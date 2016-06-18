@@ -10,6 +10,8 @@ import org.apache.log4j.Logger;
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ParseException;
 import com.github.javaparser.ast.CompilationUnit;
+import com.mcnedward.ii.app.element.JavaElement;
+import com.mcnedward.ii.app.element.JavaPackage;
 import com.mcnedward.ii.app.element.JavaProject;
 import com.mcnedward.ii.app.listener.ProjectBuildListener;
 import com.mcnedward.ii.app.visitor.ClassVisitor;
@@ -37,8 +39,11 @@ public class InterfaceInquiry {
 
 	/**
 	 * Build the JavaProject by parsing every java file and visiting the required nodes.
-	 * @param project The JavaProject to build.
-	 * @param listener Listener for notifying of changes.
+	 * 
+	 * @param project
+	 *            The JavaProject to build.
+	 * @param listener
+	 *            Listener for notifying of changes.
 	 * @return The built JavaProject, or null if the project failed to build.
 	 */
 	private JavaProject build(String projectPath, String projectName, ProjectBuildListener listener) {
@@ -46,8 +51,8 @@ public class InterfaceInquiry {
 			listener.onProgressChange(String.format("Starting to load %s...", projectName), 0);
 			JavaProject project = new JavaProject(projectPath, projectName);
 			ClassVisitor mClassVisitor = new ClassVisitor(project);
-			
-			List<CompilationHolder>compilationHolders = parseProject(project, listener);
+
+			List<CompilationHolder> compilationHolders = parseProject(project, listener);
 			listener.onProgressChange("File loaded.", 0);
 
 			int classesCount = compilationHolders.size();
@@ -57,12 +62,13 @@ public class InterfaceInquiry {
 				int progress = (int) (((double) i / classesCount) * 100);
 				listener.onProgressChange(String.format("Analyzing..."), progress);
 
-				mClassVisitor.reset();
 				mClassVisitor.visit(holder.compilationUnit, null);
-//				IJavaElement element = mClassVisitor.getElement();
-//				element.setSourceFile(holder.file);
-//				project.addElement(element);
+				mClassVisitor.reset();
 			}
+			// Check every element for ClassOrInterfaces
+			updateElementsAfterBuild(project);
+
+			// TODO Update progress correctly
 			listener.onProgressChange(String.format("Finished!"), 100);
 
 			return project;
@@ -73,12 +79,47 @@ public class InterfaceInquiry {
 	}
 
 	/**
+	 * Checks all JavaElements in the project for any ClassOrInterfaces, then gives them the correct JavaElement
+	 * corresponding to that ClassOrInterface.
+	 * 
+	 * @param project
+	 *            The JavaProject
+	 */
+	private void updateElementsAfterBuild(JavaProject project) {
+		for (JavaPackage javaPackage : project.getPackages()) {
+			List<JavaElement> javaElements = javaPackage.getElements();
+			for (JavaElement element : javaElements) {
+				if (element.needsInterfaceStatusChecked()) {
+					// Needs to be checked, so find all the classes or interfaces used by this element
+					List<JavaElement> elementsToCheck = element.getElements();
+					for (JavaElement elementToCheck : elementsToCheck) {
+						JavaElement projectElement = project.find(elementToCheck.getName());
+						elementToCheck.setIsInterface(projectElement.isInterface());
+						elementToCheck.setNeedsInterfaceStatusChecked(false);
+					}
+				}
+				if (element.needsMissingClassOrInterfaceChecked()) {
+					for (String coi : element.getMissingClassOrInterfaceList()) {
+						JavaElement missingElement = project.find(coi);
+						if (missingElement == null) {
+							logger.error(String.format("Still could not find the element %s in the JavaElement %s", coi, element));
+						} else {
+							element.addElement(missingElement);
+							element.setNeedsMissingClassOrInterfaceChecked(false);
+						}
+					}
+				}
+			}
+		}
+	}
+
+	/**
 	 * Loads the file or directory and creates the CompilationUnits.
 	 * 
 	 * @param selectedFile
 	 *            The selected file or directory.
 	 * @throws IOException
-	 * @throws ParseException 
+	 * @throws ParseException
 	 */
 	private List<CompilationHolder> parseProject(JavaProject project, ProjectBuildListener listener) throws IOException, ParseException {
 		logger.info("Loading: " + project.getPath());

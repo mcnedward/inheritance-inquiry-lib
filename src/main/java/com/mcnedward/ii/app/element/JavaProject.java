@@ -17,20 +17,24 @@ public class JavaProject {
 	private String mName;
 	private File mProjectFile;
 	private List<File> mFiles;
-	private List<IJavaElement> mElements;
+	private List<JavaPackage> mPackages;
+	private List<JavaElement> mElements;
 
 	public JavaProject(String projectPath, String projectName) {
 		mPath = projectPath;
 		mName = projectName;
+		mPackages = new ArrayList<>();
 		mElements = new ArrayList<>();
 		buildFile();
 	}
 
-	public IJavaElement find(String elementName) {
+	public JavaElement find(String elementName) {
 		try {
-			for (IJavaElement element : mElements) {
-				if (element.getName().equals(elementName)) {
-					return element;
+			for (JavaPackage javaPackage : mPackages) {
+				for (JavaElement element : javaPackage.getElements()) {
+					if (element.getName().equals(elementName)) {
+						return element;
+					}
 				}
 			}
 			return null;
@@ -40,26 +44,18 @@ public class JavaProject {
 		}
 	}
 
-	/**
-	 * Adds an interface to the project if it does not exist, or updates the existing interface.
-	 * 
-	 * @param interfaceToSaveOrUpdate
-	 * @return
-	 */
-	// public IJavaElement saveOrUpdateInterface(IJavaElement interfaceToSaveOrUpdate) {
-	// IJavaElement original = findInterface(interfaceToSaveOrUpdate.getName());
-	// if (original == null) {
-	// // Just save the interface
-	// original = interfaceToSaveOrUpdate;
-	// addElement(original);
-	// } else {
-	// // Interface exists, so update
-	// original.setPackageName(interfaceToSaveOrUpdate.getPackageName());
-	// original.setSuperClasses(interfaceToSaveOrUpdate.getSuperClasses());
-	// original.setInterfaces(interfaceToSaveOrUpdate.getInterfaces());
-	// }
-	// return original;
-	// }
+	public JavaPackage findPackage(String packageName) {
+		for (JavaPackage javaPackage : mPackages) {
+			if (javaPackage.getName().equals(packageName)) {
+				return javaPackage;
+			}
+		}
+		return null;
+	}
+
+	public void addPackage(JavaPackage javaPackage) {
+		mPackages.add(javaPackage);
+	}
 
 	private void buildFile() {
 		mProjectFile = new File(mPath);
@@ -83,19 +79,14 @@ public class JavaProject {
 		}
 	}
 
-	public void addElement(IJavaElement javaElement) {
-		logger.info("Adding: " + javaElement);
-		mElements.add(javaElement);
-	}
-
 	/**
-	 * Gets all of the IJavaElements that are classes.
+	 * Gets all of the JavaElements that are classes.
 	 * 
-	 * @return The class IJavaElements
+	 * @return The class JavaElements
 	 */
-	public List<IJavaElement> getClasses() {
-		List<IJavaElement> classes = new ArrayList<>();
-		for (IJavaElement element : mElements) {
+	public List<JavaElement> getClasses() {
+		List<JavaElement> classes = new ArrayList<>();
+		for (JavaElement element : mElements) {
 			if (!element.isInterface())
 				classes.add(element);
 		}
@@ -103,13 +94,13 @@ public class JavaProject {
 	}
 
 	/**
-	 * Gets all of the IJavaElements that are interfaces.
+	 * Gets all of the JavaElements that are interfaces.
 	 * 
-	 * @return The interface IJavaElements
+	 * @return The interface JavaElements
 	 */
-	public List<IJavaElement> getInterfaces() {
-		List<IJavaElement> interfaces = new ArrayList<>();
-		for (IJavaElement element : mElements) {
+	public List<JavaElement> getInterfaces() {
+		List<JavaElement> interfaces = new ArrayList<>();
+		for (JavaElement element : mElements) {
 			if (element.isInterface())
 				interfaces.add(element);
 		}
@@ -142,6 +133,21 @@ public class JavaProject {
 	 */
 	public List<File> getFiles() {
 		return mFiles;
+	}
+
+	/**
+	 * @return the packages
+	 */
+	public List<JavaPackage> getPackages() {
+		return mPackages;
+	}
+
+	/**
+	 * @param packages
+	 *            the packages to set
+	 */
+	public void setPackages(List<JavaPackage> packages) {
+		this.mPackages = packages;
 	}
 
 	@Override

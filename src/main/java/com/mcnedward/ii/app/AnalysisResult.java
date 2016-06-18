@@ -3,7 +3,7 @@ package com.mcnedward.ii.app;
 import java.io.File;
 import java.util.List;
 
-import com.mcnedward.ii.app.element.IJavaElement;
+import com.mcnedward.ii.app.element.JavaElement;
 
 /**
  * @author Edward - Jun 18, 2016
@@ -12,9 +12,9 @@ import com.mcnedward.ii.app.element.IJavaElement;
 public class AnalysisResult {
 
 	private File mFile;
-	private List<IJavaElement> mElements;
+	private List<JavaElement> mElements;
 
-	public AnalysisResult(File file, List<IJavaElement> elements) {
+	public AnalysisResult(File file, List<JavaElement> elements) {
 		mFile = file;
 		mElements = elements;
 	}
@@ -29,7 +29,7 @@ public class AnalysisResult {
 	/**
 	 * @return The IJavaElements
 	 */
-	public List<IJavaElement> getElements() {
+	public List<JavaElement> getElements() {
 		return mElements;
 	}
 

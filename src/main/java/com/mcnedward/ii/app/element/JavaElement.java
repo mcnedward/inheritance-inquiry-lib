@@ -8,18 +8,23 @@ import java.util.List;
  * @author Edward - Jun 16, 2016
  *
  */
-public class JavaElement implements IJavaElement {
+public class JavaElement {
 	
 	private String mName;
 	private String mPackageName;
-	private List<IJavaElement> mSuperClasses;	// extends
-	private List<IJavaElement> mInterfaces;	// extends
+	private List<JavaElement> mSuperClasses;	// extends
+	private List<JavaElement> mInterfaces;		// interfaces
+	private List<JavaElement> mElements;		// All classes or interfaces used by this element
+	private List<String> mMissingClassOrInterfaceList;
 	private boolean mIsInterface;
 	private File mSourceFile;
+	private boolean mNeedsChecked, mNeedsMissingClassOrInterfaceChecked;
 	
 	public JavaElement() {
 		mSuperClasses = new ArrayList<>();
 		mInterfaces = new ArrayList<>();
+		mElements = new ArrayList<>();
+		mMissingClassOrInterfaceList = new ArrayList<>();
 	}
 	
 	public JavaElement(String name) {
@@ -32,20 +37,25 @@ public class JavaElement implements IJavaElement {
 		mIsInterface = isInterface;
 	}
 	
-	@Override
-	public void addSuperClass(IJavaElement superClass) {
+	public void addSuperClass(JavaElement superClass) {
 		mSuperClasses.add(superClass);
 	}
 	
-	@Override
-	public void addInterface(IJavaElement javaInterface) {
+	public void addInterface(JavaElement javaInterface) {
 		mInterfaces.add(javaInterface);
+	}
+	
+	public void addElement(JavaElement element) {
+		mElements.add(element);
+	}
+	
+	public void addMissingClassOrInterface(String coi) {
+		mMissingClassOrInterfaceList.add(coi);
 	}
 	
 	/**
 	 * @return the name
 	 */
-	@Override
 	public String getName() {
 		return mName;
 	}
@@ -53,7 +63,6 @@ public class JavaElement implements IJavaElement {
 	/**
 	 * @param name
 	 */
-	@Override
 	public void setName(String name) {
 		mName = name;
 	}
@@ -61,7 +70,6 @@ public class JavaElement implements IJavaElement {
 	/**
 	 * @return the packageName
 	 */
-	@Override
 	public String getPackageName() {
 		return mPackageName;
 	}
@@ -76,51 +84,81 @@ public class JavaElement implements IJavaElement {
 	/**
 	 * @return the superClasses
 	 */
-	@Override
-	public List<IJavaElement> getSuperClasses() {
+	public List<JavaElement> getSuperClasses() {
 		return mSuperClasses;
 	}
 
 	/**
 	 * @param superClasses the superClasses to set
 	 */
-	public void setSuperClasses(List<IJavaElement> superClasses) {
+	public void setSuperClasses(List<JavaElement> superClasses) {
 		mSuperClasses = superClasses;
 	}
 	
 	/**
 	 * @return the interfaces
 	 */
-	@Override
-	public List<IJavaElement> getInterfaces() {
+	public List<JavaElement> getInterfaces() {
 		return mInterfaces;
 	}
 
 	/**
 	 * @param interfaces the interfaces to set
 	 */
-	public void setInterfaces(List<IJavaElement> interfaces) {
+	public void setInterfaces(List<JavaElement> interfaces) {
 		mInterfaces = interfaces;
 	}
 	
-	@Override
+	public List<JavaElement> getElements() {
+		return mElements;
+	}
+	
+	public List<String> getMissingClassOrInterfaceList() {
+		return mMissingClassOrInterfaceList;
+	}
+	
 	public boolean isInterface() {
 		return mIsInterface;
 	}
 	
-	@Override
 	public void setIsInterface(boolean isInterface) {
 		mIsInterface = isInterface;
 	}
 	
-	@Override
 	public File getSourceFile() {
 		return mSourceFile;
 	}
 	
-	@Override
 	public void setSourceFile(File sourceFile) {
 		mSourceFile = sourceFile;
+	}
+	
+	/**
+	 * @return
+	 */
+	public boolean needsInterfaceStatusChecked() {
+		return mNeedsChecked;
+	}
+
+	/**
+	 * @param needsChecked
+	 */
+	public void setNeedsInterfaceStatusChecked(boolean needsChecked) {
+		mNeedsChecked = needsChecked;
+	}
+
+	/**
+	 * @return
+	 */
+	public boolean needsMissingClassOrInterfaceChecked() {
+		return mNeedsMissingClassOrInterfaceChecked;
+	}
+
+	/**
+	 * @param needsMissinClassOrInterfaceChecked
+	 */
+	public void setNeedsMissingClassOrInterfaceChecked(boolean needsMissinClassOrInterfaceChecked) {
+		mNeedsMissingClassOrInterfaceChecked = needsMissinClassOrInterfaceChecked;
 	}
 
 	@Override

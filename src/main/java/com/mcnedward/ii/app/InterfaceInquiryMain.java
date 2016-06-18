@@ -1,6 +1,6 @@
 package com.mcnedward.ii.app;
 
-import com.mcnedward.ii.app.element.IJavaElement;
+import com.mcnedward.ii.app.element.JavaElement;
 import com.mcnedward.ii.app.element.JavaProject;
 import com.mcnedward.ii.app.listener.ProjectBuildListener;
 
@@ -26,9 +26,8 @@ public class InterfaceInquiryMain {
 			@Override
 			public void finished(JavaProject project) {
 				System.out.println(project);
-				System.out.println("Number of classes: " + project.getClasses().size());
-				System.out.println("Number of interfaces: " + project.getInterfaces().size());
-				for (IJavaElement javaInterface : project.getInterfaces()) {
+				System.out.println("Number of packages: " + project.getPackages().size());
+				for (JavaElement javaInterface : project.getInterfaces()) {
 					System.out.println(javaInterface);
 				}
 			}

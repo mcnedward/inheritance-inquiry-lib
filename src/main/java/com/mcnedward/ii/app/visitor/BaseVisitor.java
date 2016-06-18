@@ -11,7 +11,5 @@ public abstract class BaseVisitor<T> extends VoidVisitorAdapter<T> {
 	public BaseVisitor() {
 
 	}
-
-	public abstract void reset();
 	
 }
