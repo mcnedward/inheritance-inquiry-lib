@@ -1,5 +1,6 @@
 package com.mcnedward.ii.app.element;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,13 +13,23 @@ public class JavaElement implements IJavaElement {
 	private String mName;
 	private String mPackageName;
 	private List<IJavaElement> mSuperClasses;	// extends
-	private List<IJavaElement> mInterfaces;
+	private List<IJavaElement> mInterfaces;	// extends
 	private boolean mIsInterface;
+	private File mSourceFile;
 	
-	public JavaElement(String className) {
-		mName = className;
+	public JavaElement() {
 		mSuperClasses = new ArrayList<>();
 		mInterfaces = new ArrayList<>();
+	}
+	
+	public JavaElement(String name) {
+		this(name, false);	// Default to not an interface
+	}
+	
+	public JavaElement(String name, boolean isInterface) {
+		this();
+		mName = name;
+		mIsInterface = isInterface;
 	}
 	
 	@Override
@@ -40,6 +51,14 @@ public class JavaElement implements IJavaElement {
 	}
 
 	/**
+	 * @param name
+	 */
+	@Override
+	public void setName(String name) {
+		mName = name;
+	}
+	
+	/**
 	 * @return the packageName
 	 */
 	@Override
@@ -50,7 +69,6 @@ public class JavaElement implements IJavaElement {
 	/**
 	 * @param packageName the packageName to set
 	 */
-	@Override
 	public void setPackageName(String packageName) {
 		mPackageName = packageName;
 	}
@@ -58,6 +76,7 @@ public class JavaElement implements IJavaElement {
 	/**
 	 * @return the superClasses
 	 */
+	@Override
 	public List<IJavaElement> getSuperClasses() {
 		return mSuperClasses;
 	}
@@ -69,6 +88,21 @@ public class JavaElement implements IJavaElement {
 		mSuperClasses = superClasses;
 	}
 	
+	/**
+	 * @return the interfaces
+	 */
+	@Override
+	public List<IJavaElement> getInterfaces() {
+		return mInterfaces;
+	}
+
+	/**
+	 * @param interfaces the interfaces to set
+	 */
+	public void setInterfaces(List<IJavaElement> interfaces) {
+		mInterfaces = interfaces;
+	}
+	
 	@Override
 	public boolean isInterface() {
 		return mIsInterface;
@@ -77,6 +111,16 @@ public class JavaElement implements IJavaElement {
 	@Override
 	public void setIsInterface(boolean isInterface) {
 		mIsInterface = isInterface;
+	}
+	
+	@Override
+	public File getSourceFile() {
+		return mSourceFile;
+	}
+	
+	@Override
+	public void setSourceFile(File sourceFile) {
+		mSourceFile = sourceFile;
 	}
 
 	@Override

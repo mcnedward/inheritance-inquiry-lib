@@ -1,5 +1,8 @@
 package com.mcnedward.ii.app.element;
 
+import java.io.File;
+import java.util.List;
+
 /**
  * @author Edward - Jun 16, 2016
  *
@@ -7,17 +10,20 @@ package com.mcnedward.ii.app.element;
 public interface IJavaElement {
 
 	String getName();
+	void setName(String name);
+	
 	String getPackageName();
-	void setPackageName(String packageName);
+	
 	boolean isInterface();
 	void setIsInterface(boolean isInterface);
-	/**
-	 * @param superClass
-	 */
+
 	void addSuperClass(IJavaElement superClass);
-	/**
-	 * @param javaInterface
-	 */
 	void addInterface(IJavaElement javaInterface);
 	
+	List<IJavaElement> getSuperClasses();
+	List<IJavaElement> getInterfaces();
+
+	File getSourceFile();
+	
+	void setSourceFile(File sourceFile);
 }
