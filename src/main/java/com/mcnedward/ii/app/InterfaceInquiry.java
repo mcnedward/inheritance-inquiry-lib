@@ -93,16 +93,25 @@ public class InterfaceInquiry {
 					// Needs to be checked, so find all the classes or interfaces used by this element
 					List<JavaElement> elementsToCheck = element.getElements();
 					for (JavaElement elementToCheck : elementsToCheck) {
-						JavaElement projectElement = project.find(elementToCheck.getName());
-						elementToCheck.setIsInterface(projectElement.isInterface());
-						elementToCheck.setNeedsInterfaceStatusChecked(false);
+						elementToCheck = project.find(elementToCheck.getName());
+					}
+				}
+				if (element.needsMissingTypeArgChecked()) {
+					for (String typeArg : element.getMissingTypeArgs()) {
+						JavaElement missingElement = project.find(typeArg);
+						if (missingElement == null) {
+							logger.error(String.format("Still could not find the type argument element %s in the JavaElement %s", typeArg, element));
+						} else {
+							element.addTypeArg(missingElement);
+							element.setNeedsMissingTypeArgChecked(false);
+						}
 					}
 				}
 				if (element.needsMissingClassOrInterfaceChecked()) {
 					for (String coi : element.getMissingClassOrInterfaceList()) {
 						JavaElement missingElement = project.find(coi);
 						if (missingElement == null) {
-							logger.error(String.format("Still could not find the element %s in the JavaElement %s", coi, element));
+							logger.error(String.format("Still could not find the class or interface element %s in the JavaElement %s", coi, element));
 						} else {
 							element.addElement(missingElement);
 							element.setNeedsMissingClassOrInterfaceChecked(false);

@@ -9,6 +9,7 @@ import com.github.javaparser.ast.ImportDeclaration;
 import com.github.javaparser.ast.PackageDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
+import com.github.javaparser.ast.type.Type;
 import com.mcnedward.ii.app.element.JavaElement;
 import com.mcnedward.ii.app.element.JavaPackage;
 import com.mcnedward.ii.app.element.JavaProject;
@@ -42,20 +43,10 @@ public class ClassVisitor extends BaseVisitor<JavaElement> {
 		mElement.setNeedsInterfaceStatusChecked(false); // Doesn't need to be checked after build anymore
 		mElement.setName(node.getName());
 
-		checkExtends(node);
-
-		// if (n.getImplements() != null && !n.getImplements().isEmpty())
-		// for (ClassOrInterfaceType coi : n.getImplements())
-		// classObject.addInterface(coi.getName());
-		//
-		// for (BodyDeclaration member : n.getMembers()) {
-		// if (member instanceof FieldDeclaration) {
-		// variableVisitor.visit((FieldDeclaration) member, null);
-		// }
-		// if (member instanceof MethodDeclaration) {
-		// methodVisitor.visit((MethodDeclaration) member, null);
-		// }
-		// }
+		// If this class is an interface, then any extends will also have to be interfaces.
+		checkClassesOrInterfaces(node.getExtends(), isInterface);
+		// Implements are always interfaces
+		checkClassesOrInterfaces(node.getImplements(), true);
 	}
 
 	@Override
@@ -68,39 +59,17 @@ public class ClassVisitor extends BaseVisitor<JavaElement> {
 		mImports.add(node.getName().toString());
 	}
 
-	private void checkExtends(ClassOrInterfaceDeclaration node) {
-		if (node.getExtends() != null && !node.getExtends().isEmpty()) {
-			for (ClassOrInterfaceType coi : node.getExtends()) {
-				String name = coi.getName();
-				String packageName = null;
-				// Get the package name from the imports
-				for (String importName : mImports) {
-					int index = importName.lastIndexOf('.');
-					if (index > 0) {
-						String imp = importName.substring(index + 1);
-						if (name.equals(imp)) {
-							packageName = importName.substring(0, importName.indexOf(name) - 1);
-							break;
-						}
-					}
-				}
-				if (packageName == null) {
-					// Search the current package for this class or interface
-					JavaPackage currentPackage = mProject.findPackage(mPackageName);
-					JavaElement elementInPackage = currentPackage.find(name); // currentPackage should never be null
-					if (elementInPackage != null) {
-						// TODO Found, so the element must be in the same package?
-						mElement.addElement(elementInPackage);
-					} else {
-						logger.error(String.format("Could not find the package for %s in the JavaElement %s.", name, mElement));
-						mElement.setNeedsMissingClassOrInterfaceChecked(true);
-						mElement.addMissingClassOrInterface(name);
-					}
-				} else {
-					// Search the project for an existing package
-					JavaElement element = findOrCreateElement(packageName, name);
-					mElement.addElement(element);
-				}
+	private void checkClassesOrInterfaces(List<ClassOrInterfaceType> list, boolean isInterface) {
+		for (ClassOrInterfaceType coi : list) {
+			String name = coi.getName();
+			JavaElement coiElement = checkImportsForElement(name, mElement, true);
+			if (coiElement != null)
+				coiElement.setIsInterface(isInterface);
+
+			List<Type> typeArgs = coi.getTypeArgs();
+			for (Type typeArg : typeArgs) {
+				String typeName = typeArg.toString();
+				checkImportsForElement(typeName, coiElement, false);
 			}
 		}
 	}
@@ -112,7 +81,7 @@ public class ClassVisitor extends BaseVisitor<JavaElement> {
 			// Package does not exist, so class cannot either.
 			// Add the class to the package, and the package to the project
 			javaPackage = new JavaPackage(packageName);
-			element = new JavaElement(elementName);
+			element = new JavaElement(elementName, javaPackage);
 			javaPackage.addElement(element);
 			mProject.addPackage(javaPackage);
 			element.setNeedsInterfaceStatusChecked(true);
@@ -120,12 +89,85 @@ public class ClassVisitor extends BaseVisitor<JavaElement> {
 			// Find the class in the package
 			element = javaPackage.find(elementName);
 			if (element == null) {
-				element = new JavaElement(elementName);
+				element = new JavaElement(elementName, javaPackage);
 				javaPackage.addElement(element);
 				element.setNeedsInterfaceStatusChecked(true);
 			}
 		}
 		return element;
+	}
+
+	/**
+	 * <p>
+	 * This method is used to check the imports for the current class (the one being visited here) and try to find the
+	 * package for the specified elementName. This elementName is the name of a JavaElement that needs to be added to
+	 * the elementToUpdate, and can be the name of a class or interface, or the name of a type argument in a
+	 * parameterized generic declaration.
+	 * </p>
+	 * <p>
+	 * The elementToUpdate is the element that will have the found JavaElement added to it. This elementToUpdate can be
+	 * the current class, or a class or interface with parameterized types.
+	 * </p>
+	 * <p>
+	 * This also handles setting the elementToUpdate to need checking after the build, if the correct element could not
+	 * be found for certain.
+	 * </p>
+	 * 
+	 * @param elementName
+	 *            The name of the element to find.
+	 * @param elementToUpdate
+	 *            The JavaElement to add the found element to.
+	 * @param classOrInterface
+	 *            True if this is being checked for a class or interface, false if it is being checked for a type
+	 *            argument.
+	 * 
+	 * @return The found JavaElement.
+	 */
+	private JavaElement checkImportsForElement(String elementName, JavaElement elementToUpdate, boolean classOrInterface) {
+		String packageName = checkImportsForPackage(elementName);
+		JavaElement foundElement;
+		if (packageName == null) {
+			// Search the current package for this class or interface
+			JavaPackage currentPackage = mProject.findPackage(mPackageName);
+			foundElement = currentPackage.find(elementName); // currentPackage should never be null
+			if (foundElement == null) {
+				logger.error(String.format("Could not find the package for the %s %s in the JavaElement %s.",
+						(classOrInterface ? "class or interface" : "type argument"), elementName, elementToUpdate));
+				if (classOrInterface) {
+					elementToUpdate.setNeedsMissingClassOrInterfaceChecked(true);
+					elementToUpdate.addMissingClassOrInterface(elementName);
+				} else {
+					elementToUpdate.setNeedsMissingTypeArgChecked(true);
+					elementToUpdate.addMissingTypeArg(elementName);
+				}
+				return null;
+				// TODO throw JavaElementNotFoundException?
+			}
+		} else {
+			// Search the project for an existing package
+			foundElement = findOrCreateElement(packageName, elementName);
+		}
+		if (classOrInterface)
+			elementToUpdate.addElement(foundElement);
+		else
+			elementToUpdate.addTypeArg(foundElement);
+		return foundElement;
+	}
+
+	private String checkImportsForPackage(String elementName) {
+		String packageName = null;
+		// Get the package name from the imports
+		for (String importName : mImports) {
+			int index = importName.lastIndexOf('.');
+			if (index > 0) {
+				String imp = importName.substring(index + 1);
+				if (elementName.equals(imp)) {
+					packageName = importName.substring(0, importName.indexOf(elementName) - 1);
+					break;
+				}
+			}
+		}
+		return packageName;
 	}
 
 	public JavaElement getElement() {
