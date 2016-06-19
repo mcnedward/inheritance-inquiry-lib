@@ -1,4 +1,4 @@
-package com.mcnedward.ii.app.visitor;
+package com.mcnedward.ii.visitor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,9 +10,9 @@ import com.github.javaparser.ast.PackageDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.Type;
-import com.mcnedward.ii.app.element.JavaElement;
-import com.mcnedward.ii.app.element.JavaPackage;
-import com.mcnedward.ii.app.element.JavaProject;
+import com.mcnedward.ii.element.JavaElement;
+import com.mcnedward.ii.element.JavaPackage;
+import com.mcnedward.ii.element.JavaProject;
 
 /**
  * @author Edward - Jun 18, 2016
@@ -131,7 +131,7 @@ public class ClassVisitor extends BaseVisitor<JavaElement> {
 			JavaPackage currentPackage = mProject.findPackage(mPackageName);
 			foundElement = currentPackage.find(elementName); // currentPackage should never be null
 			if (foundElement == null) {
-				logger.error(String.format("Could not find the package for the %s %s in the JavaElement %s.",
+				logger.debug(String.format("Could not find the package for the %s %s in the JavaElement %s.",
 						(classOrInterface ? "class or interface" : "type argument"), elementName, elementToUpdate));
 				if (classOrInterface) {
 					elementToUpdate.setNeedsMissingClassOrInterfaceChecked(true);

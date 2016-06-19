@@ -1,4 +1,4 @@
-package com.mcnedward.ii.app.visitor;
+package com.mcnedward.ii.visitor;
 
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 

@@ -1,4 +1,4 @@
-package com.mcnedward.ii.app.utils;
+package com.mcnedward.ii.utils;
 
 import java.util.concurrent.TimeUnit;
 

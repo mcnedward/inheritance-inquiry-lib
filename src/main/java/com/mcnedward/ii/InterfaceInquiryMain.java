@@ -1,8 +1,8 @@
-package com.mcnedward.ii.app;
+package com.mcnedward.ii;
 
-import com.mcnedward.ii.app.element.JavaElement;
-import com.mcnedward.ii.app.element.JavaProject;
-import com.mcnedward.ii.app.listener.ProjectBuildListener;
+import com.mcnedward.ii.element.JavaElement;
+import com.mcnedward.ii.element.JavaProject;
+import com.mcnedward.ii.listener.ProjectBuildListener;
 
 /**
  * @author Edward - Jun 16, 2016
@@ -25,13 +25,22 @@ public class InterfaceInquiryMain {
 			
 			@Override
 			public void finished(JavaProject project) {
-				System.out.println(project);
-				System.out.println("Number of packages: " + project.getPackages().size());
-				for (JavaElement javaInterface : project.getInterfaces()) {
-					System.out.println(javaInterface);
-				}
+				JavaElement element = project.find("AccountRepositoryImpl");
+				recurse(element);
 			}
 		});
+	}
+	
+	private static void recurse(JavaElement element) {
+		for (JavaElement javaInterface : element.getInterfaces()) {
+			System.out.println(String.format("%s %s %s",
+					element,
+					(element.isInterface() || (!element.isInterface() && !javaInterface.isInterface()) ? "extends" : "implements"),
+					javaInterface));
+			if (!javaInterface.getInterfaces().isEmpty()) {
+				recurse(javaInterface);
+			}
+		}
 	}
 
 }

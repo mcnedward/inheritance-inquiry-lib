@@ -1,6 +1,6 @@
-package com.mcnedward.ii.app.listener;
+package com.mcnedward.ii.listener;
 
-import com.mcnedward.ii.app.element.JavaProject;
+import com.mcnedward.ii.element.JavaProject;
 
 /**
  * @author Edward - Jun 18, 2016

@@ -1,4 +1,4 @@
-package com.mcnedward.ii.app;
+package com.mcnedward.ii;
 
 import java.io.File;
 import java.io.IOException;
@@ -10,11 +10,11 @@ import org.apache.log4j.Logger;
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ParseException;
 import com.github.javaparser.ast.CompilationUnit;
-import com.mcnedward.ii.app.element.JavaElement;
-import com.mcnedward.ii.app.element.JavaPackage;
-import com.mcnedward.ii.app.element.JavaProject;
-import com.mcnedward.ii.app.listener.ProjectBuildListener;
-import com.mcnedward.ii.app.visitor.ClassVisitor;
+import com.mcnedward.ii.element.JavaElement;
+import com.mcnedward.ii.element.JavaPackage;
+import com.mcnedward.ii.element.JavaProject;
+import com.mcnedward.ii.listener.ProjectBuildListener;
+import com.mcnedward.ii.visitor.ClassVisitor;
 
 /**
  * @author Edward - Jun 16, 2016
@@ -100,7 +100,7 @@ public class InterfaceInquiry {
 					for (String typeArg : element.getMissingTypeArgs()) {
 						JavaElement missingElement = project.find(typeArg);
 						if (missingElement == null) {
-							logger.error(String.format("Still could not find the type argument element %s in the JavaElement %s", typeArg, element));
+							logger.debug(String.format("Still could not find the type argument element %s in the JavaElement %s", typeArg, element));
 						} else {
 							element.addTypeArg(missingElement);
 							element.setNeedsMissingTypeArgChecked(false);
@@ -111,7 +111,7 @@ public class InterfaceInquiry {
 					for (String coi : element.getMissingClassOrInterfaceList()) {
 						JavaElement missingElement = project.find(coi);
 						if (missingElement == null) {
-							logger.error(String.format("Still could not find the class or interface element %s in the JavaElement %s", coi, element));
+							logger.debug(String.format("Still could not find the class or interface element %s in the JavaElement %s", coi, element));
 						} else {
 							element.addElement(missingElement);
 							element.setNeedsMissingClassOrInterfaceChecked(false);

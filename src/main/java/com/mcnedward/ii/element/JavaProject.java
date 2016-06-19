@@ -1,4 +1,4 @@
-package com.mcnedward.ii.app.element;
+package com.mcnedward.ii.element;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -18,13 +18,11 @@ public class JavaProject {
 	private File mProjectFile;
 	private List<File> mFiles;
 	private List<JavaPackage> mPackages;
-	private List<JavaElement> mElements;
 
 	public JavaProject(String projectPath, String projectName) {
 		mPath = projectPath;
 		mName = projectName;
 		mPackages = new ArrayList<>();
-		mElements = new ArrayList<>();
 		buildFile();
 	}
 
@@ -79,32 +77,48 @@ public class JavaProject {
 		}
 	}
 
+	// Cache the search for classes
+	private List<JavaElement> mClasses;
 	/**
 	 * Gets all of the JavaElements that are classes.
 	 * 
 	 * @return The class JavaElements
 	 */
 	public List<JavaElement> getClasses() {
-		List<JavaElement> classes = new ArrayList<>();
-		for (JavaElement element : mElements) {
-			if (!element.isInterface())
-				classes.add(element);
+		if (mClasses != null && !mClasses.isEmpty()) {
+			return mClasses;
 		}
-		return classes;
+		mClasses = new ArrayList<>();
+		for (JavaPackage javaPackage : mPackages) {
+			for (JavaElement element : javaPackage.getElements()) {
+				if (!element.isInterface()) {
+					mClasses.add(element);
+				}
+			}
+		}
+		return mClasses;
 	}
 
+	// Cache the search for interfaces
+	private List<JavaElement> mInterfaces;
 	/**
 	 * Gets all of the JavaElements that are interfaces.
 	 * 
 	 * @return The interface JavaElements
 	 */
 	public List<JavaElement> getInterfaces() {
-		List<JavaElement> interfaces = new ArrayList<>();
-		for (JavaElement element : mElements) {
-			if (element.isInterface())
-				interfaces.add(element);
+		if (mInterfaces != null && !mInterfaces.isEmpty()) {
+			return mInterfaces;
 		}
-		return interfaces;
+		mInterfaces = new ArrayList<>();
+		for (JavaPackage javaPackage : mPackages) {
+			for (JavaElement element : javaPackage.getElements()) {
+				if (element.isInterface()) {
+					mInterfaces.add(element);
+				}
+			}
+		}
+		return mInterfaces;
 	}
 
 	/**

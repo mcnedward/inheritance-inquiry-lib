@@ -1,9 +1,9 @@
-package com.mcnedward.ii.app;
+package com.mcnedward.ii;
 
 import java.io.File;
 import java.util.List;
 
-import com.mcnedward.ii.app.element.JavaElement;
+import com.mcnedward.ii.element.JavaElement;
 
 /**
  * @author Edward - Jun 18, 2016
