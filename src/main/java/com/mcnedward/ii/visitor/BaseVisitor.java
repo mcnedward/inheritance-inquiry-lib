@@ -1,6 +1,7 @@
 package com.mcnedward.ii.visitor;
 
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
+import com.mcnedward.ii.element.JavaProject;
 
 /**
  * @author Edward - Jun 18, 2016
@@ -8,8 +9,14 @@ import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
  */
 public abstract class BaseVisitor<T> extends VoidVisitorAdapter<T> {
 
-	public BaseVisitor() {
-
+	private JavaProject mProject;
+	
+	public BaseVisitor(JavaProject project) {
+		mProject = project;
+	}
+	
+	protected JavaProject project() {
+		return mProject;
 	}
 	
 }

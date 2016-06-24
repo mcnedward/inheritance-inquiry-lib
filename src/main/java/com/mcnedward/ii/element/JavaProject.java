@@ -76,6 +76,29 @@ public class JavaProject {
 			}
 		}
 	}
+	
+	public JavaElement findOrCreateElement(String packageName, String elementName) {
+		JavaElement element = null;
+		JavaPackage javaPackage = findPackage(packageName);
+		if (javaPackage == null) {
+			// Package does not exist, so class cannot either.
+			// Add the class to the package, and the package to the project
+			javaPackage = new JavaPackage(packageName);
+			element = new JavaElement(elementName, javaPackage);
+			javaPackage.addElement(element);
+			addPackage(javaPackage);
+			element.setNeedsInterfaceStatusChecked(true);
+		} else {
+			// Find the class in the package
+			element = javaPackage.find(elementName);
+			if (element == null) {
+				element = new JavaElement(elementName, javaPackage);
+				javaPackage.addElement(element);
+				element.setNeedsInterfaceStatusChecked(true);
+			}
+		}
+		return element;
+	}
 
 	// Cache the search for classes
 	private List<JavaElement> mClasses;
@@ -119,6 +142,12 @@ public class JavaProject {
 			}
 		}
 		return mInterfaces;
+	}
+	
+	public List<JavaElement> getAllElements() {
+		List<JavaElement> elements = new ArrayList<>(getClasses());
+		elements.addAll(getInterfaces());
+		return elements;
 	}
 
 	/**

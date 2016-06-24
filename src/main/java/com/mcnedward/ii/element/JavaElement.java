@@ -9,50 +9,66 @@ import java.util.List;
  *
  */
 public class JavaElement {
-	
+
 	private String mName;
+	private String mPackageName;
 	private JavaPackage mPackage;
-	private List<JavaElement> mElements;		// All classes or interfaces used by this element
+	private List<String> mImports;
+	private List<JavaElement> mElements; // All classes or interfaces used by this element
 	private List<JavaElement> mTypeArgs;
 	private List<String> mMissingTypeArgs, mMissingClassOrInterfaceList;
 	private boolean mIsInterface;
 	private File mSourceFile;
-	private boolean mNeedsChecked, mNeedsMissingTypeArgChecked, mNeedsMissingClassOrInterfaceChecked;
-	
+	private boolean mNeedsChecked;
+
 	public JavaElement() {
+		mImports = new ArrayList<>();
 		mElements = new ArrayList<>();
 		mTypeArgs = new ArrayList<>();
 		mMissingTypeArgs = new ArrayList<>();
 		mMissingClassOrInterfaceList = new ArrayList<>();
 	}
-	
+
 	public JavaElement(String name, JavaPackage javaPackage) {
-		this(name, false);	// Default to not an interface
+		this(name, false); // Default to not an interface
 		mPackage = javaPackage;
+		mPackageName = javaPackage.getName();
 	}
-	
+
 	public JavaElement(String name, boolean isInterface) {
 		this();
 		mName = name;
 		mIsInterface = isInterface;
 	}
-	
+
+	public void addImport(String importName) {
+		mImports.add(importName);
+	}
+
 	public void addElement(JavaElement element) {
 		mElements.add(element);
 	}
-	
+
 	public void addTypeArg(JavaElement element) {
 		mTypeArgs.add(element);
 	}
-	
+
 	public void addMissingTypeArg(String typeArg) {
 		mMissingTypeArgs.add(typeArg);
 	}
-	
+
+	public boolean needsMissingTypeArgChecked() {
+		return !mMissingTypeArgs.isEmpty();
+	}
+
 	public void addMissingClassOrInterface(String coi) {
 		mMissingClassOrInterfaceList.add(coi);
 	}
-	
+
+	public boolean needsMissingClassOrInterfaceChecked() {
+		return !mMissingClassOrInterfaceList.isEmpty();
+	}
+
 	/**
 	 * Gets all of the JavaElements that are super classes.
 	 * 
@@ -81,6 +97,37 @@ public class JavaElement {
 		return interfaces;
 	}
 	
+	public List<String> getSuperClassesFull() {
+		List<String> classes = new ArrayList<>();
+		for (JavaElement element : mElements) {
+			if (!element.isInterface())
+				classes.add(element.getFullyQualifiedName());
+		}
+		return classes;
+	}
+	
+	public List<String> getInterfacesFull() {
+		List<String> interfaces = new ArrayList<>();
+		for (JavaElement element : mElements) {
+			if (element.isInterface())
+				interfaces.add(element.getFullyQualifiedName());
+		}
+		return interfaces;
+	}
+
+	public String getFullyQualifiedName() {
+		String out = "";
+		if (mPackage != null && !mPackage.getName().equals("")) {
+			out = mPackage.getName() + ".";
+		}
+		return out + mName;
+	}
+
+	public void cleanUp() {
+		mMissingTypeArgs = new ArrayList<>();
+		mMissingClassOrInterfaceList = new ArrayList<>();
+	}
+
 	/**
 	 * @return the name
 	 */
@@ -94,52 +141,63 @@ public class JavaElement {
 	public void setName(String name) {
 		mName = name;
 	}
-	
-	/**
-	 */
+
+	public String getPackageName() {
+		return mPackageName;
+	}
+
+	public void setPackageName(String packageName) {
+		mPackageName = packageName;
+	}
+
 	public JavaPackage getPackage() {
 		return mPackage;
 	}
 
 	/**
-	 * @param javaPackage the javaPackage to set
+	 * @param javaPackage
+	 *            the javaPackage to set
 	 */
 	public void setPackage(JavaPackage javaPackage) {
 		mPackage = javaPackage;
 	}
 
+	public List<String> getImports() {
+		return mImports;
+	}
+
 	public List<JavaElement> getElements() {
 		return mElements;
 	}
-	
+
 	public List<JavaElement> getTypeArgs() {
 		return mTypeArgs;
 	}
-	
+
 	public List<String> getMissingTypeArgs() {
 		return mMissingTypeArgs;
 	}
-	
+
 	public List<String> getMissingClassOrInterfaceList() {
 		return mMissingClassOrInterfaceList;
 	}
-	
+
 	public boolean isInterface() {
 		return mIsInterface;
 	}
-	
+
 	public void setIsInterface(boolean isInterface) {
 		mIsInterface = isInterface;
 	}
-	
+
 	public File getSourceFile() {
 		return mSourceFile;
 	}
-	
+
 	public void setSourceFile(File sourceFile) {
 		mSourceFile = sourceFile;
 	}
-	
+
 	/**
 	 * @return
 	 */
@@ -154,35 +212,9 @@ public class JavaElement {
 		mNeedsChecked = needsChecked;
 	}
 
-	public boolean needsMissingTypeArgChecked() {
-		return mNeedsMissingTypeArgChecked;
-	}
-	
-	public void setNeedsMissingTypeArgChecked(boolean needsMissingTypeArgChecked) {
-		mNeedsMissingTypeArgChecked = needsMissingTypeArgChecked;
-	}
-	
-	/**
-	 * @return
-	 */
-	public boolean needsMissingClassOrInterfaceChecked() {
-		return mNeedsMissingClassOrInterfaceChecked;
-	}
-
-	/**
-	 * @param needsMissinClassOrInterfaceChecked
-	 */
-	public void setNeedsMissingClassOrInterfaceChecked(boolean needsMissinClassOrInterfaceChecked) {
-		mNeedsMissingClassOrInterfaceChecked = needsMissinClassOrInterfaceChecked;
-	}
-
 	@Override
 	public String toString() {
-		String out = "";
-		if (mPackage != null && !mPackage.getName().equals("")) {
-			out = mPackage.getName() + ".";
-		}
-		return out + mName;
+		return getFullyQualifiedName();
 	}
 
 }

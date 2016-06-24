@@ -62,8 +62,8 @@ public class InterfaceInquiry {
 				int progress = (int) (((double) i / classesCount) * 100);
 				listener.onProgressChange(String.format("Analyzing..."), progress);
 
-				mClassVisitor.visit(holder.compilationUnit, null);
-				mClassVisitor.reset();
+				JavaElement element = new JavaElement();
+				mClassVisitor.visit(holder.compilationUnit, element);
 			}
 			// Check every element for ClassOrInterfaces
 			updateElementsAfterBuild(project);
@@ -102,8 +102,8 @@ public class InterfaceInquiry {
 						if (missingElement == null) {
 							logger.debug(String.format("Still could not find the type argument element %s in the JavaElement %s", typeArg, element));
 						} else {
+							logger.debug(String.format("Found missing element %s.", missingElement));
 							element.addTypeArg(missingElement);
-							element.setNeedsMissingTypeArgChecked(false);
 						}
 					}
 				}
@@ -113,11 +113,12 @@ public class InterfaceInquiry {
 						if (missingElement == null) {
 							logger.debug(String.format("Still could not find the class or interface element %s in the JavaElement %s", coi, element));
 						} else {
+							logger.debug(String.format("Found missing element %s.", missingElement));
 							element.addElement(missingElement);
-							element.setNeedsMissingClassOrInterfaceChecked(false);
 						}
 					}
 				}
+				element.cleanUp();
 			}
 		}
 	}
