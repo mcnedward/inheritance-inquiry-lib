@@ -3,6 +3,7 @@ package com.mcnedward.ii.element;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Stack;
 
 import org.apache.log4j.Logger;
 
@@ -22,6 +23,15 @@ public class JavaProject {
 	public JavaProject(String projectPath, String projectName) {
 		mPath = projectPath;
 		mName = projectName;
+		mProjectFile = new File(mPath);
+		mPackages = new ArrayList<>();
+		buildFile();
+	}
+	
+	public JavaProject(File projectFile, String projectName) {
+		mPath = projectFile.getAbsolutePath();
+		mName = projectName;
+		mProjectFile = projectFile;
 		mPackages = new ArrayList<>();
 		buildFile();
 	}
@@ -51,12 +61,74 @@ public class JavaProject {
 		return null;
 	}
 
+	/**
+	 * Finds the Depth of Inheritance Tree (DIT) for a JavaElement.
+	 * <p>DIT equals the maximum inheritance path from the class to the root class. (http://www.aivosto.com/project/help/pm-oo-ck.html)</p>
+	 * @param element The element to find the DIT for.
+	 * @return A Stack of JavaElements that are a part of the inheritance tree for the element given to this method.
+	 */
+	public Stack<JavaElement> findDepthOfInheritanceTreeFor(JavaElement element) {
+		Stack<JavaElement> classStack = new Stack<>();
+		if (element.isInterface()) {
+			recurseInterfaces(element, classStack);
+		} else {
+			// Class can only extend one class
+			recurseSuperClasses(element, classStack);
+		}
+		return classStack;
+	}
+
+	private void recurseSuperClasses(JavaElement javaClass, Stack<JavaElement> classStack) {
+		if (javaClass.getSuperClasses().isEmpty())
+			return;
+		JavaElement elementSuperClass = javaClass.getSuperClasses().get(0);
+		classStack.push(elementSuperClass);
+		recurseSuperClasses(elementSuperClass, classStack);
+	}
+
+	private void recurseInterfaces(JavaElement javaInterface, Stack<JavaElement> classStack) {
+		if (javaInterface.getInterfaces().isEmpty())
+			return;
+		for (JavaElement elementInterface : javaInterface.getInterfaces()) {
+			recurseInterfaces(elementInterface, classStack);
+			classStack.push(elementInterface);
+		}
+	}
+
+	/**
+	 * Finds the Number of Children (NOC) for a JavaElement.
+	 * <p>
+	 * NOC equals the number of immediate child classes derived from a base class.
+	 * (http://www.aivosto.com/project/help/pm-oo-ck.html)
+	 * </p>
+	 * 
+	 * @param element
+	 *            The element to find the NOC for.
+	 * @return A list of JavaElements that are children of the element given to this method. To find the NOC
+	 *         from this, just get the size().
+	 */
+	public List<JavaElement> findNumberOfChildrenFor(JavaElement element) {
+		List<JavaElement> classChildren = new ArrayList<>();
+
+		// Go through every class and interface in the project to find elements that extend this one
+		for (JavaElement projectElement : getAllElements()) {
+			if (projectElement.isInterface()) {
+				if (projectElement.getInterfaces().contains(element))
+					classChildren.add(projectElement);
+			} else {
+				if (projectElement.getSuperClasses().contains(element)) {
+					classChildren.add(projectElement);
+				}
+			}
+		}
+		return classChildren;
+	}
+
 	public void addPackage(JavaPackage javaPackage) {
 		mPackages.add(javaPackage);
 	}
 
 	private void buildFile() {
-		mProjectFile = new File(mPath);
 		mFiles = new ArrayList<>();
 		if (mProjectFile.isDirectory()) {
 			buildDirectory(mProjectFile.listFiles());
@@ -76,7 +148,7 @@ public class JavaProject {
 			}
 		}
 	}
-	
+
 	public JavaElement findOrCreateElement(String packageName, String elementName) {
 		JavaElement element = null;
 		JavaPackage javaPackage = findPackage(packageName);
@@ -102,6 +174,7 @@ public class JavaProject {
 
 	// Cache the search for classes
 	private List<JavaElement> mClasses;
+
 	/**
 	 * Gets all of the JavaElements that are classes.
 	 * 
@@ -124,6 +197,7 @@ public class JavaProject {
 
 	// Cache the search for interfaces
 	private List<JavaElement> mInterfaces;
+
 	/**
 	 * Gets all of the JavaElements that are interfaces.
 	 * 
@@ -143,7 +217,7 @@ public class JavaProject {
 		}
 		return mInterfaces;
 	}
-	
+
 	public List<JavaElement> getAllElements() {
 		List<JavaElement> elements = new ArrayList<>(getClasses());
 		elements.addAll(getInterfaces());

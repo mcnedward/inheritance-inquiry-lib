@@ -16,6 +16,7 @@ public class JavaElement {
 	private List<String> mImports;
 	private List<JavaElement> mElements; // All classes or interfaces used by this element
 	private List<JavaElement> mTypeArgs;
+	private List<JavaMethod> mMethods;
 	private List<String> mMissingTypeArgs, mMissingClassOrInterfaceList;
 	private boolean mIsInterface;
 	private File mSourceFile;
@@ -25,6 +26,7 @@ public class JavaElement {
 		mImports = new ArrayList<>();
 		mElements = new ArrayList<>();
 		mTypeArgs = new ArrayList<>();
+		mMethods = new ArrayList<>();
 		mMissingTypeArgs = new ArrayList<>();
 		mMissingClassOrInterfaceList = new ArrayList<>();
 	}
@@ -53,6 +55,10 @@ public class JavaElement {
 		mTypeArgs.add(element);
 	}
 
+	public void addMethod(JavaMethod method) {
+		mMethods.add(method);
+	}
+	
 	public void addMissingTypeArg(String typeArg) {
 		mMissingTypeArgs.add(typeArg);
 	}
@@ -174,6 +180,10 @@ public class JavaElement {
 		return mTypeArgs;
 	}
 
+	public List<JavaMethod> getMethods() {
+		return mMethods;
+	}
+	
 	public List<String> getMissingTypeArgs() {
 		return mMissingTypeArgs;
 	}

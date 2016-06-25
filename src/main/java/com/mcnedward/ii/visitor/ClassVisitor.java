@@ -6,9 +6,12 @@ import org.apache.log4j.Logger;
 
 import com.github.javaparser.ast.ImportDeclaration;
 import com.github.javaparser.ast.PackageDeclaration;
+import com.github.javaparser.ast.body.BodyDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
+import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.mcnedward.ii.element.JavaElement;
+import com.mcnedward.ii.element.JavaMethod;
 import com.mcnedward.ii.element.JavaProject;
 
 /**
@@ -19,10 +22,12 @@ public class ClassVisitor extends BaseVisitor<JavaElement> {
 	protected static final Logger logger = Logger.getLogger(ClassVisitor.class);
 
 	private ClassOrInterfaceTypeVisitor mClassOrInterfaceTypeVisitor;
+	private MethodVisitor mMethodVisitor;
 
 	public ClassVisitor(JavaProject project) {
 		super(project);
 		mClassOrInterfaceTypeVisitor = new ClassOrInterfaceTypeVisitor(project);
+		mMethodVisitor = new MethodVisitor(project);
 	}
 
 	@Override
@@ -56,6 +61,14 @@ public class ClassVisitor extends BaseVisitor<JavaElement> {
 		for (ClassOrInterfaceType type : classInterfaces) {
 			mClassOrInterfaceTypeVisitor.setIsInterface(true);
 			mClassOrInterfaceTypeVisitor.visit(type, element);
+		}
+		
+		for (BodyDeclaration member : node.getMembers()) {
+			if (member instanceof MethodDeclaration) {
+				JavaMethod method = new JavaMethod();
+				mMethodVisitor.visit((MethodDeclaration) member, method);
+				element.addMethod(method);
+			}
 		}
 	}
 
