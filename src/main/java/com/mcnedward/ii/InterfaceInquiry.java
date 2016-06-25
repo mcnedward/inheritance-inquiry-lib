@@ -6,6 +6,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.api.errors.InvalidRemoteException;
+import org.eclipse.jgit.util.FileUtils;
 
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ParseException;
@@ -13,6 +16,7 @@ import com.github.javaparser.ast.CompilationUnit;
 import com.mcnedward.ii.element.JavaElement;
 import com.mcnedward.ii.element.JavaPackage;
 import com.mcnedward.ii.element.JavaProject;
+import com.mcnedward.ii.exception.DownloadException;
 import com.mcnedward.ii.listener.ProjectBuildListener;
 import com.mcnedward.ii.visitor.ClassVisitor;
 
@@ -28,13 +32,55 @@ public class InterfaceInquiry {
 
 	public void buildProject(String projectPath, String projectName, ProjectBuildListener listener) {
 		Runnable task = () -> {
-			JavaProject project = build(projectPath, projectName, listener);
+			listener.onProgressChange(String.format("Starting to load %s...", projectName), 0);
+			JavaProject project = new JavaProject(projectName, projectName);
+			build(project, listener);
 			if (project != null)
 				listener.finished(project);
 		};
 
 		Thread thread = new Thread(task);
 		thread.start();
+	}
+
+	public void buildProject(File projectFile, String projectName, ProjectBuildListener listener) {
+		Runnable task = () -> {
+			listener.onProgressChange(String.format("Starting to load %s...", projectName), 0);
+			JavaProject project = new JavaProject(projectFile, projectName);
+			build(project, listener);
+			if (project != null)
+				listener.finished(project);
+		};
+
+		Thread thread = new Thread(task);
+		thread.start();
+	}
+
+	public void buildProject(String remoteUrl, String projectName, String username, String password, ProjectBuildListener listener) {
+		File projectFile;
+		try {
+			projectFile = GitService.downloadFileFromGit(remoteUrl, projectName, username, password, listener);
+			Runnable task = () -> {
+				listener.onProgressChange(String.format("Starting to load %s...", projectName), 0);
+				JavaProject project = new JavaProject(projectFile, projectName);
+				build(project, listener, true);
+				if (project != null)
+					listener.finished(project);
+			};
+
+			Thread thread = new Thread(task);
+			thread.start();
+		} catch (InvalidRemoteException e) {
+			e.printStackTrace();
+		} catch (GitAPIException e) {
+			e.printStackTrace();
+		} catch (DownloadException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private JavaProject build(JavaProject project, ProjectBuildListener listener) {
+		return build(project, listener, false);
 	}
 
 	/**
@@ -44,12 +90,13 @@ public class InterfaceInquiry {
 	 *            The JavaProject to build.
 	 * @param listener
 	 *            Listener for notifying of changes.
+	 * @param deleteAfterBuild
+	 *            True if the JavaProject file should be deleted after the build, such as when the file is a temporary
+	 *            file from a git download.
 	 * @return The built JavaProject, or null if the project failed to build.
 	 */
-	private JavaProject build(String projectPath, String projectName, ProjectBuildListener listener) {
+	private JavaProject build(JavaProject project, ProjectBuildListener listener, boolean deleteAfterBuild) {
 		try {
-			listener.onProgressChange(String.format("Starting to load %s...", projectName), 0);
-			JavaProject project = new JavaProject(projectPath, projectName);
 			ClassVisitor mClassVisitor = new ClassVisitor(project);
 
 			List<CompilationHolder> compilationHolders = parseProject(project, listener);
@@ -75,6 +122,14 @@ public class InterfaceInquiry {
 		} catch (IOException | ParseException e) {
 			listener.onProgressChange("Something went wrong loading the file.", 100);
 			return null;
+		} finally {
+			if (deleteAfterBuild) {
+				try {
+					FileUtils.delete(project.getProjectFile(), FileUtils.RECURSIVE | FileUtils.RETRY);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
 		}
 	}
 
