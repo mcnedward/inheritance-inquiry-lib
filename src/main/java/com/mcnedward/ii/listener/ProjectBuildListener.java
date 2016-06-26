@@ -9,4 +9,5 @@ import com.mcnedward.ii.element.JavaProject;
 public interface ProjectBuildListener {
 	void onProgressChange(String message, int progress);
 	void finished(JavaProject project);
+	void onBuildError(String message, Exception exception);
 }

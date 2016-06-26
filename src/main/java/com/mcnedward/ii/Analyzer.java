@@ -19,21 +19,14 @@ public class Analyzer {
 		findClassesWithHighNOCAndWMC(project);
 	}
 
-	private void calculateDepthOfInheritance(JavaProject project) {
-		System.out.println("********** Depth of Inheritance **********");
+	public static void calculateDepthOfInheritance(JavaProject project) {
 		List<JavaElement> projectElements = project.getAllElements();
 		for (JavaElement element : projectElements) {
 			Stack<JavaElement> classStack = project.findDepthOfInheritanceTreeFor(element);
-			if (classStack.size() > 0) {
-				int numOfInheritedMethods = 0;
-				for (JavaElement child : classStack) {
-					numOfInheritedMethods += child.getMethods().size();
-				}
-				System.out.println(String.format("Depth of inheritance for %s is %s - %s\nNumber of inherited methods: %s", element,
-						classStack.size(), classStack, numOfInheritedMethods));
-			}
+			int DOT = project.findNumberOfInheritedMethodsFor(element);
+			System.out.println(String.format("Depth of inheritance for %s is %s - %s\nNumber of inherited methods: %s", element, classStack.size(),
+					classStack, DOT));
 		}
-		System.out.println();
 	}
 
 	private void calculateNumberOfChildren(JavaProject project) {
@@ -56,11 +49,7 @@ public class Analyzer {
 	private void findClassesWithHighNOCAndWMC(JavaProject project) {
 		System.out.println("********** Classes With High NOC & WMC **********");
 		for (JavaElement element : project.getAllElements()) {
-			int wmc = element.getMethods().size();
-			int noc = project.findNumberOfChildrenFor(element).size();
-
-			int total = wmc + noc;
-
+			int total = project.findNOCAndWMCFor(element);
 			if (total > 30)
 				System.out.println(String.format(
 						"%s has a high NOC and WMC [%s]. Considering a refactor to separate to reduce the number of methods inherited to children.",

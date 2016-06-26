@@ -27,7 +27,7 @@ public class JavaProject {
 		mPackages = new ArrayList<>();
 		buildFile();
 	}
-	
+
 	public JavaProject(File projectFile, String projectName) {
 		mPath = projectFile.getAbsolutePath();
 		mName = projectName;
@@ -63,8 +63,13 @@ public class JavaProject {
 
 	/**
 	 * Finds the Depth of Inheritance Tree (DIT) for a JavaElement.
-	 * <p>DIT equals the maximum inheritance path from the class to the root class. (http://www.aivosto.com/project/help/pm-oo-ck.html)</p>
-	 * @param element The element to find the DIT for.
+	 * <p>
+	 * DIT equals the maximum inheritance path from the class to the root class.
+	 * (http://www.aivosto.com/project/help/pm-oo-ck.html)
+	 * </p>
+	 * 
+	 * @param element
+	 *            The element to find the DIT for.
 	 * @return A Stack of JavaElements that are a part of the inheritance tree for the element given to this method.
 	 */
 	public Stack<JavaElement> findDepthOfInheritanceTreeFor(JavaElement element) {
@@ -76,6 +81,24 @@ public class JavaProject {
 			recurseSuperClasses(element, classStack);
 		}
 		return classStack;
+	}
+
+	/**
+	 * Calculates the number of inherited methods of a JavaElement, based on their DIT.
+	 * 
+	 * @param element
+	 *            The element to find the number of inherited methods for.
+	 * @return The number of inherited methods.
+	 */
+	public int findNumberOfInheritedMethodsFor(JavaElement element) {
+		Stack<JavaElement> classStack = findDepthOfInheritanceTreeFor(element);
+		if (classStack.size() == 0)
+			return 0;
+		int numOfInheritedMethods = 0;
+		for (JavaElement child : classStack) {
+			numOfInheritedMethods += child.getMethods().size();
+		}
+		return numOfInheritedMethods;
 	}
 
 	private void recurseSuperClasses(JavaElement javaClass, Stack<JavaElement> classStack) {
@@ -104,8 +127,8 @@ public class JavaProject {
 	 * 
 	 * @param element
 	 *            The element to find the NOC for.
-	 * @return A list of JavaElements that are children of the element given to this method. To find the NOC
-	 *         from this, just get the size().
+	 * @return A list of JavaElements that are children of the element given to this method. To find the NOC from this,
+	 *         just get the size().
 	 */
 	public List<JavaElement> findNumberOfChildrenFor(JavaElement element) {
 		List<JavaElement> classChildren = new ArrayList<>();
@@ -122,6 +145,21 @@ public class JavaProject {
 			}
 		}
 		return classChildren;
+	}
+
+	/**
+	 * Calculates the total Number of Children and Weighted Method for an element. Elements that have many methods and
+	 * children can be a sign of poor design, since the children elements will inherit many methods and will become more
+	 * complex.
+	 * 
+	 * @param element The element to inspect.
+	 * @return The NOC and WMC for the element.
+	 */
+	public int findNOCAndWMCFor(JavaElement element) {
+		int wmc = element.getMethods().size();
+		int noc = findNumberOfChildrenFor(element).size();
+		int total = wmc + noc;
+		return total;
 	}
 
 	public void addPackage(JavaPackage javaPackage) {

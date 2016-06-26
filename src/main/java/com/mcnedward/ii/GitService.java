@@ -7,12 +7,11 @@ import org.apache.log4j.Logger;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.InvalidRemoteException;
-import org.eclipse.jgit.api.errors.TransportException;
 import org.eclipse.jgit.lib.ProgressMonitor;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 
 import com.mcnedward.ii.exception.DownloadException;
-import com.mcnedward.ii.listener.ProjectBuildListener;
+import com.mcnedward.ii.listener.GitDownloadListener;
 
 /**
  * Downloads a git repository to a temporary location, which can then be used in the InterfaceInquiry.
@@ -41,26 +40,36 @@ public class GitService {
 	 *         folder). This needs to be deleted once the project has been built.
 	 * @throws InvalidRemoteException
 	 * @throws GitAPIException
-	 * @throws DownloadException 
+	 * @throws DownloadException
 	 */
-	public static File downloadFileFromGit(String remoteUrl, String repoName, String username, String password, ProjectBuildListener listener)
-			throws InvalidRemoteException, GitAPIException, DownloadException {
-		try {
-			File tempRepo = File.createTempFile(repoName, "");
-			tempRepo.delete();
-			tempRepo.deleteOnExit();
+	public static void downloadFileFromGit(String remoteUrl, String username, String password, GitDownloadListener listener) {
+		int slashIndex = remoteUrl.lastIndexOf("/");
+		int dotIndex = remoteUrl.lastIndexOf(".");
+		String repoName = remoteUrl.substring(slashIndex + 1, dotIndex);
+		listener.onProgressChange("Starting download for " + repoName + "...", 0);
+		Runnable task = () -> {
+			try {
+				File tempRepo = File.createTempFile(repoName, "");
+				tempRepo.delete();
+				tempRepo.deleteOnExit();
 
-			Git gitResult = Git.cloneRepository().setProgressMonitor(new ProjectBuildMonitor(remoteUrl, repoName, listener)).setURI(remoteUrl)
-					.setCredentialsProvider(new UsernamePasswordCredentialsProvider(username, password)).setDirectory(tempRepo).call();
+				Git gitResult;
+				gitResult = Git.cloneRepository().setProgressMonitor(new ProjectBuildMonitor(repoName, listener)).setURI(remoteUrl)
+						.setCredentialsProvider(new UsernamePasswordCredentialsProvider(username, password)).setDirectory(tempRepo).call();
 
-			// Close everything
-			gitResult.getRepository().close();
-			gitResult.close();
+				// Close everything
+				gitResult.getRepository().close();
+				gitResult.close();
 
-			return tempRepo;
-		} catch (IOException | TransportException e) {
-			throw new DownloadException(String.format("Could not download project %s from the remote URL %s.", repoName, remoteUrl), e);
-		}
+				listener.finished(tempRepo, repoName);
+			} catch (IOException | GitAPIException e) {
+				listener.onDownloadError(String.format("Could not download project %s from the remote URL %s.", repoName, remoteUrl), e);
+			}
+
+		};
+
+		Thread thread = new Thread(task);
+		thread.start();
 	}
 
 }
@@ -75,14 +84,12 @@ final class ProjectBuildMonitor implements ProgressMonitor {
 	protected static final Logger logger = Logger.getLogger(GitService.class);
 
 	private String mRepoName;
-	private String mRemoteUrl;
-	private ProjectBuildListener mListener;
+	private GitDownloadListener mListener;
 	private int mProgress, mGoal;
 	private String mTask;
 
-	public ProjectBuildMonitor(String repoName, String remoteUrl, ProjectBuildListener listener) {
+	public ProjectBuildMonitor(String repoName, GitDownloadListener listener) {
 		mRepoName = repoName;
-		mRemoteUrl = remoteUrl;
 		mListener = listener;
 	}
 
@@ -95,18 +102,17 @@ final class ProjectBuildMonitor implements ProgressMonitor {
 
 	@Override
 	public void endTask() {
-		mListener.onProgressChange(String.format("Finished download for %s from %s.", mRepoName, mRemoteUrl), 100);
+		mListener.onProgressChange(String.format("Finished download for %s.", mRepoName), 100);
 	}
 
 	@Override
 	public boolean isCancelled() {
-		mListener.onProgressChange(String.format("Canceled download for %s from %s.", mRepoName, mRemoteUrl), 0);
 		return false;
 	}
 
 	@Override
 	public void start(int arg0) {
-		mListener.onProgressChange(String.format("Starting download for %s from %s...", mRepoName, mRemoteUrl), 0);
+		mListener.onProgressChange(String.format("Starting download for %s...", mRepoName), 0);
 	}
 
 	@Override
