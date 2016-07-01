@@ -18,6 +18,7 @@ public class JavaElement {
 	private List<JavaElement> mTypeArgs;
 	private List<JavaMethod> mMethods;
 	private List<String> mMissingTypeArgs, mMissingClassOrInterfaceList;
+	private List<ClassOrInterfaceHolder> mHolders;
 	private boolean mIsInterface;
 	private File mSourceFile;
 	private boolean mNeedsChecked;
@@ -29,6 +30,7 @@ public class JavaElement {
 		mMethods = new ArrayList<>();
 		mMissingTypeArgs = new ArrayList<>();
 		mMissingClassOrInterfaceList = new ArrayList<>();
+		mHolders = new ArrayList<>();
 	}
 
 	public JavaElement(String name, JavaPackage javaPackage) {
@@ -41,6 +43,11 @@ public class JavaElement {
 		this();
 		mName = name;
 		mIsInterface = isInterface;
+	}
+	
+	public JavaElement(String name) {
+		this();
+		mName = name;
 	}
 
 	public void addImport(String importName) {
@@ -73,6 +80,10 @@ public class JavaElement {
 
 	public boolean needsMissingClassOrInterfaceChecked() {
 		return !mMissingClassOrInterfaceList.isEmpty();
+	}
+	
+	public void addHolder(ClassOrInterfaceHolder holder) {
+		mHolders.add(holder);
 	}
 
 	/**
@@ -190,6 +201,10 @@ public class JavaElement {
 
 	public List<String> getMissingClassOrInterfaceList() {
 		return mMissingClassOrInterfaceList;
+	}
+	
+	public List<ClassOrInterfaceHolder> getHolders() {
+		return mHolders;
 	}
 
 	public boolean isInterface() {

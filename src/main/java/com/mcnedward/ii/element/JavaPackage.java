@@ -1,7 +1,8 @@
 package com.mcnedward.ii.element;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 
@@ -13,11 +14,11 @@ public class JavaPackage {
 	private static final Logger logger = Logger.getLogger(JavaPackage.class);
 	
 	private String mName;
-	private List<JavaElement> mElements;
+	private Set<JavaElement> mElements;
 
 	public JavaPackage(String name) {
 		mName = name;
-		mElements = new ArrayList<>();
+		mElements = new HashSet<>();
 	}
 	
 	public JavaElement find(String elementName) {
@@ -48,7 +49,7 @@ public class JavaPackage {
 	/**
 	 * @return the elements
 	 */
-	public List<JavaElement> getElements() {
+	public Set<JavaElement> getElements() {
 		return mElements;
 	}
 
@@ -56,7 +57,7 @@ public class JavaPackage {
 	 * @param elements
 	 *            the elements to set
 	 */
-	public void setElements(List<JavaElement> elements) {
+	public void setElements(Set<JavaElement> elements) {
 		mElements = elements;
 	}
 	
