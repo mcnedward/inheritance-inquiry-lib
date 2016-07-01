@@ -1,7 +1,11 @@
 package com.mcnedward.ii.visitor;
 
+import com.github.javaparser.ast.body.AnnotationDeclaration;
+import com.github.javaparser.ast.body.AnnotationMemberDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
+import com.github.javaparser.ast.expr.NormalAnnotationExpr;
+import com.github.javaparser.ast.expr.SingleMemberAnnotationExpr;
 import com.mcnedward.ii.element.JavaMethod;
 import com.mcnedward.ii.element.JavaProject;
 import com.mcnedward.ii.element.MethodParameter;
@@ -25,7 +29,6 @@ public class MethodVisitor extends BaseVisitor<JavaMethod> {
 		for (Parameter param : node.getParameters()) {
 			param.accept(this, method);
 		}
-		
 	}
 	
 	@Override
@@ -34,6 +37,30 @@ public class MethodVisitor extends BaseVisitor<JavaMethod> {
 		methodParameter.setParameterName(p.getId().getName());
 		methodParameter.setParameterType(p.getType().toString());
 		method.addParameter(methodParameter);
+	}
+
+	@Override
+	public void visit(AnnotationDeclaration n, JavaMethod arg) {
+		// TODO Auto-generated method stub
+		super.visit(n, arg);
+	}
+
+	@Override
+	public void visit(AnnotationMemberDeclaration n, JavaMethod arg) {
+		// TODO Auto-generated method stub
+		super.visit(n, arg);
+	}
+
+	@Override
+	public void visit(NormalAnnotationExpr n, JavaMethod arg) {
+		// TODO Auto-generated method stub
+		super.visit(n, arg);
+	}
+
+	@Override
+	public void visit(SingleMemberAnnotationExpr n, JavaMethod arg) {
+		// TODO Auto-generated method stub
+		super.visit(n, arg);
 	}
 
 }

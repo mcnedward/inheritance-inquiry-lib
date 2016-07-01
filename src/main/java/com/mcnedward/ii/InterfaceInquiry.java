@@ -31,7 +31,7 @@ public class InterfaceInquiry {
 	public void buildProject(String projectPath, String projectName, boolean deleteAfterBuild, ProjectBuildListener listener) {
 		Runnable task = () -> {
 			listener.onProgressChange(String.format("Starting to load %s...", projectName), 0);
-			JavaProject project = new JavaProject(projectName, projectName);
+			JavaProject project = new JavaProject(projectPath, projectName);
 			build(project, deleteAfterBuild, listener);
 			if (project != null)
 				listener.finished(project);
@@ -112,13 +112,20 @@ public class InterfaceInquiry {
 			return project;
 		} catch (IOException | ParseException e) {
 			listener.onProgressChange("Something went wrong loading the file.", 100);
+			logger.error("Something went wrong loading the file...", e);
 			return null;
 		} finally {
 			if (deleteAfterBuild) {
 				try {
 					FileUtils.delete(project.getProjectFile(), FileUtils.RECURSIVE | FileUtils.RETRY);
+					logger.info(String.format("Deleting %s", project.getProjectFile().getName()));
 				} catch (IOException e) {
-					e.printStackTrace();
+					try {
+						logger.warn(String.format("Could not delete file: %s... Trying one more time.", project.getProjectFile()));
+						FileUtils.delete(project.getProjectFile(), FileUtils.RECURSIVE | FileUtils.RETRY);
+					} catch (IOException e1) {
+						logger.error(String.format("Could not delete file: %s after second attempt...", project.getProjectFile()), e);
+					}
 				}
 			}
 		}
