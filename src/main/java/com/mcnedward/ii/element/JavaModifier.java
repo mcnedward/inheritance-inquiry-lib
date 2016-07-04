@@ -4,7 +4,7 @@ package com.mcnedward.ii.element;
  * @author Edward - Jun 24, 2016
  *
  */
-public enum Modifier {
+public enum JavaModifier {
 	
 	PRIVATE("private"),
 	PROTECTED("protected"),
@@ -20,7 +20,7 @@ public enum Modifier {
 	
 	public String name;
 	
-	Modifier(String name) {
+	JavaModifier(String name) {
 		this.name = name;
 	}
 }

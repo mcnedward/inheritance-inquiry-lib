@@ -5,6 +5,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ImportDeclaration;
+import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.PackageDeclaration;
 import org.eclipse.jdt.core.dom.Type;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
@@ -22,6 +23,7 @@ public class JavaElementVisitor extends ProjectVisitor {
 	private JavaElement mElement;
 	private String mElementName;
 	private JavaClassOrInterfaceVisitor mClassOrInterfaceVisitor;
+	private JavaMethodVisitor mMethodVisitor;
 	
 	public JavaElementVisitor(JavaProject project, String elementName) {
 		super(project);
@@ -49,6 +51,12 @@ public class JavaElementVisitor extends ProjectVisitor {
 				mClassOrInterfaceVisitor.setIsInterface(node.isInterface());	// If this node is an interface, then it's "extends" will be as well
 				superClassType.accept(mClassOrInterfaceVisitor);
 			}
+			
+			for (Object declaration : node.bodyDeclarations()) {
+				if (declaration instanceof MethodDeclaration) {
+					((MethodDeclaration)declaration).accept(mMethodVisitor);
+				}
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -62,6 +70,7 @@ public class JavaElementVisitor extends ProjectVisitor {
 		mElement.setPackageName(packageName);
 
 		mClassOrInterfaceVisitor = new JavaClassOrInterfaceVisitor(project(), mElement);
+		mMethodVisitor = new JavaMethodVisitor(project(), mElement);
 		
 		return super.visit(node);
 	}

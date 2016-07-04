@@ -19,6 +19,23 @@ public class JavaMethod extends BaseObject {
 		mMethodCallObjects = new ArrayList<>();
 	}
 	
+	public String getSignature() {
+		StringBuilder builder = new StringBuilder(mName);
+		if (mMethodParameters.isEmpty()) {
+			builder.append("()");
+		} else {
+			builder.append("(");
+			for (int i = 0; i < mMethodParameters.size(); i++) {
+				MethodParameter parameter = mMethodParameters.get(i);
+				builder.append(parameter.getParameterType());
+				if (i != mMethodParameters.size() - 1)
+					builder.append(", ");
+			}
+			builder.append(")");
+		}
+		return builder.toString();
+	}
+	
 	public void addParameter(MethodParameter methodParameter) {
 		mMethodParameters.add(methodParameter);
 	}
@@ -73,7 +90,7 @@ public class JavaMethod extends BaseObject {
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
 		for (int i = 0; i < mModifiers.size(); i++) {
-			Modifier modifier = mModifiers.get(i);
+			JavaModifier modifier = mModifiers.get(i);
 			builder.append(modifier.name + " ");
 		}
 		builder.append(mReturnType + " " + mName + "(");

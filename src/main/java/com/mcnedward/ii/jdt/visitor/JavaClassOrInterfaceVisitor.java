@@ -29,6 +29,7 @@ public class JavaClassOrInterfaceVisitor extends ProjectVisitor {
 
 	@Override
 	public boolean visit(ParameterizedType node) {
+		@SuppressWarnings("unchecked")
 		List<SimpleType> typeArguments = node.typeArguments();
 
 		ClassOrInterfaceHolder holder = holder(node.getType().toString());

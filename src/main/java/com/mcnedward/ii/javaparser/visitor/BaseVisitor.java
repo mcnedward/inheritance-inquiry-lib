@@ -6,7 +6,7 @@ import java.util.List;
 import com.github.javaparser.ast.body.ModifierSet;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 import com.mcnedward.ii.element.JavaProject;
-import com.mcnedward.ii.element.Modifier;
+import com.mcnedward.ii.element.JavaModifier;
 
 /**
  * @author Edward - Jun 18, 2016
@@ -25,40 +25,40 @@ public abstract class BaseVisitor<T> extends VoidVisitorAdapter<T> {
 	}
 
 	// Adapted from DumpVisitor
-	protected List<Modifier> decodeModifiers(final int modifiers) {
-		List<Modifier> modifierList = new ArrayList<>();
+	protected List<JavaModifier> decodeModifiers(final int modifiers) {
+		List<JavaModifier> modifierList = new ArrayList<>();
 		if (ModifierSet.isPrivate(modifiers)) {
-			modifierList.add(Modifier.PRIVATE);
+			modifierList.add(JavaModifier.PRIVATE);
 		}
 		if (ModifierSet.isProtected(modifiers)) {
-			modifierList.add(Modifier.PROTECTED);
+			modifierList.add(JavaModifier.PROTECTED);
 		}
 		if (ModifierSet.isPublic(modifiers)) {
-			modifierList.add(Modifier.PUBLIC);
+			modifierList.add(JavaModifier.PUBLIC);
 		}
 		if (ModifierSet.isAbstract(modifiers)) {
-			modifierList.add(Modifier.ABSTRACT);
+			modifierList.add(JavaModifier.ABSTRACT);
 		}
 		if (ModifierSet.isStatic(modifiers)) {
-			modifierList.add(Modifier.STATIC);
+			modifierList.add(JavaModifier.STATIC);
 		}
 		if (ModifierSet.isFinal(modifiers)) {
-			modifierList.add(Modifier.FINAL);
+			modifierList.add(JavaModifier.FINAL);
 		}
 		if (ModifierSet.isNative(modifiers)) {
-			modifierList.add(Modifier.NATIVE);
+			modifierList.add(JavaModifier.NATIVE);
 		}
 		if (ModifierSet.isStrictfp(modifiers)) {
-			modifierList.add(Modifier.STRICT);
+			modifierList.add(JavaModifier.STRICT);
 		}
 		if (ModifierSet.isSynchronized(modifiers)) {
-			modifierList.add(Modifier.SYNCHRONIZED);
+			modifierList.add(JavaModifier.SYNCHRONIZED);
 		}
 		if (ModifierSet.isTransient(modifiers)) {
-			modifierList.add(Modifier.TRANSIENT);
+			modifierList.add(JavaModifier.TRANSIENT);
 		}
 		if (ModifierSet.isVolatile(modifiers)) {
-			modifierList.add(Modifier.VOLATILE);
+			modifierList.add(JavaModifier.VOLATILE);
 		}
 		return modifierList;
 	}

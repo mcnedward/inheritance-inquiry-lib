@@ -9,7 +9,7 @@ import java.util.List;
  */
 public class BaseObject {
 	
-	protected List<Modifier> mModifiers;
+	protected List<JavaModifier> mModifiers;
 	protected String mName;
 	protected boolean isAbstract;
 
@@ -20,7 +20,7 @@ public class BaseObject {
 	/**
 	 * @return the modifiers
 	 */
-	public List<Modifier> getModifiers() {
+	public List<JavaModifier> getModifiers() {
 		return mModifiers;
 	}
 
@@ -28,9 +28,9 @@ public class BaseObject {
 	 * @param modifiers
 	 *            the modifiers to set
 	 */
-	public void setModifiers(List<Modifier> modifiers) {
+	public void setModifiers(List<JavaModifier> modifiers) {
 		mModifiers = modifiers;
-		isAbstract = modifiers.contains(Modifier.ABSTRACT);
+		isAbstract = modifiers.contains(JavaModifier.ABSTRACT);
 	}
 
 	/**

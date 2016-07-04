@@ -124,9 +124,10 @@ public class InterfaceInquiryEclipse {
 						String coiPackage = checkImportsForPackage(coiName, element.getImports());
 						if (coiPackage != null) {
 							coi = project.findOrCreateElement(coiPackage, coiName);
+							coi.setIsInterface(holder.isInterface());
 						}
 						if (coi == null) {
-							logger.warn(String.format("Could not find element named: \"%s\" for element: %s.", coiName, element));
+							logger.debug(String.format("Could not find element named: \"%s\" for element: %s.", coiName, element));
 							continue;
 						}
 					}

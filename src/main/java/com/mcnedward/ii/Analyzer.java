@@ -3,7 +3,10 @@ package com.mcnedward.ii;
 import java.util.List;
 import java.util.Stack;
 
+import org.apache.log4j.Logger;
+
 import com.mcnedward.ii.element.JavaElement;
+import com.mcnedward.ii.element.JavaMethod;
 import com.mcnedward.ii.element.JavaProject;
 
 /**
@@ -11,6 +14,7 @@ import com.mcnedward.ii.element.JavaProject;
  *
  */
 public class Analyzer {
+	private static final Logger logger = Logger.getLogger(Analyzer.class);
 
 	public void analyze(JavaProject project) {
 		calculateDepthOfInheritance(project);
@@ -29,6 +33,24 @@ public class Analyzer {
 		}
 	}
 
+	public static void calculateOverridenMethods(JavaProject project) {
+		for (JavaElement child : project.getClasses()) {
+			if (child.getSuperClasses().isEmpty()) continue;
+			JavaElement parent = child.getSuperClasses().get(0);
+			
+			for (JavaMethod childMethod : child.getMethods()) {
+				String childSignature = childMethod.getSignature();
+				for (JavaMethod parentMethod : parent.getMethods()) {
+					String parentSignature = parentMethod.getSignature();
+					
+					if (childSignature.equals(parentSignature)) {
+						logger.info(String.format("Element %s is overriding method %s defined in parent class %s.", child, childSignature, parent));
+					}
+				}
+			}
+		}
+	}
+	
 	private void calculateNumberOfChildren(JavaProject project) {
 		System.out.println("********** Number of Children **********");
 		for (JavaElement element : project.getAllElements()) {
