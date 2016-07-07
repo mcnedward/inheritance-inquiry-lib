@@ -2,7 +2,7 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.mcnedward.ii</groupId>
-	<artifactId>interface-inquiry</artifactId>
+	<artifactId>inheritance-inquiry</artifactId>
 	<version>0.1.0</version>
 
 	<build>
@@ -28,12 +28,6 @@
 			<groupId>org.eclipse.jgit</groupId>
 			<artifactId>org.eclipse.jgit</artifactId>
 			<version>4.4.0.201606070830-r</version>
-		</dependency>
-		<!-- https://mvnrepository.com/artifact/org.eclipse.jdt/core -->
-		<dependency>
-			<groupId>org.eclipse.jdt</groupId>
-			<artifactId>core</artifactId>
-			<version>3.3.0-v_771</version>
 		</dependency>
 
 		<dependency>
