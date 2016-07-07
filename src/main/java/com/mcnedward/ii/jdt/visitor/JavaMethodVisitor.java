@@ -2,20 +2,22 @@ package com.mcnedward.ii.jdt.visitor;
 
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.eclipse.jdt.core.dom.ASTNode;
+import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.SuperMethodInvocation;
 
 import com.mcnedward.ii.element.JavaElement;
 import com.mcnedward.ii.element.JavaMethod;
 import com.mcnedward.ii.element.JavaProject;
-import com.mcnedward.ii.element.MethodParameter;
 
 /**
  * @author Edward - Jun 24, 2016
  *
  */
 public class JavaMethodVisitor extends ProjectVisitor {
+	private static final Logger logger = Logger.getLogger(JavaMethodVisitor.class);
 	
 	private JavaElement mParentElement;
 	
@@ -39,6 +41,9 @@ public class JavaMethodVisitor extends ProjectVisitor {
 		for (ASTNode param : parameters) {
 			param.accept(new JavaMethodParameterVisitor(project(), method));
 		}
+		
+		IMethodBinding binding = node.resolveBinding();
+		logger.info(binding);
 		
 		return super.visit(node);
 	}
