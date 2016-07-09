@@ -6,6 +6,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.eclipse.jdt.core.dom.IPackageBinding;
+import org.eclipse.jdt.core.dom.ITypeBinding;
+import org.eclipse.jdt.core.dom.Modifier;
+
+import com.mcnedward.ii.element.JavaElement;
+import com.mcnedward.ii.element.JavaModifier;
 
 /**
  * @author Edward - Jul 7, 2016
@@ -48,6 +54,45 @@ public class ASTUtils {
 		classPaths.add("C:/Program Files/Java/jre1.8.0_73/lib/rt.jar");
 		
 		return classPaths.toArray(new String[classPaths.size()]);
+	}
+	
+	// Adapted from DumpVisitor
+	public static List<JavaModifier> decodeModifiers(final int modifiers) {
+		List<JavaModifier> modifierList = new ArrayList<>();
+		if (Modifier.isPrivate(modifiers)) {
+			modifierList.add(JavaModifier.PRIVATE);
+		}
+		if (Modifier.isProtected(modifiers)) {
+			modifierList.add(JavaModifier.PROTECTED);
+		}
+		if (Modifier.isPublic(modifiers)) {
+			modifierList.add(JavaModifier.PUBLIC);
+		}
+		if (Modifier.isAbstract(modifiers)) {
+			modifierList.add(JavaModifier.ABSTRACT);
+		}
+		if (Modifier.isStatic(modifiers)) {
+			modifierList.add(JavaModifier.STATIC);
+		}
+		if (Modifier.isFinal(modifiers)) {
+			modifierList.add(JavaModifier.FINAL);
+		}
+		if (Modifier.isNative(modifiers)) {
+			modifierList.add(JavaModifier.NATIVE);
+		}
+		if (Modifier.isStrictfp(modifiers)) {
+			modifierList.add(JavaModifier.STRICT);
+		}
+		if (Modifier.isSynchronized(modifiers)) {
+			modifierList.add(JavaModifier.SYNCHRONIZED);
+		}
+		if (Modifier.isTransient(modifiers)) {
+			modifierList.add(JavaModifier.TRANSIENT);
+		}
+		if (Modifier.isVolatile(modifiers)) {
+			modifierList.add(JavaModifier.VOLATILE);
+		}
+		return modifierList;
 	}
 	
 	private static void getClassPathEntriesForFolder(File folder, List<String> classPaths) {

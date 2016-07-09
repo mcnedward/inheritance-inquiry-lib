@@ -14,13 +14,13 @@ import com.mcnedward.ii.element.MethodParameter;
  * @author Edward - Jun 24, 2016
  *
  */
-public class JavaMethodParameterVisitor extends ProjectVisitor {
+public class MethodParameterVisitor extends JavaProjectVisitor {
 	@SuppressWarnings("unused")
-	private static final Logger logger = Logger.getLogger(JavaMethodParameterVisitor.class);
+	private static final Logger logger = Logger.getLogger(MethodParameterVisitor.class);
 	
 	private JavaMethod mMethod;
 	
-	public JavaMethodParameterVisitor(JavaProject project, JavaMethod method) {
+	public MethodParameterVisitor(JavaProject project, JavaMethod method) {
 		super(project);
 		mMethod = method;
 	}

@@ -12,28 +12,12 @@ public class JavaMethod extends BaseObject {
 	private String mReturnType;
 	private List<MethodParameter> mMethodParameters;
 	private List<MethodCallObject> mMethodCallObjects;	// TODO This may not be needed for this project
+	private String mSignature;
 	
 	public JavaMethod() {
 		super();
 		mMethodParameters = new ArrayList<>();
 		mMethodCallObjects = new ArrayList<>();
-	}
-	
-	public String getSignature() {
-		StringBuilder builder = new StringBuilder(mName);
-		if (mMethodParameters.isEmpty()) {
-			builder.append("()");
-		} else {
-			builder.append("(");
-			for (int i = 0; i < mMethodParameters.size(); i++) {
-				MethodParameter parameter = mMethodParameters.get(i);
-				builder.append(parameter.getParameterType());
-				if (i != mMethodParameters.size() - 1)
-					builder.append(", ");
-			}
-			builder.append(")");
-		}
-		return builder.toString();
 	}
 	
 	public void addParameter(MethodParameter methodParameter) {
@@ -84,6 +68,14 @@ public class JavaMethod extends BaseObject {
 	 */
 	public void setMethodCallObjects(List<MethodCallObject> methodCallObjects) {
 		mMethodCallObjects = methodCallObjects;
+	}
+	
+	public String getSignature() {
+		return mSignature;
+	}
+	
+	public void setSignature(String signature) {
+		mSignature = signature;
 	}
 
 	@Override
