@@ -3,95 +3,73 @@ package com.mcnedward.ii.jdt.visitor;
 import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.eclipse.jdt.core.dom.ASTNode;
-import org.eclipse.jdt.core.dom.ImportDeclaration;
-import org.eclipse.jdt.core.dom.MethodDeclaration;
-import org.eclipse.jdt.core.dom.PackageDeclaration;
-import org.eclipse.jdt.core.dom.Type;
-import org.eclipse.jdt.core.dom.TypeDeclaration;
+import org.eclipse.jdt.core.dom.IPackageBinding;
+import org.eclipse.jdt.core.dom.ITypeBinding;
 
 import com.mcnedward.ii.element.JavaElement;
 import com.mcnedward.ii.element.JavaProject;
 
 /**
- * @author Edward - Jun 16, 2016
- *
+ * This is the Visitor to use when visiting nodes inside of a {@link JavaElement}. This will contain a reference to the
+ * parent JavaElement, so you can add new items to that element by using the element() method.
+ * 
+ * @author Edward - Jul 8, 2016
  */
-public class JavaElementVisitor extends ProjectVisitor {
-	protected static final Logger logger = Logger.getLogger(JavaElementVisitor.class);
+public abstract class JavaElementVisitor extends JavaProjectVisitor {
+	private static final Logger logger = Logger.getLogger(JavaElementVisitor.class);
 
-	private JavaElement mElement;
-	private String mElementName;
-	private JavaClassOrInterfaceVisitor mClassOrInterfaceVisitor;
-	private JavaMethodVisitor mMethodVisitor;
-	
-	public JavaElementVisitor(JavaProject project, String elementName) {
+	private JavaElement mParentElement;
+
+	public JavaElementVisitor(JavaProject project, JavaElement parentElement) {
 		super(project);
-		mElementName = elementName;
+		mParentElement = parentElement;
 	}
-	
-	@SuppressWarnings("unchecked")
-	@Override
-	public boolean visit(TypeDeclaration node) {
-		try {
-			element().setIsInterface(node.isInterface());
-			
-			// Setup all the interfaces
-			List<ASTNode> interfaces = node.superInterfaceTypes();
-			for (ASTNode inter : interfaces) {
-				mClassOrInterfaceVisitor.reset();
-				mClassOrInterfaceVisitor.setIsInterface(true);
-				inter.accept(mClassOrInterfaceVisitor);
-			}
 
-			// Set the super class
-			Type superClassType = node.getSuperclassType();
-			if (superClassType != null) {
-				mClassOrInterfaceVisitor.reset();
-				mClassOrInterfaceVisitor.setIsInterface(node.isInterface());	// If this node is an interface, then it's "extends" will be as well
-				superClassType.accept(mClassOrInterfaceVisitor);
-			}
-			
-			for (Object declaration : node.bodyDeclarations()) {
-				if (declaration instanceof MethodDeclaration) {
-					((MethodDeclaration)declaration).accept(mMethodVisitor);
+	protected JavaElement element() {
+		return mParentElement;
+	}
+
+	protected JavaElement findOrCreateElement(String name, ITypeBinding binding) {
+		String packageName = checkImportsForPackage(name, element().getImports());
+		if (packageName == null) {
+			if (binding != null) {
+				IPackageBinding packageBinding = binding.getPackage();
+				if (packageBinding != null) {
+					packageName = packageBinding.getName();
 				}
 			}
-		} catch (Exception e) {
-			e.printStackTrace();
 		}
-		return false;
-	}
-	
-	@Override
-	public boolean visit(PackageDeclaration node) {
-		String packageName = node.getName().getFullyQualifiedName();
-		mElement = project().findOrCreateElement(packageName, mElementName);
-		mElement.setPackageName(packageName);
+		if (packageName == null) {
+			// TODO Don't like this...
+			logger.error(String.format("Package could not be found for %s in element %s...", name, element().getName()));
+		}
 
-		mClassOrInterfaceVisitor = new JavaClassOrInterfaceVisitor(project(), mElement);
-		mMethodVisitor = new JavaMethodVisitor(project(), mElement);
-		
-		return super.visit(node);
+		return project().findOrCreateElement(packageName, name);
 	}
 
-	@Override
-	public boolean visit(ImportDeclaration node) {
-		mElement.addImport(node.getName().getFullyQualifiedName());
-		return super.visit(node);
-	}
-	
-	public JavaElement element() {
-		return mElement;
+	/**
+	 * Searches the imports for an element that has been imported.
+	 * 
+	 * @param elementName
+	 *            The name of the element to find the package for.
+	 * @param imports
+	 *            The list of imports from the JavaElement passed in to the visit() method.
+	 * @return The name of the package for the element, if found. Null if the package name is not found.
+	 */
+	protected String checkImportsForPackage(String elementName, List<String> imports) {
+		String packageName = null;
+		// Get the package name from the imports
+		for (String importName : imports) {
+			int index = importName.lastIndexOf('.');
+			if (index > 0) {
+				String imp = importName.substring(index + 1);
+				if (elementName.equals(imp)) {
+					packageName = importName.substring(0, importName.indexOf(elementName) - 1);
+					break;
+				}
+			}
+		}
+		return packageName;
 	}
 
-	@Override
-	public void preVisit(ASTNode node) {
-		super.preVisit(node);
-	}
-	
-	@Override
-	public void postVisit(ASTNode node) {
-		super.postVisit(node);
-	}
 }

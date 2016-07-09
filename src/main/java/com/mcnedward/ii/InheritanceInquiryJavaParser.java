@@ -23,10 +23,10 @@ import com.mcnedward.ii.listener.ProjectBuildListener;
  * @author Edward - Jun 16, 2016
  *
  */
-public class InterfaceInquiryJavaParser {
-	protected static final Logger logger = Logger.getLogger(InterfaceInquiryJavaParser.class);
+public class InheritanceInquiryJavaParser {
+	protected static final Logger logger = Logger.getLogger(InheritanceInquiryJavaParser.class);
 
-	public InterfaceInquiryJavaParser() {
+	public InheritanceInquiryJavaParser() {
 	}
 
 	public void buildProject(String projectPath, String projectName, boolean deleteAfterBuild, ProjectBuildListener listener) {

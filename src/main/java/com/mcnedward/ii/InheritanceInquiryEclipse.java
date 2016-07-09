@@ -15,11 +15,10 @@ import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.FileASTRequestor;
 import org.eclipse.jgit.util.FileUtils;
 
-import com.mcnedward.ii.element.ClassOrInterfaceHolder;
 import com.mcnedward.ii.element.JavaElement;
 import com.mcnedward.ii.element.JavaPackage;
 import com.mcnedward.ii.element.JavaProject;
-import com.mcnedward.ii.jdt.visitor.JavaElementVisitor;
+import com.mcnedward.ii.jdt.visitor.ClassVisitor;
 import com.mcnedward.ii.listener.ProjectBuildListener;
 import com.mcnedward.ii.utils.ASTUtils;
 import com.mcnedward.ii.utils.Stopwatch;
@@ -28,13 +27,13 @@ import com.mcnedward.ii.utils.Stopwatch;
  * @author Edward - Jun 16, 2016
  *
  */
-public class InterfaceInquiryEclipse extends FileASTRequestor {
-	private static final Logger logger = Logger.getLogger(InterfaceInquiryEclipse.class);
+public class InheritanceInquiryEclipse extends FileASTRequestor {
+	private static final Logger logger = Logger.getLogger(InheritanceInquiryEclipse.class);
 
 	private Sourcer mSourcer;
 	private List<CompilationUnitHolder> mHolders;
 
-	public InterfaceInquiryEclipse() {
+	public InheritanceInquiryEclipse() {
 		mSourcer = new Sourcer();
 		mHolders = new ArrayList<>();
 	}
@@ -57,59 +56,10 @@ public class InterfaceInquiryEclipse extends FileASTRequestor {
 		try {
 			// Get all the files for the project
 			List<SourcedFile> files = mSourcer.buildSourceForProject(project, listener);
-
-			@SuppressWarnings("unchecked")
-			Hashtable<String, String> options = JavaCore.getOptions();
-			options.put(JavaCore.COMPILER_SOURCE, JavaCore.VERSION_1_8);
-			options.put(JavaCore.COMPILER_CODEGEN_TARGET_PLATFORM, JavaCore.VERSION_1_8);
-			options.put(JavaCore.COMPILER_COMPLIANCE, JavaCore.VERSION_1_8);
 			
-			ASTParser parser = ASTParser.newParser(AST.JLS8);
-			parser.setCompilerOptions(options);
-			parser.setKind(ASTParser.K_COMPILATION_UNIT);
-			parser.setResolveBindings(true);
-			parser.setBindingsRecovery(true);
-			
-			String[] classPaths = ASTUtils.classPathEntries();
-			String[] sources = ASTUtils.sourceEntries(project.getProjectFile().getAbsolutePath());
-			String[] encodings = ASTUtils.encodings();
-			parser.setEnvironment(classPaths, sources, encodings, true);
-
-			List<String> filePaths = new ArrayList<>();
-			for (SourcedFile file : files) {
-				filePaths.add(file.getFile().getAbsolutePath());
-			}
-			String[] sourceFiles = filePaths.toArray(new String[filePaths.size()]); 
-			parser.createASTs(sourceFiles, null, new String[0], this, null);
-			
-			for (int i = 0; i < mHolders.size(); i++) {
-				CompilationUnitHolder holder = mHolders.get(i);
-				
-				int progress = (int) (((double) i / mHolders.size()) * 100);
-				listener.onProgressChange("Analyzing...", progress);
-				
-				String fileName = holder.sourceFilePath;
-				for (SourcedFile f : files) {
-					if (f.getFile().getAbsolutePath().equals(holder.sourceFilePath)) {
-						fileName = f.getName();
-						break;
-					}
-				}
-				CompilationUnit cu = holder.cu;
-				
-				IProblem[] problems = cu.getProblems();
-				if (problems != null && problems.length > 0) {
-			        logger.warn(String.format("Got %s problems compiling the source file: ", problems.length));
-			        for (IProblem problem : problems) {
-			            logger.warn(String.format("%s", problem));
-			        }
-			    }
-				
-				cu.accept(new JavaElementVisitor(project, fileName));
-			}
-			
-			// Check every element for ClassOrInterfaces
-			updateElementsAfterBuild(project);
+			createASTs(project.getProjectFile().getAbsolutePath(), files);
+			visitCompilationUnits(project, files, listener);
+			updateElementsAfterBuild(project);	// Check every element for ClassOrInterfaces
 
 			String timeToComplete = Stopwatch.stopAndGetTime();
 			System.out.println("FINISHED! Time to complete: " + timeToComplete);
@@ -136,12 +86,81 @@ public class InterfaceInquiryEclipse extends FileASTRequestor {
 		}
 	}
 	
+	/**
+	 * Setup the ASTParser with the correct options, source files, classPaths, and environment, then creates the ASTs from a batch of {@link CompilationUnit}s.
+	 * @param projectPath The absolute path of the project.
+	 * @param files The list of {@link SourcedFile}s.
+	 */
+	private void createASTs(String projectPath, List<SourcedFile> files) {
+		@SuppressWarnings("unchecked")
+		Hashtable<String, String> options = JavaCore.getOptions();
+		options.put(JavaCore.COMPILER_SOURCE, JavaCore.VERSION_1_8);
+		options.put(JavaCore.COMPILER_CODEGEN_TARGET_PLATFORM, JavaCore.VERSION_1_8);
+		options.put(JavaCore.COMPILER_COMPLIANCE, JavaCore.VERSION_1_8);
+		
+		ASTParser parser = ASTParser.newParser(AST.JLS8);
+		parser.setCompilerOptions(options);
+		parser.setKind(ASTParser.K_COMPILATION_UNIT);
+		parser.setResolveBindings(true);
+		parser.setBindingsRecovery(true);
+		
+		String[] classPaths = ASTUtils.classPathEntries();
+		String[] sources = ASTUtils.sourceEntries(projectPath);
+		String[] encodings = ASTUtils.encodings();
+		parser.setEnvironment(classPaths, sources, encodings, true);
+
+		List<String> filePaths = new ArrayList<>();
+		for (SourcedFile file : files) {
+			filePaths.add(file.getFile().getAbsolutePath());
+		}
+		String[] sourceFiles = filePaths.toArray(new String[filePaths.size()]); 
+		parser.createASTs(sourceFiles, null, new String[0], this, null);
+	}
+	
 	@Override
 	public void acceptAST(String sourceFilePath, CompilationUnit compilationUnit) {
 		CompilationUnitHolder holder = new CompilationUnitHolder();
 		holder.cu = compilationUnit;
 		holder.sourceFilePath = sourceFilePath;
 		mHolders.add(holder);
+	}
+	
+	/**
+	 * Checks the {@link CompilationUnit}s for problems, then visits each of them.
+	 * @param project The {@link JavaProject}.
+	 * @param files The list of {@link SourcedFile}s.
+	 * @param listener The {@link ProjectBuildListener}.
+	 */
+	private void visitCompilationUnits(JavaProject project, List<SourcedFile> files, ProjectBuildListener listener) {
+		for (int i = 0; i < mHolders.size(); i++) {
+			CompilationUnitHolder holder = mHolders.get(i);
+			
+			int progress = (int) (((double) i / mHolders.size()) * 100);
+			listener.onProgressChange("Analyzing...", progress);
+			
+			String fileName = holder.sourceFilePath;
+			for (SourcedFile f : files) {
+				if (f.getFile().getAbsolutePath().equals(holder.sourceFilePath)) {
+					fileName = f.getName();
+					break;
+				}
+			}
+			CompilationUnit cu = holder.cu;
+			
+			List<String> missingImports = new ArrayList<>();
+			IProblem[] problems = cu.getProblems();
+			if (problems != null && problems.length > 0) {
+		        logger.debug(String.format("Got %s problems compiling the source file: %s", problems.length, fileName));
+		        for (IProblem problem : problems) {
+		            logger.debug(String.format("%s", problem));
+		            if (problem.getMessage().contains("import")) {
+		            	missingImports.add(problem.getArguments()[0]);	// This is assuming a lot I think, but should be right...
+		            }
+		        }
+		    }
+			
+			cu.accept(new ClassVisitor(project, fileName, missingImports));
+		}
 	}
 	
 	/**
@@ -160,30 +179,6 @@ public class InterfaceInquiryEclipse extends FileASTRequestor {
 					List<JavaElement> elementsToCheck = element.getElements();
 					for (JavaElement elementToCheck : elementsToCheck) {
 						elementToCheck = project.find(elementToCheck.getName());
-					}
-				}
-				if (element.getHolders().isEmpty())
-					continue;
-				for (ClassOrInterfaceHolder holder : element.getHolders()) {
-					String coiName = holder.getName();
-					JavaElement coi = project.find(coiName);
-					if (coi == null) {
-						String coiPackage = checkImportsForPackage(coiName, element.getImports());
-						if (coiPackage != null) {
-							coi = project.findOrCreateElement(coiPackage, coiName);
-							coi.setIsInterface(holder.isInterface());
-						}
-						if (coi == null) {
-							logger.debug(String.format("Could not find element named: \"%s\" for element: %s.", coiName, element));
-							continue;
-						}
-					}
-					element.addElement(coi);
-					for (String typeArgName : holder.getTypeArgs()) {
-						JavaElement typeArg = project.find(typeArgName);
-						if (typeArg != null) {
-							coi.addTypeArg(typeArg);
-						}
 					}
 				}
 			}
