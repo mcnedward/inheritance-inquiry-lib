@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
-import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.eclipse.jdt.core.JavaCore;
@@ -15,8 +14,6 @@ import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.FileASTRequestor;
 import org.eclipse.jgit.util.FileUtils;
 
-import com.mcnedward.ii.element.JavaElement;
-import com.mcnedward.ii.element.JavaPackage;
 import com.mcnedward.ii.element.JavaProject;
 import com.mcnedward.ii.jdt.visitor.ClassVisitor;
 import com.mcnedward.ii.listener.ProjectBuildListener;
@@ -59,7 +56,6 @@ public class InheritanceInquiryEclipse extends FileASTRequestor {
 			
 			createASTs(project.getProjectFile().getAbsolutePath(), files);
 			visitCompilationUnits(project, files, listener);
-			updateElementsAfterBuild(project);	// Check every element for ClassOrInterfaces
 
 			String timeToComplete = Stopwatch.stopAndGetTime();
 			System.out.println("FINISHED! Time to complete: " + timeToComplete);
@@ -163,53 +159,6 @@ public class InheritanceInquiryEclipse extends FileASTRequestor {
 		}
 	}
 	
-	/**
-	 * Checks all JavaElements in the project for any ClassOrInterfaces, then gives them the correct JavaElement
-	 * corresponding to that ClassOrInterface.
-	 * 
-	 * @param project
-	 *            The JavaProject
-	 */
-	private void updateElementsAfterBuild(JavaProject project) {
-		for (JavaPackage javaPackage : new ArrayList<>(project.getPackages())) {
-			Set<JavaElement> javaElements = javaPackage.getElements();
-			for (JavaElement element : javaElements) {
-				if (element.needsInterfaceStatusChecked()) {
-					// Needs to be checked, so find all the classes or interfaces used by this element
-					List<JavaElement> elementsToCheck = element.getElements();
-					for (JavaElement elementToCheck : elementsToCheck) {
-						elementToCheck = project.find(elementToCheck.getName());
-					}
-				}
-			}
-		}
-	}
-
-	/**
-	 * Searches the imports for an element that has been imported.
-	 * 
-	 * @param elementName
-	 *            The name of the element to find the package for.
-	 * @param imports
-	 *            The list of imports from the JavaElement passed in to the visit() method.
-	 * @return The name of the package for the element, if found. Null if the package name is not found.
-	 */
-	private String checkImportsForPackage(String elementName, List<String> imports) {
-		String packageName = null;
-		// Get the package name from the imports
-		for (String importName : imports) {
-			int index = importName.lastIndexOf('.');
-			if (index > 0) {
-				String imp = importName.substring(index + 1);
-				if (elementName.equals(imp)) {
-					packageName = importName.substring(0, importName.indexOf(elementName) - 1);
-					break;
-				}
-			}
-		}
-		return packageName;
-	}
-
 	private final class CompilationUnitHolder {
 		public CompilationUnit cu;
 		public String sourceFilePath;

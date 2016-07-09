@@ -48,7 +48,6 @@ public class ClassVisitor extends BaseVisitor<JavaElement> {
 		element = project().findOrCreateElement(element.getPackageName(), elementName);
 
 		element.setIsInterface(isInterface);
-		element.setNeedsInterfaceStatusChecked(false); // Doesn't need to be checked after build anymore
 		element.setName(node.getName());
 		
 		List<ClassOrInterfaceType> classExtends = node.getExtends();

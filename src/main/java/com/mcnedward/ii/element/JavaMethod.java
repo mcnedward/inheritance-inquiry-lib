@@ -3,6 +3,8 @@ package com.mcnedward.ii.element;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.jdt.core.dom.IMethodBinding;
+
 /**
  * @author Edward - Jun 24, 2016
  *
@@ -13,6 +15,7 @@ public class JavaMethod extends BaseObject {
 	private List<MethodParameter> mMethodParameters;
 	private List<MethodCallObject> mMethodCallObjects;	// TODO This may not be needed for this project
 	private String mSignature;
+	private IMethodBinding mMethodBinding;
 	
 	public JavaMethod() {
 		super();
@@ -76,6 +79,14 @@ public class JavaMethod extends BaseObject {
 	
 	public void setSignature(String signature) {
 		mSignature = signature;
+	}
+	
+	public IMethodBinding getMethodBinding() {
+		return mMethodBinding;
+	}
+	
+	public void setMethodBinding(IMethodBinding binding) {
+		mMethodBinding = binding;
 	}
 
 	@Override

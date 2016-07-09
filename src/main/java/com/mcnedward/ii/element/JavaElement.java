@@ -4,6 +4,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.mcnedward.ii.element.generic.GenericParameter;
+
 /**
  * @author Edward - Jun 16, 2016
  *
@@ -14,18 +16,17 @@ public class JavaElement {
 	private String mPackageName;
 	private JavaPackage mPackage;
 	private List<String> mImports;
-	private List<JavaElement> mElements; // All classes or interfaces used by this element
+	private List<ClassOrInterfaceElement> mClassOrInterfaceElements;	// All classes or interfaces used by this element
 	private List<JavaElement> mTypeArgs;
 	private List<GenericParameter> mGenericTypeArgs;
 	private List<JavaMethod> mMethods;
 	private List<String> mMissingTypeArgs, mMissingClassOrInterfaceList;
 	private boolean mIsInterface;
 	private File mSourceFile;
-	private boolean mNeedsChecked;
 
 	public JavaElement() {
 		mImports = new ArrayList<>();
-		mElements = new ArrayList<>();
+		mClassOrInterfaceElements = new ArrayList<>();
 		mTypeArgs = new ArrayList<>();
 		mGenericTypeArgs = new ArrayList<>();
 		mMethods = new ArrayList<>();
@@ -54,10 +55,10 @@ public class JavaElement {
 		mImports.add(importName);
 	}
 
-	public void addElement(JavaElement element) {
-		mElements.add(element);
+	public void addClassOrInterface(ClassOrInterfaceElement element) {
+		mClassOrInterfaceElements.add(element);
 	}
-
+	
 	public void addTypeArg(JavaElement element) {
 		mTypeArgs.add(element);
 	}
@@ -86,52 +87,6 @@ public class JavaElement {
 		return !mMissingClassOrInterfaceList.isEmpty();
 	}
 	
-	/**
-	 * Gets all of the JavaElements that are super classes.
-	 * 
-	 * @return The class JavaElements
-	 */
-	public List<JavaElement> getSuperClasses() {
-		List<JavaElement> classes = new ArrayList<>();
-		for (JavaElement element : mElements) {
-			if (!element.isInterface())
-				classes.add(element);
-		}
-		return classes;
-	}
-
-	/**
-	 * Gets all of the JavaElements that are interfaces.
-	 * 
-	 * @return The interface JavaElements
-	 */
-	public List<JavaElement> getInterfaces() {
-		List<JavaElement> interfaces = new ArrayList<>();
-		for (JavaElement element : mElements) {
-			if (element.isInterface())
-				interfaces.add(element);
-		}
-		return interfaces;
-	}
-	
-	public List<String> getSuperClassesFull() {
-		List<String> classes = new ArrayList<>();
-		for (JavaElement element : mElements) {
-			if (!element.isInterface())
-				classes.add(element.getFullyQualifiedName());
-		}
-		return classes;
-	}
-	
-	public List<String> getInterfacesFull() {
-		List<String> interfaces = new ArrayList<>();
-		for (JavaElement element : mElements) {
-			if (element.isInterface())
-				interfaces.add(element.getFullyQualifiedName());
-		}
-		return interfaces;
-	}
-
 	public String getFullyQualifiedName() {
 		String out = "";
 		if (mPackage != null && !mPackage.getName().equals("")) {
@@ -183,10 +138,54 @@ public class JavaElement {
 		return mImports;
 	}
 
-	public List<JavaElement> getElements() {
-		return mElements;
+	public List<ClassOrInterfaceElement> getClassOrInterfaceElements() {
+		return mClassOrInterfaceElements;
 	}
-
+	
+	private List<ClassOrInterfaceElement> mCachedSuperClassCOIs;
+	public List<ClassOrInterfaceElement> getSuperClassCois() {
+		if (mCachedSuperClassCOIs != null) return mCachedSuperClassCOIs;
+		mCachedSuperClassCOIs = new ArrayList<>();
+		for (ClassOrInterfaceElement e : mClassOrInterfaceElements) {
+			if (!e.isInterface())
+				mCachedSuperClassCOIs.add(e);
+		}
+		return mCachedSuperClassCOIs;
+	}
+	
+	private List<ClassOrInterfaceElement> mCachedInterfaceCOIs;
+	public List<ClassOrInterfaceElement> getInterfaceCois() {
+		if (mCachedInterfaceCOIs != null) return mCachedInterfaceCOIs;
+		mCachedInterfaceCOIs = new ArrayList<>();
+		for (ClassOrInterfaceElement e : mClassOrInterfaceElements) {
+			if (e.isInterface())
+				mCachedInterfaceCOIs.add(e);
+		}
+		return mCachedInterfaceCOIs;
+	}
+	
+	private List<JavaElement> mCachedSuperClasses;
+	public List<JavaElement> getSuperClasses() {
+		if (mCachedSuperClasses != null) return mCachedSuperClasses;
+		mCachedSuperClasses = new ArrayList<>();
+		for (ClassOrInterfaceElement e : mClassOrInterfaceElements) {
+			if (!e.isInterface())
+				mCachedSuperClasses.add(e.getElement());
+		}
+		return mCachedSuperClasses;
+	}
+	
+	private List<JavaElement> mCachedInterfaces;
+	public List<JavaElement> getInterfaces() {
+		if (mCachedInterfaces != null) return mCachedInterfaces;
+		mCachedInterfaces = new ArrayList<>();
+		for (ClassOrInterfaceElement e : mClassOrInterfaceElements) {
+			if (e.isInterface())
+				mCachedInterfaces.add(e.getElement());
+		}
+		return mCachedInterfaces;
+	}
+	
 	public List<JavaElement> getTypeArgs() {
 		return mTypeArgs;
 	}
@@ -221,20 +220,6 @@ public class JavaElement {
 
 	public void setSourceFile(File sourceFile) {
 		mSourceFile = sourceFile;
-	}
-
-	/**
-	 * @return
-	 */
-	public boolean needsInterfaceStatusChecked() {
-		return mNeedsChecked;
-	}
-
-	/**
-	 * @param needsChecked
-	 */
-	public void setNeedsInterfaceStatusChecked(boolean needsChecked) {
-		mNeedsChecked = needsChecked;
 	}
 
 	@Override

@@ -1,13 +1,18 @@
 package com.mcnedward.ii;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
 import org.apache.log4j.Logger;
 
+import com.mcnedward.ii.element.ClassOrInterfaceElement;
 import com.mcnedward.ii.element.JavaElement;
 import com.mcnedward.ii.element.JavaMethod;
 import com.mcnedward.ii.element.JavaProject;
+import com.mcnedward.ii.element.generic.GenericParameter;
+import com.mcnedward.ii.element.generic.ResolvedGeneric;
+import com.mcnedward.ii.utils.MethodUtils;
 
 /**
  * @author Edward - Jun 22, 2016
@@ -38,11 +43,41 @@ public class Analyzer {
 			if (child.getSuperClasses().isEmpty()) continue;
 			JavaElement parent = child.getSuperClasses().get(0);
 			
+			List<GenericParameter> generics = parent.getGenericTypeArgs();
+			
+			List<String> parentMethodSignatures = new ArrayList<>();
+			if (generics.isEmpty()) {
+				// If no generics in parent declaration, just get all the methods
+				for (JavaMethod parentMethod : parent.getMethods())
+					parentMethodSignatures.add(parentMethod.getSignature());
+			} else {
+				// Otherwise, convert the parent method signatures to replace the generic type args with the correct type.
+				// First, resolve the generics for the parent class, using the child class
+				// The generate the new, correct method signatures
+				
+				List<ResolvedGeneric> resolvedGenerics = new ArrayList<>();
+				ClassOrInterfaceElement superClass = child.getSuperClassCois().get(0);
+				List<JavaElement> superClassTypeArgs = superClass.getTypeArgs();
+				for (int i = 0; i < superClassTypeArgs.size(); i++) {
+					// The generic parameter and the superclass type used to represent that generic SHOULD have the same index
+					JavaElement superClassTypeArg = superClassTypeArgs.get(i);
+					GenericParameter genericParameter = generics.get(i);
+					
+					ResolvedGeneric resolvedGeneric = new ResolvedGeneric(genericParameter, superClassTypeArg);
+					resolvedGenerics.add(resolvedGeneric);
+				}
+				
+				for (JavaMethod parentMethod : parent.getMethods()) {
+					String methodSignature = MethodUtils.getMethodSignatureWithGenerics(parentMethod.getMethodBinding(), resolvedGenerics);
+					parentMethodSignatures.add(methodSignature);
+					logger.debug(String.format("Update method signature for class %s:\n%s\n%s", parent, parentMethod.getSignature(), methodSignature));
+				}
+			}
+			
 			for (JavaMethod childMethod : child.getMethods()) {
 				String childSignature = childMethod.getSignature();
-				for (JavaMethod parentMethod : parent.getMethods()) {
-					String parentSignature = parentMethod.getSignature();
-					
+				
+				for (String parentSignature : parentMethodSignatures) {
 					if (childSignature.equals(parentSignature)) {
 						logger.info(String.format("Element %s is overriding method %s defined in parent class %s.", child, childSignature, parent));
 					}

@@ -7,6 +7,7 @@ import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.ParameterizedType;
 import org.eclipse.jdt.core.dom.SimpleType;
 
+import com.mcnedward.ii.element.ClassOrInterfaceElement;
 import com.mcnedward.ii.element.JavaElement;
 import com.mcnedward.ii.element.JavaProject;
 
@@ -32,18 +33,20 @@ public class ClassOrInterfaceVisitor extends JavaElementVisitor {
 
 		JavaElement element = findOrCreateElement(name, binding);
 		element.setIsInterface(mIsInterface);
-		element.setNeedsInterfaceStatusChecked(false);
+		
+		ClassOrInterfaceElement coi = new ClassOrInterfaceElement(element);
+		parentElement().addClassOrInterface(coi);
 
 		// Add any generic type arguments
-		SimpleTypeVisitor simpleTypeVisitor = new SimpleTypeVisitor(project(), element());
-		simpleTypeVisitor.setGenericArgs(element().getGenericTypeArgs());
+		CoiTypeArgVisitor coiTypeVisitor = new CoiTypeArgVisitor(project(), coi);
+		coiTypeVisitor.setGenericArgs(parentElement().getGenericTypeArgs());
 
 		@SuppressWarnings("unchecked")
 		List<SimpleType> typeArguments = node.typeArguments();
 
 		if (element != null) {
 			for (SimpleType t : typeArguments) {
-				t.accept(simpleTypeVisitor);
+				t.accept(coiTypeVisitor);
 			}
 		}
 		// False to prevent visiting SimpleTypes using the visit() in this class.
@@ -54,8 +57,7 @@ public class ClassOrInterfaceVisitor extends JavaElementVisitor {
 	@Override
 	public boolean visit(SimpleType node) {
 		// Add any generic type arguments
-		SimpleTypeVisitor simpleTypeVisitor = new SimpleTypeVisitor(project(), element());
-		simpleTypeVisitor.setGenericArgs(element().getGenericTypeArgs());
+		SimpleTypeVisitor simpleTypeVisitor = new SimpleTypeVisitor(project(), parentElement());
 		simpleTypeVisitor.setIsInterface(mIsInterface);
 		node.accept(simpleTypeVisitor);
 		return super.visit(node);

@@ -197,14 +197,12 @@ public class JavaProject {
 			element = new JavaElement(elementName, javaPackage);
 			javaPackage.addElement(element);
 			addPackage(javaPackage);
-			element.setNeedsInterfaceStatusChecked(true);
 		} else {
 			// Find the class in the package
 			element = javaPackage.find(elementName);
 			if (element == null) {
 				element = new JavaElement(elementName, javaPackage);
 				javaPackage.addElement(element);
-				element.setNeedsInterfaceStatusChecked(true);
 			}
 		}
 		return element;

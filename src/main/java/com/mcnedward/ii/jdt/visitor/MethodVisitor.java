@@ -33,7 +33,7 @@ public class MethodVisitor extends JavaElementVisitor {
 			return false;
 
 		JavaMethod method = new JavaMethod();
-		element().addMethod(method);
+		parentElement().addMethod(method);
 		method.setName(node.getName().getFullyQualifiedName());
 
 		method.setReturnType(node.getReturnType2().toString());
@@ -46,6 +46,7 @@ public class MethodVisitor extends JavaElementVisitor {
 		}
 
 		IMethodBinding binding = node.resolveBinding();
+		method.setMethodBinding(binding);	// Save the binding for use later in case generics are used
 		String signature = MethodUtils.getMethodSignature(binding);
 		method.setSignature(signature);
 		logger.debug(method.getSignature());

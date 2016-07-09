@@ -25,12 +25,12 @@ public abstract class JavaElementVisitor extends JavaProjectVisitor {
 		mParentElement = parentElement;
 	}
 
-	protected JavaElement element() {
+	protected JavaElement parentElement() {
 		return mParentElement;
 	}
 
 	protected JavaElement findOrCreateElement(String name, ITypeBinding binding) {
-		String packageName = checkImportsForPackage(name, element().getImports());
+		String packageName = checkImportsForPackage(name, parentElement().getImports());
 		if (packageName == null) {
 			if (binding != null) {
 				IPackageBinding packageBinding = binding.getPackage();
@@ -41,7 +41,7 @@ public abstract class JavaElementVisitor extends JavaProjectVisitor {
 		}
 		if (packageName == null) {
 			// TODO Don't like this...
-			logger.error(String.format("Package could not be found for %s in element %s...", name, element().getName()));
+			logger.error(String.format("Package could not be found for %s in element %s...", name, parentElement().getName()));
 		}
 
 		return project().findOrCreateElement(packageName, name);

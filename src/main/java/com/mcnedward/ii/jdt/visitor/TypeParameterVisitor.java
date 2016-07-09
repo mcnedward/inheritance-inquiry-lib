@@ -3,9 +3,9 @@ package com.mcnedward.ii.jdt.visitor;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.TypeParameter;
 
-import com.mcnedward.ii.element.GenericParameter;
 import com.mcnedward.ii.element.JavaElement;
 import com.mcnedward.ii.element.JavaProject;
+import com.mcnedward.ii.element.generic.GenericParameter;
 
 /**
  * @author Edward - Jul 8, 2016
@@ -30,7 +30,7 @@ public class TypeParameterVisitor extends JavaElementVisitor {
 		GenericParameter param = new GenericParameter(name);
 		param.setSuperClass(superClass);
 		
-		element().addGenericTypeArg(param);
+		parentElement().addGenericTypeArg(param);
 		
 		return false;
 	}

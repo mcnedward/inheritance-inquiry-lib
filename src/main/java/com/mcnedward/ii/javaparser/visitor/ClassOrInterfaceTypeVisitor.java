@@ -104,8 +104,9 @@ public class ClassOrInterfaceTypeVisitor extends BaseVisitor<JavaElement> {
 			// Search the project for an existing package
 			foundElement = project().findOrCreateElement(elementPackageName, elementName);
 		}
-		if (classOrInterface)
-			elementToUpdate.addElement(foundElement);
+		if (classOrInterface) {
+//			elementToUpdate.addElement(foundElement);	// TODO Update
+		}
 		else
 			elementToUpdate.addTypeArg(foundElement);
 		return foundElement;

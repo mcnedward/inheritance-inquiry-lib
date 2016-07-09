@@ -143,13 +143,6 @@ public class InheritanceInquiryJavaParser {
 		for (JavaPackage javaPackage : project.getPackages()) {
 			Set<JavaElement> javaElements = javaPackage.getElements();
 			for (JavaElement element : javaElements) {
-				if (element.needsInterfaceStatusChecked()) {
-					// Needs to be checked, so find all the classes or interfaces used by this element
-					List<JavaElement> elementsToCheck = element.getElements();
-					for (JavaElement elementToCheck : elementsToCheck) {
-						elementToCheck = project.find(elementToCheck.getName());
-					}
-				}
 				if (element.needsMissingTypeArgChecked()) {
 					for (String typeArg : element.getMissingTypeArgs()) {
 						JavaElement missingElement = project.find(typeArg);
@@ -168,7 +161,7 @@ public class InheritanceInquiryJavaParser {
 							logger.debug(String.format("Still could not find the class or interface element %s in the JavaElement %s", coi, element));
 						} else {
 							logger.debug(String.format("Found missing element %s.", missingElement));
-							element.addElement(missingElement);
+//							element.addElement(missingElement);	// TODO This will need to be updated, since the JavaElements list was replaced with a ClassOrInterfaceElement list
 						}
 					}
 				}

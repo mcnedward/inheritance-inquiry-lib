@@ -1,4 +1,6 @@
-package com.mcnedward.ii.element;
+package com.mcnedward.ii.element.generic;
+
+import com.mcnedward.ii.element.JavaElement;
 
 /**
  * @author Edward - Jul 8, 2016
