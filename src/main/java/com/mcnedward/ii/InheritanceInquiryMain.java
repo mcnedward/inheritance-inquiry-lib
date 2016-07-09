@@ -1,6 +1,5 @@
 package com.mcnedward.ii;
 
-import com.mcnedward.ii.element.JavaElement;
 import com.mcnedward.ii.element.JavaProject;
 import com.mcnedward.ii.listener.ProjectBuildListener;
 
@@ -26,10 +25,6 @@ public class InheritanceInquiryMain {
 				System.out.println(project);
 				System.out.println("Number of classes: " + project.getClasses().size());
 				System.out.println("Number of interfaces: " + project.getInterfaces().size());
-				
-				for (JavaElement inter : project.getInterfaces()) {
-					System.out.println(inter);
-				}
 				
 				Analyzer.calculateOverridenMethods(project);
 			}

@@ -16,9 +16,9 @@ public class JavaElement {
 	private List<String> mImports;
 	private List<JavaElement> mElements; // All classes or interfaces used by this element
 	private List<JavaElement> mTypeArgs;
+	private List<GenericParameter> mGenericTypeArgs;
 	private List<JavaMethod> mMethods;
 	private List<String> mMissingTypeArgs, mMissingClassOrInterfaceList;
-	private List<ClassOrInterfaceHolder> mHolders;
 	private boolean mIsInterface;
 	private File mSourceFile;
 	private boolean mNeedsChecked;
@@ -27,10 +27,10 @@ public class JavaElement {
 		mImports = new ArrayList<>();
 		mElements = new ArrayList<>();
 		mTypeArgs = new ArrayList<>();
+		mGenericTypeArgs = new ArrayList<>();
 		mMethods = new ArrayList<>();
 		mMissingTypeArgs = new ArrayList<>();
 		mMissingClassOrInterfaceList = new ArrayList<>();
-		mHolders = new ArrayList<>();
 	}
 
 	public JavaElement(String name, JavaPackage javaPackage) {
@@ -62,6 +62,10 @@ public class JavaElement {
 		mTypeArgs.add(element);
 	}
 
+	public void addGenericTypeArg(GenericParameter param) {
+		mGenericTypeArgs.add(param);
+	}
+	
 	public void addMethod(JavaMethod method) {
 		mMethods.add(method);
 	}
@@ -82,10 +86,6 @@ public class JavaElement {
 		return !mMissingClassOrInterfaceList.isEmpty();
 	}
 	
-	public void addHolder(ClassOrInterfaceHolder holder) {
-		mHolders.add(holder);
-	}
-
 	/**
 	 * Gets all of the JavaElements that are super classes.
 	 * 
@@ -190,6 +190,10 @@ public class JavaElement {
 	public List<JavaElement> getTypeArgs() {
 		return mTypeArgs;
 	}
+	
+	public List<GenericParameter> getGenericTypeArgs() {
+		return mGenericTypeArgs;
+	}
 
 	public List<JavaMethod> getMethods() {
 		return mMethods;
@@ -201,10 +205,6 @@ public class JavaElement {
 
 	public List<String> getMissingClassOrInterfaceList() {
 		return mMissingClassOrInterfaceList;
-	}
-	
-	public List<ClassOrInterfaceHolder> getHolders() {
-		return mHolders;
 	}
 
 	public boolean isInterface() {
