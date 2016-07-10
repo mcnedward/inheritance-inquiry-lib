@@ -51,7 +51,7 @@ public class InterfaceInquiryLib {
 	}
 
 	private static void parse(String source) {
-		ASTParser parser = ASTParser.newParser(AST.JLS3);
+		ASTParser parser = ASTParser.newParser(AST.JLS8);
 		parser.setSource(source.toCharArray());
 		parser.setKind(ASTParser.K_COMPILATION_UNIT);
 

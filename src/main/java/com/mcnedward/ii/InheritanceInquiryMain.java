@@ -26,7 +26,7 @@ public class InheritanceInquiryMain {
 				System.out.println("Number of classes: " + project.getClasses().size());
 				System.out.println("Number of interfaces: " + project.getInterfaces().size());
 				
-				Analyzer.calculateOverridenMethods(project);
+				Analyzer.calculateExtendedMethods(project);
 			}
 
 			@Override

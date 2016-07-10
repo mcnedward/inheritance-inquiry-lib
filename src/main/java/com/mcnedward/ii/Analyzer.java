@@ -103,11 +103,13 @@ public class Analyzer {
 					if (childBinding.overrides(parentBinding)) {
 						// Child method overrides parent method, so check to see if the child method contains the parent method's MethodInvocation
 						for (JavaMethodInvocation invocation : childMethod.getMethodInvocations()) {
-//							if (invocation.getMethodBinding().)
+							// The method declaration binding will be the same binding as the one where the method is defined (declared)
+							IMethodBinding methodDeclaration = invocation.getMethodBinding().getMethodDeclaration();
+							if (methodDeclaration == parentBinding) {
+								logger.info(String.format("Method %s in element %s is extending method %s defined in parent class %s.",
+										childMethod.getSignature(), child, parentMethod.getSignature(), parent));
+							}
 						}
-						
-						logger.info(String.format("Method %s in element %s is overriding method %s defined in parent class %s.",
-								childMethod.getSignature(), child, parentMethod.getSignature(), parent));
 					}
 				}
 			}

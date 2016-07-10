@@ -6,11 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.eclipse.jdt.core.dom.IPackageBinding;
-import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.Modifier;
 
-import com.mcnedward.ii.element.JavaElement;
 import com.mcnedward.ii.element.JavaModifier;
 
 /**

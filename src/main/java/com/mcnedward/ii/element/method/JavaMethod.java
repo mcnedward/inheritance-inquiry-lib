@@ -6,7 +6,6 @@ import java.util.List;
 import org.eclipse.jdt.core.dom.IMethodBinding;
 
 import com.mcnedward.ii.element.BaseObject;
-import com.mcnedward.ii.element.JavaModifier;
 
 /**
  * @author Edward - Jun 24, 2016
@@ -25,6 +24,7 @@ public class JavaMethod extends BaseObject {
 		super();
 		mMethodParameters = new ArrayList<>();
 		mMethodCallObjects = new ArrayList<>();
+		mMethodInvocations = new ArrayList<>();
 	}
 	
 	public void addParameter(MethodParameter methodParameter) {
@@ -103,21 +103,7 @@ public class JavaMethod extends BaseObject {
 
 	@Override
 	public String toString() {
-		StringBuilder builder = new StringBuilder();
-		for (int i = 0; i < mModifiers.size(); i++) {
-			JavaModifier modifier = mModifiers.get(i);
-			builder.append(modifier.name + " ");
-		}
-		builder.append(mReturnType + " " + mName + "(");
-		for (int i = 0; i < mMethodParameters.size(); i++) {
-			MethodParameter param = mMethodParameters.get(0);
-			builder.append(param.toString());
-			if (i != mMethodParameters.size() - 1) {
-				builder.append(", ");
-			}
-		}
-		builder.append(")");
-		return builder.toString();
+		return mSignature;
 	}
 	
 }
