@@ -28,7 +28,7 @@ public class TypeParameterVisitor extends JavaElementVisitor {
 		JavaElement superClass = findOrCreateElement(superClassName, superClassBinding);
 		
 		GenericParameter param = new GenericParameter(name);
-		param.setSuperClass(superClass);
+		param.setElement(superClass);
 		
 		parentElement().addGenericTypeArg(param);
 		

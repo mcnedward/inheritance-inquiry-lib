@@ -11,8 +11,8 @@ import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.mcnedward.ii.element.JavaElement;
-import com.mcnedward.ii.element.JavaMethod;
 import com.mcnedward.ii.element.JavaProject;
+import com.mcnedward.ii.element.method.JavaMethod;
 
 /**
  * @author Edward - Jun 18, 2016

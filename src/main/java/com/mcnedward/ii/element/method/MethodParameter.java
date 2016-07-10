@@ -1,4 +1,4 @@
-package com.mcnedward.ii.element;
+package com.mcnedward.ii.element.method;
 
 /**
  * @author Edward - Jun 24, 2016

@@ -9,8 +9,8 @@ import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.SuperMethodInvocation;
 
 import com.mcnedward.ii.element.JavaElement;
-import com.mcnedward.ii.element.JavaMethod;
 import com.mcnedward.ii.element.JavaProject;
+import com.mcnedward.ii.element.method.JavaMethod;
 import com.mcnedward.ii.utils.ASTUtils;
 import com.mcnedward.ii.utils.MethodUtils;
 
@@ -51,6 +51,8 @@ public class MethodVisitor extends JavaElementVisitor {
 		method.setSignature(signature);
 		logger.debug(method.getSignature());
 
+		node.accept(new MethodInvocationVisitor(project(), parentElement(), method));
+		
 		return super.visit(node);
 	}
 

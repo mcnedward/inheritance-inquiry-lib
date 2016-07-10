@@ -6,9 +6,9 @@ import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.expr.NormalAnnotationExpr;
 import com.github.javaparser.ast.expr.SingleMemberAnnotationExpr;
-import com.mcnedward.ii.element.JavaMethod;
 import com.mcnedward.ii.element.JavaProject;
-import com.mcnedward.ii.element.MethodParameter;
+import com.mcnedward.ii.element.method.JavaMethod;
+import com.mcnedward.ii.element.method.MethodParameter;
 
 /**
  * @author Edward - Jun 24, 2016

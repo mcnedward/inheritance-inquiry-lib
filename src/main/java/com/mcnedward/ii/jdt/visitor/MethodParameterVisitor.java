@@ -6,9 +6,9 @@ import org.eclipse.jdt.core.dom.PrimitiveType;
 import org.eclipse.jdt.core.dom.QualifiedType;
 import org.eclipse.jdt.core.dom.SimpleType;
 
-import com.mcnedward.ii.element.JavaMethod;
 import com.mcnedward.ii.element.JavaProject;
-import com.mcnedward.ii.element.MethodParameter;
+import com.mcnedward.ii.element.method.JavaMethod;
+import com.mcnedward.ii.element.method.MethodParameter;
 
 /**
  * @author Edward - Jun 24, 2016

@@ -1,9 +1,12 @@
-package com.mcnedward.ii.element;
+package com.mcnedward.ii.element.method;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.jdt.core.dom.IMethodBinding;
+
+import com.mcnedward.ii.element.BaseObject;
+import com.mcnedward.ii.element.JavaModifier;
 
 /**
  * @author Edward - Jun 24, 2016
@@ -14,6 +17,7 @@ public class JavaMethod extends BaseObject {
 	private String mReturnType;
 	private List<MethodParameter> mMethodParameters;
 	private List<MethodCallObject> mMethodCallObjects;	// TODO This may not be needed for this project
+	private List<JavaMethodInvocation> mMethodInvocations;
 	private String mSignature;
 	private IMethodBinding mMethodBinding;
 	
@@ -29,6 +33,10 @@ public class JavaMethod extends BaseObject {
 	
 	public void addMethodCallObject(MethodCallObject methodCallObject) {
 		mMethodCallObjects.add(methodCallObject);
+	}
+	
+	public void addMethodInvocation(JavaMethodInvocation methodInvocation) {
+		mMethodInvocations.add(methodInvocation);
 	}
 	
 	/**
@@ -64,6 +72,10 @@ public class JavaMethod extends BaseObject {
 	 */
 	public List<MethodCallObject> getMethodCallObjects() {
 		return mMethodCallObjects;
+	}
+	
+	public List<JavaMethodInvocation> getMethodInvocations() {
+		return mMethodInvocations;
 	}
 
 	/**

@@ -1,18 +1,15 @@
 package com.mcnedward.ii;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
 import org.apache.log4j.Logger;
+import org.eclipse.jdt.core.dom.IMethodBinding;
 
-import com.mcnedward.ii.element.ClassOrInterfaceElement;
 import com.mcnedward.ii.element.JavaElement;
-import com.mcnedward.ii.element.JavaMethod;
 import com.mcnedward.ii.element.JavaProject;
-import com.mcnedward.ii.element.generic.GenericParameter;
-import com.mcnedward.ii.element.generic.ResolvedGeneric;
-import com.mcnedward.ii.utils.MethodUtils;
+import com.mcnedward.ii.element.method.JavaMethod;
+import com.mcnedward.ii.element.method.JavaMethodInvocation;
 
 /**
  * @author Edward - Jun 22, 2016
@@ -38,54 +35,85 @@ public class Analyzer {
 		}
 	}
 
+	/**
+	 * Check all the child methods of the {@link JavaElement}s in the {@link JavaProject} to see if they override any of
+	 * their parent methods.
+	 * 
+	 * @param project
+	 *            The {@link JavaProject}.
+	 */
 	public static void calculateOverridenMethods(JavaProject project) {
 		for (JavaElement child : project.getClasses()) {
-			if (child.getSuperClasses().isEmpty()) continue;
+			if (child.getSuperClasses().isEmpty())
+				continue;
+
 			JavaElement parent = child.getSuperClasses().get(0);
-			
-			List<GenericParameter> generics = parent.getGenericTypeArgs();
-			
-			List<String> parentMethodSignatures = new ArrayList<>();
-			if (generics.isEmpty()) {
-				// If no generics in parent declaration, just get all the methods
-				for (JavaMethod parentMethod : parent.getMethods())
-					parentMethodSignatures.add(parentMethod.getSignature());
-			} else {
-				// Otherwise, convert the parent method signatures to replace the generic type args with the correct type.
-				// First, resolve the generics for the parent class, using the child class
-				// The generate the new, correct method signatures
-				
-				List<ResolvedGeneric> resolvedGenerics = new ArrayList<>();
-				ClassOrInterfaceElement superClass = child.getSuperClassCois().get(0);
-				List<JavaElement> superClassTypeArgs = superClass.getTypeArgs();
-				for (int i = 0; i < superClassTypeArgs.size(); i++) {
-					// The generic parameter and the superclass type used to represent that generic SHOULD have the same index
-					JavaElement superClassTypeArg = superClassTypeArgs.get(i);
-					GenericParameter genericParameter = generics.get(i);
-					
-					ResolvedGeneric resolvedGeneric = new ResolvedGeneric(genericParameter, superClassTypeArg);
-					resolvedGenerics.add(resolvedGeneric);
-				}
-				
-				for (JavaMethod parentMethod : parent.getMethods()) {
-					String methodSignature = MethodUtils.getMethodSignatureWithGenerics(parentMethod.getMethodBinding(), resolvedGenerics);
-					parentMethodSignatures.add(methodSignature);
-					logger.debug(String.format("Update method signature for class %s:\n%s\n%s", parent, parentMethod.getSignature(), methodSignature));
-				}
-			}
-			
 			for (JavaMethod childMethod : child.getMethods()) {
-				String childSignature = childMethod.getSignature();
-				
-				for (String parentSignature : parentMethodSignatures) {
-					if (childSignature.equals(parentSignature)) {
-						logger.info(String.format("Element %s is overriding method %s defined in parent class %s.", child, childSignature, parent));
+				IMethodBinding childBinding = childMethod.getMethodBinding();
+
+				for (JavaMethod parentMethod : parent.getMethods()) {
+					IMethodBinding parentBinding = parentMethod.getMethodBinding();
+					if (childBinding.overrides(parentBinding)) {
+						logger.info(String.format("Method %s in element %s is overriding method %s defined in parent class %s.",
+								childMethod.getSignature(), child, parentMethod.getSignature(), parent));
 					}
 				}
 			}
 		}
 	}
-	
+
+	/**
+	 * Checks all the child methods of the {@link JavaElement}s in the {@link JavaProject} to see if they extend any of
+	 * their parent methods.
+	 * <p>
+	 * Extending a parent method is when a method in a child class overrides a superclass method to provide additional
+	 * functionality, while still invoking the superclass method.
+	 * </p>
+	 * <p>
+	 * Superclass:<br>
+	 * 
+	 * <pre>
+	 * <code>public void save(T entity) {
+	 *     persist(entity);
+	 * }
+	 * </pre>
+	 * </p>
+	 * 
+	 * <p>
+	 * Child class:
+	 * <pre>
+	 * <code>public void save(Account account) {
+	 *     validate(account);
+	 *     super.save(account)
+	 * }
+	 * </pre>
+	 * </p>
+	 * @param project The {@link JavaProject}
+	 */
+	public static void calculateExtendedMethods(JavaProject project) {
+		for (JavaElement child : project.getClasses()) {
+			if (child.getSuperClasses().isEmpty()) continue;
+			
+			JavaElement parent = child.getSuperClasses().get(0);
+			for (JavaMethod childMethod : child.getMethods()) {
+				IMethodBinding childBinding = childMethod.getMethodBinding();
+
+				for (JavaMethod parentMethod : parent.getMethods()) {
+					IMethodBinding parentBinding = parentMethod.getMethodBinding();
+					if (childBinding.overrides(parentBinding)) {
+						// Child method overrides parent method, so check to see if the child method contains the parent method's MethodInvocation
+						for (JavaMethodInvocation invocation : childMethod.getMethodInvocations()) {
+//							if (invocation.getMethodBinding().)
+						}
+						
+						logger.info(String.format("Method %s in element %s is overriding method %s defined in parent class %s.",
+								childMethod.getSignature(), child, parentMethod.getSignature(), parent));
+					}
+				}
+			}
+		}
+	}
+
 	private void calculateNumberOfChildren(JavaProject project) {
 		System.out.println("********** Number of Children **********");
 		for (JavaElement element : project.getAllElements()) {
