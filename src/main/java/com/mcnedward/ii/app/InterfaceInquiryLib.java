@@ -12,6 +12,8 @@ import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 
+import com.mcnedward.ii.utils.Stopwatch;
+
 /**
  * @author Edward - Jun 16, 2016
  *
@@ -28,7 +30,8 @@ public class InterfaceInquiryLib {
 	}
 
 	private static void parseDirectory(String directoryPath) {
-		Stopwatch.start();
+		Stopwatch stopwatch = new Stopwatch();
+		stopwatch.start();
 		try {
 			List<String> filePromises = parser.parseDirectory(directoryPath);
 			
@@ -43,7 +46,7 @@ public class InterfaceInquiryLib {
 				if (numberOfFinishedFiles == totalNumberOfFiles) stillParsing = false;
 			}
 			
-			String timeToComplete = Stopwatch.stopAndGetTime();
+			String timeToComplete = stopwatch.stopAndGetTime();
 			System.out.println("FINISHED! Time to complete: " + timeToComplete);
 		} catch (IOException e) {
 			System.out.println("There was a problem when parsing files for the directory at: " + directoryPath + ".");

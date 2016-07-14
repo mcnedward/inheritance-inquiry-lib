@@ -34,7 +34,8 @@ public class Sourcer {
 			File file = files.get(i);
 			
 			int progress = (int) (((double) i / fileCount) * 100);
-			listener.onProgressChange(String.format("Parsing..."), progress);
+			if (listener != null)
+				listener.onProgressChange(String.format("Parsing..."), progress);
 			
 			sourceFiles.add(sourceFile(file));
 		}

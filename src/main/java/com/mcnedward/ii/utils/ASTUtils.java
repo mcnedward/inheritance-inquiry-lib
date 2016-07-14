@@ -14,7 +14,7 @@ import com.mcnedward.ii.element.JavaModifier;
  * @author Edward - Jul 7, 2016
  *
  */
-public class ASTUtils {
+public final class ASTUtils {
 	@SuppressWarnings("unused")
 	private static final Logger logger = Logger.getLogger(ASTUtils.class);
 

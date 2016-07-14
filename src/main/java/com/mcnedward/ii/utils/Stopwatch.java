@@ -6,26 +6,25 @@ import java.util.concurrent.TimeUnit;
  * @author Edward - Jun 16, 2016
  *
  */
-public class Stopwatch {
+public final class Stopwatch {
 
-	private static long startTime, elapsedTime;
+	private long startTime, elapsedTime;
 	
-	public static void start() {
+	public void start() {
 		startTime = System.currentTimeMillis();
 	}
 	
-	public static long stop() {
+	public long stop() {
 		elapsedTime = getCurrentElapsedTime();
 		startTime = 0l;	// Reset the time
 		return elapsedTime;
 	}
 	
-	
-	public static String stopAndGetTime() {
+	public String stopAndGetTime() {
 		return getTime(stop());
 	}
 
-	public static String getTime(long time) {
+	public String getTime(long time) {
 		try {
 			long minutes = TimeUnit.MILLISECONDS.toMinutes(time);
 			long seconds = TimeUnit.MILLISECONDS.toSeconds(time);
@@ -36,11 +35,11 @@ public class Stopwatch {
 		}
 	}
 	
-	public static String getElapsedTime() {
+	public String getElapsedTime() {
 		return getTime(getCurrentElapsedTime());
 	}
 	
-	private static long getCurrentElapsedTime() {
+	private long getCurrentElapsedTime() {
 		long currentTime = System.currentTimeMillis();
 		return currentTime - startTime;
 	}

@@ -1,4 +1,4 @@
-package com.mcnedward.ii;
+package com.mcnedward.ii.utils;
 
 import java.util.List;
 import java.util.Stack;
@@ -9,34 +9,20 @@ import com.mcnedward.ii.element.JavaElement;
 import com.mcnedward.ii.element.JavaProject;
 import com.mcnedward.ii.element.method.JavaMethod;
 import com.mcnedward.ii.element.method.JavaMethodInvocation;
-import com.mcnedward.ii.utils.IILogger;
 
 /**
- * @author Edward - Jun 22, 2016
+ * @author Edward - Jul 14, 2016
  *
  */
-public class Analyzer {
-
+public final class AnalyzerUtils {
+	
 	public static void analyze(JavaProject project) {
-		calculateDepthOfInheritance(project);
+		calculateDepthOfInheritanceTree(project);
 		calculateNumberOfChildren(project);
 		calculateWeightedMethodsPerClass(project);
 		findClassesWithHighNOCAndWMC(project);
 		calculateOverridenMethods(project);
 		calculateExtendedMethods(project);
-	}
-
-	public static void calculateDepthOfInheritance(JavaProject project) {
-		IILogger.info("********** DEPTH OF INHERITANCE **********");
-		List<JavaElement> projectElements = project.getAllElements();
-		for (JavaElement element : projectElements) {
-			Stack<JavaElement> classStack = project.findDepthOfInheritanceTreeFor(element);
-			int DOT = project.findNumberOfInheritedMethodsFor(element);
-			if (DOT > 0) {
-				IILogger.info("Depth of inheritance for %s is %s - %s\nNumber of inherited methods: %s", element, classStack.size(), classStack, DOT);
-			}
-		}
-		IILogger.info("\n\n");
 	}
 
 	/**
@@ -143,6 +129,19 @@ public class Analyzer {
 		IILogger.info("\n\n");
 	}
 
+	public static void calculateDepthOfInheritanceTree(JavaProject project) {
+		IILogger.info("********** DEPTH OF INHERITANCE TREE **********");
+		List<JavaElement> projectElements = project.getAllElements();
+		for (JavaElement element : projectElements) {
+			Stack<JavaElement> classStack = project.findDepthOfInheritanceTreeFor(element);
+			int dit = project.findNumberOfInheritedMethodsFor(element);
+			if (dit > 0) {
+				IILogger.info("Depth of inheritance for %s is %s - %s\nNumber of inherited methods: %s", element, classStack.size(), classStack, dit);
+			}
+		}
+		IILogger.info("\n\n");
+	}
+
 	public static void calculateWeightedMethodsPerClass(JavaProject project) {
 		IILogger.info("********** WEIGHTED METHODS PER CLASS **********");
 		for (JavaElement element : project.getAllElements()) {
@@ -162,4 +161,5 @@ public class Analyzer {
 		}
 		IILogger.info("\n\n");
 	}
+
 }

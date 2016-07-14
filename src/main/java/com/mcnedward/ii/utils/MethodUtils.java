@@ -13,7 +13,7 @@ import com.mcnedward.ii.element.generic.ResolvedGeneric;
  * @author Edward - Jul 8, 2016
  *
  */
-public class MethodUtils {
+public final class MethodUtils {
 
 	private static final String METHOD_DELIMITER = ", ";
 	private static final String SPACE = " ";
