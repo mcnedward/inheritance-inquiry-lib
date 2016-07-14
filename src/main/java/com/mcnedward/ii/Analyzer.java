@@ -3,36 +3,40 @@ package com.mcnedward.ii;
 import java.util.List;
 import java.util.Stack;
 
-import org.apache.log4j.Logger;
 import org.eclipse.jdt.core.dom.IMethodBinding;
 
 import com.mcnedward.ii.element.JavaElement;
 import com.mcnedward.ii.element.JavaProject;
 import com.mcnedward.ii.element.method.JavaMethod;
 import com.mcnedward.ii.element.method.JavaMethodInvocation;
+import com.mcnedward.ii.utils.IILogger;
 
 /**
  * @author Edward - Jun 22, 2016
  *
  */
 public class Analyzer {
-	private static final Logger logger = Logger.getLogger(Analyzer.class);
 
-	public void analyze(JavaProject project) {
+	public static void analyze(JavaProject project) {
 		calculateDepthOfInheritance(project);
 		calculateNumberOfChildren(project);
 		calculateWeightedMethodsPerClass(project);
 		findClassesWithHighNOCAndWMC(project);
+		calculateOverridenMethods(project);
+		calculateExtendedMethods(project);
 	}
 
 	public static void calculateDepthOfInheritance(JavaProject project) {
+		IILogger.info("********** DEPTH OF INHERITANCE **********");
 		List<JavaElement> projectElements = project.getAllElements();
 		for (JavaElement element : projectElements) {
 			Stack<JavaElement> classStack = project.findDepthOfInheritanceTreeFor(element);
 			int DOT = project.findNumberOfInheritedMethodsFor(element);
-			System.out.println(String.format("Depth of inheritance for %s is %s - %s\nNumber of inherited methods: %s", element, classStack.size(),
-					classStack, DOT));
+			if (DOT > 0) {
+				IILogger.info("Depth of inheritance for %s is %s - %s\nNumber of inherited methods: %s", element, classStack.size(), classStack, DOT);
+			}
 		}
+		IILogger.info("\n\n");
 	}
 
 	/**
@@ -43,6 +47,7 @@ public class Analyzer {
 	 *            The {@link JavaProject}.
 	 */
 	public static void calculateOverridenMethods(JavaProject project) {
+		IILogger.info("********** OVERRIDEN METHODS **********");
 		for (JavaElement child : project.getClasses()) {
 			if (child.getSuperClasses().isEmpty())
 				continue;
@@ -54,12 +59,13 @@ public class Analyzer {
 				for (JavaMethod parentMethod : parent.getMethods()) {
 					IMethodBinding parentBinding = parentMethod.getMethodBinding();
 					if (childBinding.overrides(parentBinding)) {
-						logger.info(String.format("Method %s in element %s is overriding method %s defined in parent class %s.",
-								childMethod.getSignature(), child, parentMethod.getSignature(), parent));
+						IILogger.info("Method %s in element %s is overriding method %s defined in parent class %s.", childMethod.getSignature(),
+								child, parentMethod.getSignature(), parent);
 					}
 				}
 			}
 		}
+		IILogger.info("\n\n");
 	}
 
 	/**
@@ -81,6 +87,7 @@ public class Analyzer {
 	 * 
 	 * <p>
 	 * Child class:
+	 * 
 	 * <pre>
 	 * <code>public void save(Account account) {
 	 *     validate(account);
@@ -88,12 +95,16 @@ public class Analyzer {
 	 * }
 	 * </pre>
 	 * </p>
-	 * @param project The {@link JavaProject}
+	 * 
+	 * @param project
+	 *            The {@link JavaProject}
 	 */
 	public static void calculateExtendedMethods(JavaProject project) {
+		IILogger.info("********** EXTENDED METHODS **********");
 		for (JavaElement child : project.getClasses()) {
-			if (child.getSuperClasses().isEmpty()) continue;
-			
+			if (child.getSuperClasses().isEmpty())
+				continue;
+
 			JavaElement parent = child.getSuperClasses().get(0);
 			for (JavaMethod childMethod : child.getMethods()) {
 				IMethodBinding childBinding = childMethod.getMethodBinding();
@@ -101,47 +112,54 @@ public class Analyzer {
 				for (JavaMethod parentMethod : parent.getMethods()) {
 					IMethodBinding parentBinding = parentMethod.getMethodBinding();
 					if (childBinding.overrides(parentBinding)) {
-						// Child method overrides parent method, so check to see if the child method contains the parent method's MethodInvocation
+						// Child method overrides parent method, so check to see if the child method contains the parent
+						// method's MethodInvocation
 						for (JavaMethodInvocation invocation : childMethod.getMethodInvocations()) {
-							// The method declaration binding will be the same binding as the one where the method is defined (declared)
+							// The method declaration binding will be the same binding as the one where the method is
+							// defined (declared)
 							IMethodBinding methodDeclaration = invocation.getMethodBinding().getMethodDeclaration();
 							if (methodDeclaration == parentBinding) {
-								logger.info(String.format("Method %s in element %s is extending method %s defined in parent class %s.",
-										childMethod.getSignature(), child, parentMethod.getSignature(), parent));
+								IILogger.info("Method %s in element %s is extending method %s defined in parent class %s.",
+										childMethod.getSignature(), child, parentMethod.getSignature(), parent);
 							}
 						}
 					}
 				}
 			}
 		}
+		IILogger.info("\n\n");
 	}
 
-	private void calculateNumberOfChildren(JavaProject project) {
-		System.out.println("********** Number of Children **********");
+	public static void calculateNumberOfChildren(JavaProject project) {
+		IILogger.info("********** NUMBER OF CHILDREN **********");
 		for (JavaElement element : project.getAllElements()) {
 			List<JavaElement> classChildren = project.findNumberOfChildrenFor(element);
-			System.out.println(String.format("Number of children for %s is %s - %s", element, classChildren.size(), classChildren));
+
+			int NOC = classChildren.size();
+			if (NOC > 0) {
+				IILogger.info("Number of children for %s is %s - %s", element, classChildren.size(), classChildren);
+			}
 		}
-		System.out.println();
+		IILogger.info("\n\n");
 	}
 
-	private void calculateWeightedMethodsPerClass(JavaProject project) {
-		System.out.println("********** Weighted Methods Per Class **********");
+	public static void calculateWeightedMethodsPerClass(JavaProject project) {
+		IILogger.info("********** WEIGHTED METHODS PER CLASS **********");
 		for (JavaElement element : project.getAllElements()) {
-			System.out.println(String.format("Weighted methods for %s is %s", element, element.getMethods().size()));
+			IILogger.info("Weighted methods for %s is %s", element, element.getMethods().size());
 		}
-		System.out.println();
+		IILogger.info("\n\n");
 	}
 
-	private void findClassesWithHighNOCAndWMC(JavaProject project) {
-		System.out.println("********** Classes With High NOC & WMC **********");
+	public static void findClassesWithHighNOCAndWMC(JavaProject project) {
+		IILogger.info("********** CLASSES WITH HIGH NOC & WMC **********");
 		for (JavaElement element : project.getAllElements()) {
 			int total = project.findNOCAndWMCFor(element);
 			if (total > 30)
-				System.out.println(String.format(
+				IILogger.info(
 						"%s has a high NOC and WMC [%s]. Considering a refactor to separate to reduce the number of methods inherited to children.",
-						element, total));
+						element, total);
 		}
-		System.out.println();
+		IILogger.info("\n\n");
 	}
 }

@@ -11,10 +11,11 @@ public class InheritanceInquiryMain {
 
 	private static final String PROJECT_NAME = "EatingCinci";
 	private static final String PROJECT_PATH = "C:/users/edward/dev/workspace/eatingcinci-bak";
+	private static final String QUALITUS_CORPUS_SYSTEMS_PATH = "C:/QC/pt1/Systems/";
 	
 	public static void main(String[] args) {
 		InheritanceInquiryEclipse interfaceInquiry = new InheritanceInquiryEclipse();
-		interfaceInquiry.buildProject(PROJECT_PATH, PROJECT_NAME, new ProjectBuildListener() {
+		interfaceInquiry.buildProject(QUALITUS_CORPUS_SYSTEMS_PATH + "azureus/azureus-2.0.8.2", PROJECT_NAME, new ProjectBuildListener() {
 
 			@Override
 			public void onProgressChange(String message, int progress) {
@@ -25,8 +26,9 @@ public class InheritanceInquiryMain {
 				System.out.println(project);
 				System.out.println("Number of classes: " + project.getClasses().size());
 				System.out.println("Number of interfaces: " + project.getInterfaces().size());
+				System.out.println();
 				
-				Analyzer.calculateExtendedMethods(project);
+				Analyzer.analyze(project);
 			}
 
 			@Override
