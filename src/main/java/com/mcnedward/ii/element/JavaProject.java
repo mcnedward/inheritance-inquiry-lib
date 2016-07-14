@@ -7,6 +7,8 @@ import java.util.Stack;
 
 import org.apache.log4j.Logger;
 
+import com.mcnedward.ii.utils.VersionUtils;
+
 /**
  * @author Edward - Jun 16, 2016
  *
@@ -16,16 +18,24 @@ public class JavaProject {
 
 	private String mPath;
 	private String mName;
+	private String mSystemName;
+	private String mVersion;
 	private File mProjectFile;
 	private List<File> mFiles;
 	private List<JavaPackage> mPackages;
 
+	public JavaProject(File projectFile, String projectName, String systemName) {
+		this(projectFile, projectName);
+		mSystemName = systemName;
+	}
+	
 	public JavaProject(String projectPath, String projectName) {
 		mPath = projectPath;
 		mName = projectName;
 		mProjectFile = new File(mPath);
 		mPackages = new ArrayList<>();
 		buildFile();
+		mVersion = VersionUtils.findVersion(mPath);
 	}
 
 	public JavaProject(File projectFile, String projectName) {
@@ -34,6 +44,7 @@ public class JavaProject {
 		mProjectFile = projectFile;
 		mPackages = new ArrayList<>();
 		buildFile();
+		mVersion = VersionUtils.findVersion(mPath);
 	}
 
 	public JavaElement find(String elementName) {
@@ -273,6 +284,18 @@ public class JavaProject {
 	public String getName() {
 		return mName;
 	}
+	
+	public String getSystemName() {
+		return mSystemName;
+	}
+	
+	public String getVersion() {
+		return mVersion;
+	}
+	
+	public void setVersion(String version) {
+		mVersion = version;
+	}
 
 	/**
 	 * @return the projectFile
@@ -305,6 +328,10 @@ public class JavaProject {
 
 	@Override
 	public String toString() {
-		return String.format("%s [%s]", mName, mPath);
+		String out = mName;
+		if (mVersion != null && !mVersion.equals("")) {
+			out += " v. " + mVersion;
+		}
+		return out;
 	}
 }
