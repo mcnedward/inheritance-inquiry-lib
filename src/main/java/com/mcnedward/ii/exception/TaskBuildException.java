@@ -6,16 +6,17 @@ package com.mcnedward.ii.exception;
  */
 public class TaskBuildException extends Exception {
 	private static final long serialVersionUID = 1L;
-
-	private static final String MESSAGE = "Task builds took too long! We have to stop...";
-	
-	
-	public TaskBuildException() {
-		super(MESSAGE);
-	}
 	
 	public TaskBuildException(String message) {
-		super(message + "\n" + MESSAGE);
+		super(message);
+	}
+	
+	public TaskBuildException(Exception e) {
+		super(e);
 	}
 
+	public TaskBuildException(String message, Exception e) {
+		super(message, e);
+	}
+	
 }

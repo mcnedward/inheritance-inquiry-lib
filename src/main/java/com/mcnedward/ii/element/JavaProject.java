@@ -24,11 +24,6 @@ public class JavaProject {
 	private List<File> mFiles;
 	private List<JavaPackage> mPackages;
 
-	public JavaProject(File projectFile, String projectName, String systemName) {
-		this(projectFile, projectName);
-		mSystemName = systemName;
-	}
-	
 	public JavaProject(String projectPath, String projectName) {
 		mPath = projectPath;
 		mName = projectName;
@@ -38,9 +33,10 @@ public class JavaProject {
 		mVersion = VersionUtils.findVersion(mPath);
 	}
 
-	public JavaProject(File projectFile, String projectName) {
+	public JavaProject(File projectFile, String systemName) {
 		mPath = projectFile.getAbsolutePath();
-		mName = projectName;
+		mName = projectFile.getName();
+		mSystemName = systemName;
 		mProjectFile = projectFile;
 		mPackages = new ArrayList<>();
 		buildFile();
