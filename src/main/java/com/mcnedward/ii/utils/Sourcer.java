@@ -1,4 +1,4 @@
-package com.mcnedward.ii;
+package com.mcnedward.ii.utils;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -28,18 +28,18 @@ public class Sourcer {
 	public List<SourcedFile> buildSourceForProject(JavaProject project, ProjectBuildListener listener) throws IOException {
 		List<SourcedFile> sourceFiles = new ArrayList<>();
 		List<File> files = project.getFiles();
-		
+
 		int fileCount = files.size();
 		for (int i = 0; i < fileCount; i++) {
 			File file = files.get(i);
-			
+
 			int progress = (int) (((double) i / fileCount) * 100);
 			if (listener != null)
 				listener.onProgressChange(String.format("Parsing..."), progress);
-			
+
 			sourceFiles.add(sourceFile(file));
 		}
-		
+
 		return sourceFiles;
 	}
 

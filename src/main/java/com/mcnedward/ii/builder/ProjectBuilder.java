@@ -1,12 +1,10 @@
-package com.mcnedward.ii;
+package com.mcnedward.ii.builder;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ExecutorService;
 
 import org.apache.log4j.Logger;
 import org.eclipse.jdt.core.JavaCore;
@@ -18,155 +16,88 @@ import org.eclipse.jdt.core.dom.FileASTRequestor;
 import org.eclipse.jgit.util.FileUtils;
 
 import com.mcnedward.ii.element.JavaProject;
-import com.mcnedward.ii.element.JavaSystem;
-import com.mcnedward.ii.exception.TaskBuildException;
 import com.mcnedward.ii.jdt.visitor.ClassVisitor;
-import com.mcnedward.ii.listener.BuildTaskListener;
 import com.mcnedward.ii.listener.ProjectBuildListener;
-import com.mcnedward.ii.listener.SystemBuildListener;
+import com.mcnedward.ii.service.GitService;
 import com.mcnedward.ii.utils.ASTUtils;
+import com.mcnedward.ii.utils.IILogger;
+import com.mcnedward.ii.utils.SourcedFile;
+import com.mcnedward.ii.utils.Sourcer;
 import com.mcnedward.ii.utils.Stopwatch;
 
 /**
+ * This class is used to build a {@link JavaProject}. This takes a file for a project directory, or path to a project
+ * directory, the parses all the .java files to strings. Next, it builds {@link CompilationUnit}s for all of those
+ * files. Then it visits all of those CompilationUnits to build the
+ * 
  * @author Edward - Jun 16, 2016
  *
  */
-public class InheritanceInquiryEclipse extends FileASTRequestor {
-	private static final Logger logger = Logger.getLogger(InheritanceInquiryEclipse.class);
+public class ProjectBuilder extends FileASTRequestor {
+	private static final Logger logger = Logger.getLogger(ProjectBuilder.class);
 
 	private Sourcer mSourcer;
 	private List<CompilationUnitHolder> mHolders;
 
-	// Tasks
-	private static final int TIMEOUT = 5000;
-	private static final int MAX_TIMEOUTS = 20;	// One minute of timeouts
-
-	public InheritanceInquiryEclipse() {
+	public ProjectBuilder() {
 		mSourcer = new Sourcer();
 		mHolders = new ArrayList<>();
 	}
-	
-	public void buildSystem(String systemPath, ExecutorService executor, BlockingQueue<Runnable> queue, int taskQueueSize, SystemBuildListener listener) {
-		File systemFile = new File(systemPath);
-		if (systemFile.isFile()) {
-			listener.onBuildError(String.format("You need to provide a directory for a system! [Path: %s]", systemPath), null);
-			return;
-		}
-		JavaSystem system = new JavaSystem(systemFile);
 
-		File[] projects = system.getFiles();
-		int projectCount = projects.length;
-		
-		for (int i = 0; i < projectCount; i++) {
-			File projectFile = projects[i];
-			
-			executor.submit(() -> {
-				runSystemBuildTask(system, projectFile, new BuildTaskListener() {
-					@Override
-					public void onProgressChange(String message, int progress) {
-						listener.onProgressChange(message, progress);
-					}
-
-					@Override
-					public void onBuildError(String message, Exception exception) {
-						listener.onBuildError(message, exception);
-					}
-
-					@Override
-					public void onTaskComplete(JavaProject project) {
-						// Add the built project to the system, and notify that it has completed
-						system.addProject(project);
-						listener.onProjectBuilt(project);
-						
-						// Check if all projects have been built
-						if (system.allProjectsBuilt()) {
-							system.stopStopwatch();
-							listener.onAllProjectsBuilt(system);
-						}
-					}
-					
-				});
-			});
-			
-			if (queue.remainingCapacity() == 0) {
-				try {
-					waitForTasksToComplete(queue);
-				} catch (TaskBuildException e) {
-					listener.onBuildError(String.format("Stopping build... %s/%s tasks were run.", i, projectCount), e);
-					return;
-				}
-			}
-		}
-	}
-	
-	private void waitForTasksToComplete(BlockingQueue<Runnable> queue) throws TaskBuildException {
-		try {
-			int timeoutCount = 0;
-			while (queue.remainingCapacity() == 0) {
-				Thread.sleep(TIMEOUT);
-				timeoutCount++;
-				
-				if (queue.remainingCapacity() == 0 && timeoutCount == MAX_TIMEOUTS) {
-					// Wait period has passed and still no room in queue, so we need to stop...
-					throw new TaskBuildException();
-				}
-			}
-		} catch (InterruptedException e) {
-			throw new TaskBuildException("Threads interrupted while waiting for tasks to complete!");
-		}
-	}
-	
-	private void runSystemBuildTask(JavaSystem system, File projectFile, BuildTaskListener listener) {
-		JavaProject project = new JavaProject(projectFile, projectFile.getName(), system.getName());
-		if (listener != null)
-			listener.onProgressChange(String.format("Starting build task for project %s in system %s...", project.toString(), system.getName()), 0);
-
-		build(project, false, new ProjectBuildListener() {
-
-			@Override
-			public void onProgressChange(String message, int progress) {
-				listener.onProgressChange(project.toString() + ": " + message, progress);
-			}
-
-			@Override
-			public void finished(JavaProject project) {
-				listener.onTaskComplete(project);
-			}
-
-			@Override
-			public void onBuildError(String message, Exception exception) {
-				listener.onBuildError(project.toString() + ": " + message, exception);
-			}
-		});
-	}
-	
-	public void buildProject(File projectFile, String projectName, ProjectBuildListener listener) {
-		Runnable task = () -> {
-			if (listener != null)
-				listener.onProgressChange(String.format("Starting to load %s...", projectName), 0);
-			JavaProject project = new JavaProject(projectFile, projectName);
-			build(project, false, listener);
-		};
-
-		Thread thread = new Thread(task);
-		thread.start();
-	}
-
+	/**
+	 * Builds a {@link JavaProject} in a separate task.
+	 * 
+	 * @param projectPath
+	 * @param projectName
+	 * @param listener
+	 */
 	public void buildProject(String projectPath, String projectName, ProjectBuildListener listener) {
 		Runnable task = () -> {
 			listener.onProgressChange(String.format("Starting to load %s...", projectName), 0);
-			JavaProject project = new JavaProject(projectPath, projectName);
-			build(project, false, listener);
+			build(projectPath, projectName, listener);
 		};
 
 		Thread thread = new Thread(task);
 		thread.start();
 	}
 
-	private void build(JavaProject project, boolean deleteAfterBuild, ProjectBuildListener listener) {
-		Stopwatch stopwatch = new Stopwatch();
-		stopwatch.start();
+	/**
+	 * Build a {@link JavaProject}.
+	 * 
+	 * @param projectPath
+	 *            The path to the project
+	 * @param projectName
+	 *            The name to give the project
+	 * @param listener
+	 *            The {@link ProjectBuildListener}
+	 * @return The JavaProject
+	 */
+	private JavaProject build(String projectPath, String projectName, ProjectBuildListener listener) {
+		JavaProject project = new JavaProject(projectPath, projectName);
+		buildProject(project, listener);
+		return project;
+	}
+
+	/**
+	 * Build a {@link JavaProject}. This method should be used when building a project that is a part of system (for
+	 * projects with multiple versions).
+	 * 
+	 * @param projectFile
+	 *            The project file
+	 * @param systemName
+	 *            The name of the system that this project belongs to.
+	 * @return The JavaProject
+	 */
+	public JavaProject build(File projectFile, String systemName) {
+		JavaProject project = new JavaProject(projectFile, systemName);
+		buildProject(project, null);
+		return project;
+	}
+
+	private void buildProject(JavaProject project, ProjectBuildListener listener) {
 		try {
+			Stopwatch stopwatch = new Stopwatch();
+			stopwatch.start();
 			// Get all the files for the project
 			List<SourcedFile> files = mSourcer.buildSourceForProject(project, listener);
 
@@ -176,36 +107,57 @@ public class InheritanceInquiryEclipse extends FileASTRequestor {
 			// https://eclipse.org/articles/Article-Progress-Monitors/article.html
 			if (listener != null)
 				listener.onProgressChange("Creating ASTs...", 0);
+			else
+				IILogger.debug("Creating ASTs for %s...", project.toString());
+
 			createASTs(project.getProjectFile().getAbsolutePath(), files);
 			if (listener != null)
 				listener.onProgressChange("Finished building ASTs!", 100);
-			
+			else
+				IILogger.debug("Finished building ASTs for %s!", project.toString());
+
 			// Use the visitors to build the JavaProject!
 			visitCompilationUnits(project, files, listener);
 
 			String timeToComplete = stopwatch.stopAndGetTime();
 			if (listener != null)
 				listener.onProgressChange(String.format("Finished! Time to complete: %s", timeToComplete), 100);
+			else
+				IILogger.debug("Finished building %s! Time to complete: %s", project.toString(), timeToComplete);
 
 			if (project != null && listener != null)
 				listener.finished(project);
-			
+
 		} catch (IOException e) {
 			if (listener != null)
 				listener.onBuildError(String.format("Something went wrong loading the file %s.", project.getProjectFile()), e);
 			logger.error(String.format("Something went wrong loading the file %s.", project.getProjectFile()), e);
-		} finally {
-			if (deleteAfterBuild) {
+		}
+	}
+
+	/**
+	 * Build a {@link JavaProject}. This can also delete the project file after the build is complete. Useful when using
+	 * the {@link GitService}, and you need to cleanup the cloned project.
+	 * 
+	 * @param project
+	 *            The JavaProject
+	 * @param listener
+	 *            The {@link ProjectBuildListener}
+	 * @param deleteAfterBuild
+	 *            True if the project file should be deleted after the build is complete
+	 */
+	public void build(String projectPath, String projectName, ProjectBuildListener listener, boolean deleteAfterBuild) {
+		JavaProject project = build(projectPath, projectName, listener);
+		if (deleteAfterBuild) {
+			try {
+				FileUtils.delete(project.getProjectFile(), FileUtils.RECURSIVE | FileUtils.RETRY);
+				logger.info(String.format("Deleting %s", project.getProjectFile().getName()));
+			} catch (IOException e) {
 				try {
 					FileUtils.delete(project.getProjectFile(), FileUtils.RECURSIVE | FileUtils.RETRY);
-					logger.info(String.format("Deleting %s", project.getProjectFile().getName()));
-				} catch (IOException e) {
-					try {
-						FileUtils.delete(project.getProjectFile(), FileUtils.RECURSIVE | FileUtils.RETRY);
-						logger.warn(String.format("Could not delete file: %s... Trying one more time.", project.getProjectFile()));
-					} catch (IOException e1) {
-						logger.error(String.format("Could not delete file: %s after second attempt...", project.getProjectFile()), e);
-					}
+					logger.warn(String.format("Could not delete file: %s... Trying one more time.", project.getProjectFile()));
+				} catch (IOException e1) {
+					logger.error(String.format("Could not delete file: %s after second attempt...", project.getProjectFile()), e);
 				}
 			}
 		}

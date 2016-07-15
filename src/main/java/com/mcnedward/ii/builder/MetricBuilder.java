@@ -1,4 +1,4 @@
-package com.mcnedward.ii.utils;
+package com.mcnedward.ii.builder;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -15,13 +15,14 @@ import com.mcnedward.ii.analyzer.NocMetric;
 import com.mcnedward.ii.analyzer.WmcMetric;
 import com.mcnedward.ii.element.JavaElement;
 import com.mcnedward.ii.element.JavaProject;
+import com.mcnedward.ii.exception.MetricBuildException;
 
 /**
  * @author Edward - Jul 14, 2016
  *
  */
-public final class GraphBuilder {
-	private static final Logger logger = Logger.getLogger(GraphBuilder.class);
+public final class MetricBuilder {
+	private static final Logger logger = Logger.getLogger(MetricBuilder.class);
 	private static final String FILE_EXTENSION = "txt";
 	private static final String NEWLINE = "\n";
 	private static final String DELIMITER = "\t";
@@ -29,18 +30,24 @@ public final class GraphBuilder {
 	private String mPath;
 	private Analyzer mAnalyzer;
 
-	public GraphBuilder(String graphDirectoryPath) {
-		mPath = graphDirectoryPath;
+	public MetricBuilder(String metricDirectoryPath) {
+		mPath = metricDirectoryPath;
 		mAnalyzer = new Analyzer();
 	}
 
-	public void buildGraphs(JavaProject project) {
-		buildDitMetrics(project);
-		buildNocMetrics(project);
-		buildWmcMetrics(project);
+	public boolean buildMetrics(JavaProject project) {
+		try {
+			buildDitMetrics(project);
+			buildNocMetrics(project);
+			buildWmcMetrics(project);
+			return true;
+		} catch (MetricBuildException e) {
+			logger.error(e);
+			return false;
+		}
 	}
 
-	private void buildDitMetrics(JavaProject project) {
+	private void buildDitMetrics(JavaProject project) throws MetricBuildException {
 		List<DitMetric> ditMetrics = mAnalyzer.calculateDepthOfInheritanceTree(project);
 		MType metricType = MType.DIT;
 
@@ -56,7 +63,7 @@ public final class GraphBuilder {
 		writeToFile(project, metricType, builder.toString());
 	}
 
-	private void buildNocMetrics(JavaProject project) {
+	private void buildNocMetrics(JavaProject project) throws MetricBuildException {
 		List<NocMetric> nocMetrics = mAnalyzer.calculateNumberOfChildren(project);
 		MType metricType = MType.NOC;
 
@@ -72,7 +79,7 @@ public final class GraphBuilder {
 		writeToFile(project, metricType, builder.toString());
 	}
 
-	private void buildWmcMetrics(JavaProject project) {
+	private void buildWmcMetrics(JavaProject project) throws MetricBuildException {
 		List<WmcMetric> wmcMetrics = mAnalyzer.calculateWeightedMethodsPerClass(project);
 		MType metricType = MType.WMC;
 
@@ -120,7 +127,7 @@ public final class GraphBuilder {
 		return String.format("%s_%s_%s.%s", project.getName(), project.getVersion(), metricType, FILE_EXTENSION);
 	}
 
-	private void writeToFile(JavaProject project, MType metricType, String output) {
+	private void writeToFile(JavaProject project, MType metricType, String output) throws MetricBuildException {
 		String fileName = getFileName(project, metricType);
 
 		try {
@@ -135,10 +142,11 @@ public final class GraphBuilder {
 
 			logger.info(String.format("Created file %s for project [%s] version [%s]!", fileName, project.getName(), project.getVersion()));
 		} catch (FileNotFoundException e) {
-			logger.error(String.format("File %s for project [%s] version [%s] was not found...", fileName, project.getName(), project.getVersion()),
-					e);
+			throw new MetricBuildException(
+					String.format("File %s for project [%s] version [%s] was not found...", fileName, project.getName(), project.getVersion()), e);
 		} catch (UnsupportedEncodingException e) {
-			logger.error(String.format("Error writing to %s for project [%s] version [%s]...", fileName, project.getName(), project.getVersion()), e);
+			throw new MetricBuildException(
+					String.format("Error writing to %s for project [%s] version [%s]...", fileName, project.getName(), project.getVersion()), e);
 		}
 	}
 
