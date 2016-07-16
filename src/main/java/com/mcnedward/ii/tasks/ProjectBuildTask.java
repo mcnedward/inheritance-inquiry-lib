@@ -2,9 +2,11 @@ package com.mcnedward.ii.tasks;
 
 import java.io.File;
 
+import com.mcnedward.ii.builder.MetricBuilder;
 import com.mcnedward.ii.builder.ProjectBuilder;
 import com.mcnedward.ii.element.JavaProject;
 import com.mcnedward.ii.service.ProjectBuildService;
+import com.mcnedward.ii.utils.Constants;
 import com.mcnedward.ii.utils.IILogger;
 
 /**
@@ -14,6 +16,8 @@ import com.mcnedward.ii.utils.IILogger;
 public class ProjectBuildTask implements Runnable {
 
 	private ProjectBuilder mBuilder;
+	private MetricBuilder mMetricBuilder;
+	
 	private File mProjectFile;
 	private String mSystemName;
 	private int mTotalJobs;
@@ -21,8 +25,9 @@ public class ProjectBuildTask implements Runnable {
 	public ProjectBuildTask(File projectFile, String systemName, int totalJobs) {
 		mProjectFile = projectFile;
 		mSystemName = systemName;
-		mBuilder = new ProjectBuilder();
 		mTotalJobs = totalJobs;
+		mBuilder = new ProjectBuilder();
+		mMetricBuilder = new MetricBuilder(Constants.METRIC_DIRECTORY_PATH);
 	}
 
 	@Override
@@ -31,6 +36,8 @@ public class ProjectBuildTask implements Runnable {
 
 		try {
 			JavaProject project = mBuilder.build(mProjectFile, mSystemName);
+			
+			mMetricBuilder.buildMetrics(project);
 			
 			synchronized (ProjectBuildService.COMPLETE_JOBS) {
 				IILogger.info("Finished build job for %s in system %s [%s/%s]", project.toString(), mSystemName,

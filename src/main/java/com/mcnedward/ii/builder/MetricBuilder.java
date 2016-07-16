@@ -6,8 +6,6 @@ import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
 
-import org.apache.log4j.Logger;
-
 import com.mcnedward.ii.analyzer.Analyzer;
 import com.mcnedward.ii.analyzer.DitMetric;
 import com.mcnedward.ii.analyzer.MType;
@@ -16,13 +14,13 @@ import com.mcnedward.ii.analyzer.WmcMetric;
 import com.mcnedward.ii.element.JavaElement;
 import com.mcnedward.ii.element.JavaProject;
 import com.mcnedward.ii.exception.MetricBuildException;
+import com.mcnedward.ii.utils.IILogger;
 
 /**
  * @author Edward - Jul 14, 2016
  *
  */
 public final class MetricBuilder {
-	private static final Logger logger = Logger.getLogger(MetricBuilder.class);
 	private static final String FILE_EXTENSION = "txt";
 	private static final String NEWLINE = "\n";
 	private static final String DELIMITER = "\t";
@@ -42,7 +40,7 @@ public final class MetricBuilder {
 			buildWmcMetrics(project);
 			return true;
 		} catch (MetricBuildException e) {
-			logger.error(e);
+			IILogger.error(e);
 			return false;
 		}
 	}
@@ -140,7 +138,7 @@ public final class MetricBuilder {
 			writer.write(output);
 			writer.close();
 
-			logger.info(String.format("Created file %s for project [%s] version [%s]!", fileName, project.getName(), project.getVersion()));
+			IILogger.info(String.format("Created file %s for project [%s] version [%s]!", fileName, project.getName(), project.getVersion()));
 		} catch (FileNotFoundException e) {
 			throw new MetricBuildException(
 					String.format("File %s for project [%s] version [%s] was not found...", fileName, project.getName(), project.getVersion()), e);
@@ -151,7 +149,7 @@ public final class MetricBuilder {
 	}
 
 	/**
-	 * Creates the directories for graphs for this project, if those directories do not yet exists. This also returns
+	 * Creates the directories for metrics for this project, if those directories do not yet exists. This also returns
 	 * the full base path for this project's directory.
 	 * 
 	 * @param project
@@ -160,8 +158,8 @@ public final class MetricBuilder {
 	 */
 	private String getDirectoryPath(JavaProject project) {
 		String filePath = String.format("%s/%s/%s", mPath, project.getSystemName(), project.getName());
-		File graphDirectory = new File(filePath);
-		graphDirectory.mkdirs();
+		File metricDirectory = new File(filePath);
+		metricDirectory.mkdirs();
 		return filePath;
 	}
 

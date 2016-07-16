@@ -15,6 +15,7 @@ import com.mcnedward.ii.exception.TaskBuildException;
 import com.mcnedward.ii.listener.ProjectBuildListener;
 import com.mcnedward.ii.tasks.MonitoringExecutorService;
 import com.mcnedward.ii.tasks.ProjectBuildTask;
+import com.mcnedward.ii.utils.Constants;
 import com.mcnedward.ii.utils.IILogger;
 
 /**
@@ -22,18 +23,6 @@ import com.mcnedward.ii.utils.IILogger;
  *
  */
 public final class ProjectBuildService {
-
-	// Directory paths
-	private static final String QUALITUS_CORPUS_SYSTEMS_PATH = "C:/QC/pt1/Systems/";
-	private static final String GRAPH_DIRECTORY_PATH = "C:/users/edward/dev/IIGraphs";
-
-	// For buildSystem()
-	private static final String SYSTEM = "azureus";
-	private static final String SYSTEM_PATH = QUALITUS_CORPUS_SYSTEMS_PATH + SYSTEM;
-
-	// For buildProject()
-	private static final String PROJECT_NAME = "azureus";
-	private static final String PROJECT_PATH = QUALITUS_CORPUS_SYSTEMS_PATH + "azureus/azureus-2.0.8.2";
 
 	// Tasks
 	private static final int CORE_POOL_SIZE = 4;
@@ -43,12 +32,7 @@ public final class ProjectBuildService {
 	private BlockingQueue<Runnable> mQueue;
 	private MonitoringExecutorService mExecutorService;
 
-	private ProjectBuilder mInheritanceInquiry;
-	private MetricBuilder mGraphBuilder;
-
 	public ProjectBuildService() {
-		mInheritanceInquiry = new ProjectBuilder();
-		mGraphBuilder = new MetricBuilder(GRAPH_DIRECTORY_PATH);
 		// Setup Threads
 		ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat("Project-%d").setDaemon(true).build();
 		mQueue = new ArrayBlockingQueue<>(100);
@@ -57,9 +41,9 @@ public final class ProjectBuildService {
 	}
 	
 	public JavaSystem build() throws TaskBuildException {
-		File systemFile = new File(SYSTEM_PATH);
+		File systemFile = new File(Constants.SYSTEM_PATH);
 		if (systemFile.isFile()) {
-			throw new TaskBuildException(String.format("You need to provide a directory for a system! [Path: %s]", SYSTEM_PATH));
+			throw new TaskBuildException(String.format("You need to provide a directory for a system! [Path: %s]", Constants.SYSTEM_PATH));
 		}
 
 		JavaSystem system = new JavaSystem(systemFile);
@@ -93,9 +77,9 @@ public final class ProjectBuildService {
 	 * @throws TaskBuildException
 	 */
 	public JavaSystem buildAsync() throws TaskBuildException {
-		File systemFile = new File(SYSTEM_PATH);
+		File systemFile = new File(Constants.SYSTEM_PATH);
 		if (systemFile.isFile()) {
-			throw new TaskBuildException(String.format("You need to provide a directory for a system! [Path: %s]", SYSTEM_PATH));
+			throw new TaskBuildException(String.format("You need to provide a directory for a system! [Path: %s]", Constants.SYSTEM_PATH));
 		}
 		COMPLETE_JOBS = 0; // Reset job count
 
@@ -146,7 +130,7 @@ public final class ProjectBuildService {
 	}
 
 	public void buildProject() {
-		mInheritanceInquiry.buildProjectAsync(PROJECT_PATH, PROJECT_NAME, new ProjectBuildListener() {
+		new ProjectBuilder().buildProjectAsync(Constants.PROJECT_PATH, Constants.PROJECT_NAME, new ProjectBuildListener() {
 
 			@Override
 			public void onProgressChange(String message, int progress) {
@@ -160,7 +144,7 @@ public final class ProjectBuildService {
 				System.out.println("Number of interfaces: " + project.getInterfaces().size());
 				System.out.println();
 
-				mGraphBuilder.buildMetrics(project);
+				new MetricBuilder(Constants.METRIC_DIRECTORY_PATH).buildMetrics(project);
 			}
 
 			@Override

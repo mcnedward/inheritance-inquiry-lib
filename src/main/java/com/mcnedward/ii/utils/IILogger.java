@@ -38,4 +38,8 @@ public final class IILogger {
 		e.printStackTrace();
 	}
 	
+	public static void error(Exception e) {
+		error(e.getMessage(), e);
+	}
+	
 }
