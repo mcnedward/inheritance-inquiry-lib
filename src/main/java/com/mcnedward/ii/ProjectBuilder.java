@@ -11,6 +11,7 @@ import com.mcnedward.ii.element.JavaProject;
 import com.mcnedward.ii.element.JavaSystem;
 import com.mcnedward.ii.exception.TaskBuildException;
 import com.mcnedward.ii.listener.ProjectBuildListener;
+import com.mcnedward.ii.service.AnalyzerService;
 import com.mcnedward.ii.service.ProjectService;
 import com.mcnedward.ii.service.metric.MetricService;
 import com.mcnedward.ii.tasks.MonitoringExecutorService;
@@ -26,6 +27,10 @@ import com.mcnedward.ii.utils.IILogger;
  */
 public final class ProjectBuilder {
 
+	// Services
+	private ProjectService mProjectService;
+	private AnalyzerService mAnalyzerService;
+	private MetricService mMetricService;
 	// Tasks
 	private static final int CORE_POOL_SIZE = 4;
 	private static final int MAX_POOL_SIZE = 8;
@@ -35,10 +40,13 @@ public final class ProjectBuilder {
 	private MonitoringExecutorService mExecutorService;
 
 	public ProjectBuilder() {
+		// Setup services
+		mProjectService = new ProjectService();
+		mAnalyzerService = new AnalyzerService();
+		mMetricService = new MetricService(Constants.METRIC_DIRECTORY_PATH);
 		// Setup Threads
 		ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat("Project-%d").setDaemon(true).build();
 		mQueue = new ArrayBlockingQueue<>(100);
-
 		mExecutorService = new MonitoringExecutorService(CORE_POOL_SIZE, MAX_POOL_SIZE, 0L, TimeUnit.MILLISECONDS, mQueue, threadFactory);
 	}
 
@@ -49,7 +57,6 @@ public final class ProjectBuilder {
 		}
 
 		JavaSystem system = new JavaSystem(systemFile);
-		ProjectService projectBuilder = new ProjectService();
 
 		File[] projects = system.getFiles();
 		int projectCount = projects.length;
@@ -57,7 +64,7 @@ public final class ProjectBuilder {
 
 		for (int i = 0; i < projectCount; i++) {
 			File projectFile = projects[i];
-			JavaProject project = projectBuilder.build(projectFile, system.getName());
+			JavaProject project = mProjectService.build(projectFile, system.getName());
 
 			IILogger.info("Finished %s/%s", i + 1, projectCount);
 			int runningThreads = 0;
@@ -94,7 +101,7 @@ public final class ProjectBuilder {
 
 		for (int i = 0; i < projectCount; i++) {
 			File projectFile = projects[i];
-			ProjectBuildTask task = new ProjectBuildTask(projectFile, system.getName(), projectCount);
+			ProjectBuildTask task = new ProjectBuildTask(mProjectService, mAnalyzerService, mMetricService, projectFile, system.getName(), projectCount);
 			mExecutorService.submit(task);
 		}
 
@@ -134,7 +141,7 @@ public final class ProjectBuilder {
 	}
 
 	public void buildProject() {
-		new ProjectService().buildProjectAsync(Constants.PROJECT_PATH, Constants.PROJECT_NAME, new ProjectBuildListener() {
+		mProjectService.buildProjectAsync(Constants.PROJECT_PATH, Constants.PROJECT_NAME, new ProjectBuildListener() {
 
 			@Override
 			public void onProgressChange(String message, int progress) {
@@ -148,7 +155,7 @@ public final class ProjectBuilder {
 				System.out.println("Number of interfaces: " + project.getInterfaces().size());
 				System.out.println();
 
-				new MetricService(Constants.METRIC_DIRECTORY_PATH).buildMetrics(project);
+				mMetricService.buildMetrics(mAnalyzerService.analyze(project));
 			}
 
 			@Override

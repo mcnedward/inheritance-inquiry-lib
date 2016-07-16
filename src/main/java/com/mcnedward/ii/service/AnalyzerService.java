@@ -6,6 +6,7 @@ import java.util.Stack;
 
 import com.mcnedward.ii.element.JavaElement;
 import com.mcnedward.ii.element.JavaProject;
+import com.mcnedward.ii.element.JavaSolution;
 import com.mcnedward.ii.service.metric.DitMetric;
 import com.mcnedward.ii.service.metric.NocMetric;
 import com.mcnedward.ii.service.metric.WmcMetric;
@@ -18,6 +19,16 @@ import com.mcnedward.ii.service.metric.WmcMetric;
  */
 public class AnalyzerService {
 
+	public JavaSolution analyze(JavaProject project) {
+		return new JavaSolution(
+				project.getName(),
+				project.getSystemName(),
+				project.getVersion(),
+				calculateDepthOfInheritanceTree(project),
+				calculateNumberOfChildren(project),
+				calculateWeightedMethodsPerClass(project));
+	}
+	
 	/**
 	 * Calculates the Depth of Inheritance Tree for all {@link JavaElement}s in the {@link JavaProject}.
 	 * @param project The JavaProject

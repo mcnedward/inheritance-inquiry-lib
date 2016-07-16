@@ -24,7 +24,7 @@ public final class InheritanceInquiryMain {
 			IILogger.DEBUG = true;
 			
 			JavaSystem system = new ProjectBuilder().buildAsync();
-			IILogger.info("Finished building the system %s! Time to complete: %s", system.toString(), system.getBuildTime());
+			IILogger.info("Finished building the system%s! Time to complete: %s", system.toString(), system.getBuildTime());
 			
 			for (JavaProject project : system.getProjects()) {
 				IILogger.info(project.toString());

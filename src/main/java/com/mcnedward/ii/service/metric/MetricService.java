@@ -7,13 +7,13 @@ import java.io.UnsupportedEncodingException;
 import java.util.List;
 
 import com.mcnedward.ii.element.JavaElement;
-import com.mcnedward.ii.element.JavaProject;
+import com.mcnedward.ii.element.JavaSolution;
 import com.mcnedward.ii.exception.MetricBuildException;
 import com.mcnedward.ii.service.AnalyzerService;
 import com.mcnedward.ii.utils.IILogger;
 
 /**
- * This is a service tool for creating files readable by Excel for the Metrics of a {@link JavaProject}.
+ * This is a service tool for creating files readable by Excel for the Metrics of a {@link JavaSolution}.
  * 
  * @author Edward - Jul 14, 2016
  *
@@ -31,11 +31,11 @@ public final class MetricService {
 		mAnalyzer = new AnalyzerService();
 	}
 
-	public boolean buildMetrics(JavaProject project) {
+	public boolean buildMetrics(JavaSolution solution) {
 		try {
-			buildDitMetrics(project);
-			buildNocMetrics(project);
-			buildWmcMetrics(project);
+			buildDitMetrics(solution);
+			buildNocMetrics(solution);
+			buildWmcMetrics(solution);
 			return true;
 		} catch (MetricBuildException e) {
 			IILogger.error(e);
@@ -43,11 +43,11 @@ public final class MetricService {
 		}
 	}
 
-	private void buildDitMetrics(JavaProject project) throws MetricBuildException {
-		List<DitMetric> ditMetrics = mAnalyzer.calculateDepthOfInheritanceTree(project);
+	private void buildDitMetrics(JavaSolution solution) throws MetricBuildException {
+		List<DitMetric> ditMetrics = solution.getDitMetrics();
 		MType metricType = MType.DIT;
 
-		String docTitle = getDocTitle(project, metricType);
+		String docTitle = getDocTitle(solution, metricType);
 		String rowTitles = getRowTitles(metricType, "Number of Inherited Methods");
 
 		StringBuilder builder = new StringBuilder(docTitle + NEWLINE);
@@ -56,14 +56,14 @@ public final class MetricService {
 			builder.append(buildRow(metric.element, metric.metric, String.valueOf(metric.numberOfInheritedMethods)) + NEWLINE);
 		}
 
-		writeToFile(project, metricType, builder.toString());
+		writeToFile(solution, metricType, builder.toString());
 	}
 
-	private void buildNocMetrics(JavaProject project) throws MetricBuildException {
-		List<NocMetric> nocMetrics = mAnalyzer.calculateNumberOfChildren(project);
+	private void buildNocMetrics(JavaSolution solution) throws MetricBuildException {
+		List<NocMetric> nocMetrics = solution.getNocMetrics();
 		MType metricType = MType.NOC;
 
-		String docTitle = getDocTitle(project, metricType);
+		String docTitle = getDocTitle(solution, metricType);
 		String rowTitles = getRowTitles(metricType, "Class Children");
 
 		StringBuilder builder = new StringBuilder(docTitle + NEWLINE);
@@ -72,14 +72,14 @@ public final class MetricService {
 			builder.append(buildRow(metric.element, metric.metric, metric.classChildren.toString()) + NEWLINE);
 		}
 
-		writeToFile(project, metricType, builder.toString());
+		writeToFile(solution, metricType, builder.toString());
 	}
 
-	private void buildWmcMetrics(JavaProject project) throws MetricBuildException {
-		List<WmcMetric> wmcMetrics = mAnalyzer.calculateWeightedMethodsPerClass(project);
+	private void buildWmcMetrics(JavaSolution solution) throws MetricBuildException {
+		List<WmcMetric> wmcMetrics = solution.getWmcMetrics();
 		MType metricType = MType.WMC;
 
-		String docTitle = getDocTitle(project, metricType);
+		String docTitle = getDocTitle(solution, metricType);
 		String rowTitles = getRowTitles(metricType);
 
 		StringBuilder builder = new StringBuilder(docTitle + NEWLINE);
@@ -88,7 +88,7 @@ public final class MetricService {
 			builder.append(buildRow(metric.element, metric.metric) + NEWLINE);
 		}
 
-		writeToFile(project, metricType, builder.toString());
+		writeToFile(solution, metricType, builder.toString());
 	}
 
 	private String buildRow(JavaElement element, int metric) {
@@ -115,19 +115,19 @@ public final class MetricService {
 		return String.format("Class or Interface%s %s%s", DELIMITER, metricType.metricName, extraColumn);
 	}
 
-	private String getDocTitle(JavaProject project, MType metricType) {
-		return String.format("%s v. %s - %s", project.getName(), project.getVersion(), metricType.metricName);
+	private String getDocTitle(JavaSolution solution, MType metricType) {
+		return String.format("%s v. %s - %s", solution.getProjectName(), solution.getVersion(), metricType.metricName);
 	}
 
-	private String getFileName(JavaProject project, MType metricType) {
-		return String.format("%s_%s_%s.%s", project.getName(), project.getVersion(), metricType, FILE_EXTENSION);
+	private String getFileName(JavaSolution solution, MType metricType) {
+		return String.format("%s_%s_%s.%s", solution.getProjectName(), solution.getVersion(), metricType, FILE_EXTENSION);
 	}
 
-	private void writeToFile(JavaProject project, MType metricType, String output) throws MetricBuildException {
-		String fileName = getFileName(project, metricType);
+	private void writeToFile(JavaSolution solution, MType metricType, String output) throws MetricBuildException {
+		String fileName = getFileName(solution, metricType);
 
 		try {
-			String basePath = getDirectoryPath(project);
+			String basePath = getDirectoryPath(solution);
 
 			String filePath = String.format("%s/%s", basePath, fileName);
 			File file = new File(filePath);
@@ -136,26 +136,26 @@ public final class MetricService {
 			writer.write(output);
 			writer.close();
 
-			IILogger.info(String.format("Created file %s for project [%s] version [%s]!", fileName, project.getName(), project.getVersion()));
+			IILogger.info(String.format("Created file %s for project [%s] version [%s]!", fileName, solution.getProjectName(), solution.getVersion()));
 		} catch (FileNotFoundException e) {
 			throw new MetricBuildException(
-					String.format("File %s for project [%s] version [%s] was not found...", fileName, project.getName(), project.getVersion()), e);
+					String.format("File %s for solution [%s] project [%s] was not found...", fileName, solution.getProjectName(), solution.getVersion()), e);
 		} catch (UnsupportedEncodingException e) {
 			throw new MetricBuildException(
-					String.format("Error writing to %s for project [%s] version [%s]...", fileName, project.getName(), project.getVersion()), e);
+					String.format("Error writing to %s for project [%s] version [%s]...", fileName, solution.getProjectName(), solution.getVersion()), e);
 		}
 	}
 
 	/**
-	 * Creates the directories for metrics for this project, if those directories do not yet exists. This also returns
-	 * the full base path for this project's directory.
+	 * Creates the directories for metrics for this solution, if those directories do not yet exists. This also returns
+	 * the full base path for this solution's directory.
 	 * 
-	 * @param project
-	 *            The {@link JavaProject}
-	 * @return The base path for the project directory
+	 * @param solution
+	 *            The {@link JavaSolution}
+	 * @return The base path for the solution directory
 	 */
-	private String getDirectoryPath(JavaProject project) {
-		String filePath = String.format("%s/%s/%s", mPath, project.getSystemName(), project.getName());
+	private String getDirectoryPath(JavaSolution solution) {
+		String filePath = String.format("%s/%s/%s", mPath, solution.getSystemName(), solution.getProjectName());
 		File metricDirectory = new File(filePath);
 		metricDirectory.mkdirs();
 		return filePath;
