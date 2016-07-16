@@ -1,9 +1,9 @@
 package com.mcnedward.ii.element.method;
 
 import org.eclipse.jdt.core.dom.Expression;
+import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.SuperMethodInvocation;
-import org.eclipse.jdt.core.dom.IMethodBinding;
 
 import com.mcnedward.ii.element.JavaElement;
 
@@ -19,7 +19,6 @@ public class JavaMethodInvocation {
 
 	private JavaMethod mParentMethod;
 	private JavaElement mDeclaringClass;
-	private Expression mMethodInvocation;
 	private IMethodBinding mMethodBinding;
 
 	public JavaMethodInvocation(JavaMethod parentMethod, JavaElement declaringClass) {
@@ -33,14 +32,6 @@ public class JavaMethodInvocation {
 
 	public JavaElement getDeclaringClass() {
 		return mDeclaringClass;
-	}
-
-	public Expression getMethodInvocation() {
-		return mMethodInvocation;
-	}
-
-	public void setMethodInvocation(Expression methodInvocation) {
-		mMethodInvocation = methodInvocation;
 	}
 
 	public IMethodBinding getMethodBinding() {

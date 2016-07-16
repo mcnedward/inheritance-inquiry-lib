@@ -18,7 +18,9 @@ public class JavaMethod extends BaseObject {
 	private List<MethodCallObject> mMethodCallObjects;	// TODO This may not be needed for this project
 	private List<JavaMethodInvocation> mMethodInvocations;
 	private String mSignature;
+	// For use in method override and extending analysis
 	private IMethodBinding mMethodBinding;
+	
 	
 	public JavaMethod() {
 		super();
@@ -100,7 +102,7 @@ public class JavaMethod extends BaseObject {
 	public void setMethodBinding(IMethodBinding binding) {
 		mMethodBinding = binding;
 	}
-
+	
 	@Override
 	public String toString() {
 		return mSignature;

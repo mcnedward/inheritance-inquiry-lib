@@ -45,14 +45,17 @@ public class MethodVisitor extends JavaElementVisitor {
 		}
 
 		IMethodBinding binding = node.resolveBinding();
-		method.setMethodBinding(binding);	// Save the binding for use later in case generics are used
+		// Save the binding for use later
+		// NOTE: I think the keeping a refernce to bindings prevent the ASTParser from being garbage collected, but as
+		// long as the entire JavaProject is not kept around for too long, this should be fine
+		method.setMethodBinding(binding);
 		String signature = MethodUtils.getMethodSignature(binding);
 		method.setSignature(signature);
 		logger.debug(method.getSignature());
 
 		// Visit all of the method invocations inside this method
 		node.accept(new MethodInvocationVisitor(project(), parentElement(), method));
-		
+
 		return super.visit(node);
 	}
 

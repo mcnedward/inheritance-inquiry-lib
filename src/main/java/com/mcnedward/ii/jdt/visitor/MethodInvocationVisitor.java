@@ -48,7 +48,6 @@ public class MethodInvocationVisitor extends JavaElementVisitor {
 		JavaElement declaringClass = findOrCreateElement(declaringClassBinding.getName(), declaringClassBinding);
 		JavaMethodInvocation invocation = new JavaMethodInvocation(mMethod, declaringClass);
 		invocation.setMethodBinding(methodBinding);
-		invocation.setMethodInvocation(node);
 		mMethod.addMethodInvocation(invocation);
 
 		return false;
