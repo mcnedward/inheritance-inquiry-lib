@@ -1,4 +1,4 @@
-package com.mcnedward.ii.service;
+package com.mcnedward.ii;
 
 import java.io.File;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -7,39 +7,41 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import com.mcnedward.ii.builder.MetricBuilder;
-import com.mcnedward.ii.builder.ProjectBuilder;
 import com.mcnedward.ii.element.JavaProject;
 import com.mcnedward.ii.element.JavaSystem;
 import com.mcnedward.ii.exception.TaskBuildException;
 import com.mcnedward.ii.listener.ProjectBuildListener;
+import com.mcnedward.ii.service.ProjectService;
+import com.mcnedward.ii.service.metric.MetricService;
 import com.mcnedward.ii.tasks.MonitoringExecutorService;
 import com.mcnedward.ii.tasks.ProjectBuildTask;
 import com.mcnedward.ii.utils.Constants;
 import com.mcnedward.ii.utils.IILogger;
 
 /**
+ * A tool for building {@JavaProject}s and {@link JavaSystem}s.
+ * 
  * @author Edward - Jul 14, 2016
  *
  */
-public final class ProjectBuildService {
+public final class ProjectBuilder {
 
 	// Tasks
 	private static final int CORE_POOL_SIZE = 4;
 	private static final int MAX_POOL_SIZE = 8;
 	private static final int TIMEOUT = 20;
-	public static Integer COMPLETE_JOBS = 0;	// Keep track of how many jobs are finished
+	public static Integer COMPLETE_JOBS = 0; // Keep track of how many jobs are finished
 	private BlockingQueue<Runnable> mQueue;
 	private MonitoringExecutorService mExecutorService;
 
-	public ProjectBuildService() {
+	public ProjectBuilder() {
 		// Setup Threads
 		ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat("Project-%d").setDaemon(true).build();
 		mQueue = new ArrayBlockingQueue<>(100);
 
 		mExecutorService = new MonitoringExecutorService(CORE_POOL_SIZE, MAX_POOL_SIZE, 0L, TimeUnit.MILLISECONDS, mQueue, threadFactory);
 	}
-	
+
 	public JavaSystem build() throws TaskBuildException {
 		File systemFile = new File(Constants.SYSTEM_PATH);
 		if (systemFile.isFile()) {
@@ -47,7 +49,7 @@ public final class ProjectBuildService {
 		}
 
 		JavaSystem system = new JavaSystem(systemFile);
-		ProjectBuilder projectBuilder = new ProjectBuilder();
+		ProjectService projectBuilder = new ProjectService();
 
 		File[] projects = system.getFiles();
 		int projectCount = projects.length;
@@ -60,19 +62,21 @@ public final class ProjectBuildService {
 			IILogger.info("Finished %s/%s", i + 1, projectCount);
 			int runningThreads = 0;
 			for (Thread t : Thread.getAllStackTraces().keySet()) {
-			    if (t.getState() == Thread.State.RUNNABLE) runningThreads++;
+				if (t.getState() == Thread.State.RUNNABLE)
+					runningThreads++;
 			}
 			IILogger.info("Active Threads: %s", runningThreads);
-			
+
 			system.addProject(project);
 		}
-		
+
 		system.stopStopwatch();
 		return system;
 	}
 
 	/**
 	 * Builds a {@link JavaSystem} using separate jobs.
+	 * 
 	 * @return The finished JavaSystem
 	 * @throws TaskBuildException
 	 */
@@ -130,7 +134,7 @@ public final class ProjectBuildService {
 	}
 
 	public void buildProject() {
-		new ProjectBuilder().buildProjectAsync(Constants.PROJECT_PATH, Constants.PROJECT_NAME, new ProjectBuildListener() {
+		new ProjectService().buildProjectAsync(Constants.PROJECT_PATH, Constants.PROJECT_NAME, new ProjectBuildListener() {
 
 			@Override
 			public void onProgressChange(String message, int progress) {
@@ -144,7 +148,7 @@ public final class ProjectBuildService {
 				System.out.println("Number of interfaces: " + project.getInterfaces().size());
 				System.out.println();
 
-				new MetricBuilder(Constants.METRIC_DIRECTORY_PATH).buildMetrics(project);
+				new MetricService(Constants.METRIC_DIRECTORY_PATH).buildMetrics(project);
 			}
 
 			@Override

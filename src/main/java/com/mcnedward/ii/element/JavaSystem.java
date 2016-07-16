@@ -65,6 +65,6 @@ public class JavaSystem {
 	
 	@Override
 	public String toString() {
-		return String.format("%s [%s versions]", mName, mProjects.size());
+		return String.format("%s [%s versions]", mName, mFiles.length);
 	}
 }

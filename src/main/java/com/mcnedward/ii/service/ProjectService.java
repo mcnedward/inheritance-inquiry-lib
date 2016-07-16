@@ -1,4 +1,4 @@
-package com.mcnedward.ii.builder;
+package com.mcnedward.ii.service;
 
 import java.io.File;
 import java.io.IOException;
@@ -20,27 +20,26 @@ import com.google.common.base.Stopwatch;
 import com.mcnedward.ii.element.JavaProject;
 import com.mcnedward.ii.jdt.visitor.ClassVisitor;
 import com.mcnedward.ii.listener.ProjectBuildListener;
-import com.mcnedward.ii.service.GitService;
 import com.mcnedward.ii.utils.ASTUtils;
 import com.mcnedward.ii.utils.IILogger;
 import com.mcnedward.ii.utils.SourcedFile;
 import com.mcnedward.ii.utils.Sourcer;
 
 /**
- * This class is used to build a {@link JavaProject}. This takes a file for a project directory, or path to a project
+ * This service is used to build a {@link JavaProject}. This takes a file for a project directory, or path to a project
  * directory, the parses all the .java files to strings. Next, it builds {@link CompilationUnit}s for all of those
  * files. Then it visits all of those CompilationUnits to build the project.
  * 
  * @author Edward - Jun 16, 2016
  *
  */
-public class ProjectBuilder extends FileASTRequestor {
-	private static final Logger logger = Logger.getLogger(ProjectBuilder.class);
+public class ProjectService extends FileASTRequestor {
+	private static final Logger logger = Logger.getLogger(ProjectService.class);
 
 	private Sourcer mSourcer;
 	private List<CompilationUnitHolder> mHolders;
 
-	public ProjectBuilder() {
+	public ProjectService() {
 		mSourcer = new Sourcer();
 		mHolders = new ArrayList<>();
 	}

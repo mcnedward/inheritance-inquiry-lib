@@ -1,4 +1,4 @@
-package com.mcnedward.ii.builder;
+package com.mcnedward.ii.service.metric;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -6,31 +6,29 @@ import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
 
-import com.mcnedward.ii.analyzer.Analyzer;
-import com.mcnedward.ii.analyzer.DitMetric;
-import com.mcnedward.ii.analyzer.MType;
-import com.mcnedward.ii.analyzer.NocMetric;
-import com.mcnedward.ii.analyzer.WmcMetric;
 import com.mcnedward.ii.element.JavaElement;
 import com.mcnedward.ii.element.JavaProject;
 import com.mcnedward.ii.exception.MetricBuildException;
+import com.mcnedward.ii.service.AnalyzerService;
 import com.mcnedward.ii.utils.IILogger;
 
 /**
+ * This is a service tool for creating files readable by Excel for the Metrics of a {@link JavaProject}.
+ * 
  * @author Edward - Jul 14, 2016
  *
  */
-public final class MetricBuilder {
+public final class MetricService {
 	private static final String FILE_EXTENSION = "txt";
 	private static final String NEWLINE = "\n";
 	private static final String DELIMITER = "\t";
 
 	private String mPath;
-	private Analyzer mAnalyzer;
+	private AnalyzerService mAnalyzer;
 
-	public MetricBuilder(String metricDirectoryPath) {
+	public MetricService(String metricDirectoryPath) {
 		mPath = metricDirectoryPath;
-		mAnalyzer = new Analyzer();
+		mAnalyzer = new AnalyzerService();
 	}
 
 	public boolean buildMetrics(JavaProject project) {

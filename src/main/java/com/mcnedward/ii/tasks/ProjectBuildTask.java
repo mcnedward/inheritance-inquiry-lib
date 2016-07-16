@@ -2,10 +2,10 @@ package com.mcnedward.ii.tasks;
 
 import java.io.File;
 
-import com.mcnedward.ii.builder.MetricBuilder;
-import com.mcnedward.ii.builder.ProjectBuilder;
+import com.mcnedward.ii.ProjectBuilder;
 import com.mcnedward.ii.element.JavaProject;
-import com.mcnedward.ii.service.ProjectBuildService;
+import com.mcnedward.ii.service.ProjectService;
+import com.mcnedward.ii.service.metric.MetricService;
 import com.mcnedward.ii.utils.Constants;
 import com.mcnedward.ii.utils.IILogger;
 
@@ -15,8 +15,8 @@ import com.mcnedward.ii.utils.IILogger;
  */
 public class ProjectBuildTask implements Runnable {
 
-	private ProjectBuilder mBuilder;
-	private MetricBuilder mMetricBuilder;
+	private ProjectService mBuilder;
+	private MetricService mMetricBuilder;
 	
 	private File mProjectFile;
 	private String mSystemName;
@@ -26,8 +26,8 @@ public class ProjectBuildTask implements Runnable {
 		mProjectFile = projectFile;
 		mSystemName = systemName;
 		mTotalJobs = totalJobs;
-		mBuilder = new ProjectBuilder();
-		mMetricBuilder = new MetricBuilder(Constants.METRIC_DIRECTORY_PATH);
+		mBuilder = new ProjectService();
+		mMetricBuilder = new MetricService(Constants.METRIC_DIRECTORY_PATH);
 	}
 
 	@Override
@@ -39,9 +39,9 @@ public class ProjectBuildTask implements Runnable {
 			
 			mMetricBuilder.buildMetrics(project);
 			
-			synchronized (ProjectBuildService.COMPLETE_JOBS) {
+			synchronized (ProjectBuilder.COMPLETE_JOBS) {
 				IILogger.info("Finished build job for %s in system %s [%s/%s]", project.toString(), mSystemName,
-						++ProjectBuildService.COMPLETE_JOBS, mTotalJobs);
+						++ProjectBuilder.COMPLETE_JOBS, mTotalJobs);
 			}
 		} catch (Exception e) {
 			IILogger.error(String.format("There was a problem running the task for file %s...", mProjectFile.getName()), e);

@@ -5,7 +5,6 @@ import org.apache.log4j.Logger;
 import com.mcnedward.ii.element.JavaProject;
 import com.mcnedward.ii.element.JavaSystem;
 import com.mcnedward.ii.exception.TaskBuildException;
-import com.mcnedward.ii.service.ProjectBuildService;
 import com.mcnedward.ii.utils.IILogger;
 
 /**
@@ -24,7 +23,7 @@ public final class InheritanceInquiryMain {
 		try {
 			IILogger.DEBUG = true;
 			
-			JavaSystem system = new ProjectBuildService().buildAsync();
+			JavaSystem system = new ProjectBuilder().buildAsync();
 			IILogger.info("Finished building the system %s! Time to complete: %s", system.toString(), system.getBuildTime());
 			
 			for (JavaProject project : system.getProjects()) {
@@ -36,7 +35,7 @@ public final class InheritanceInquiryMain {
 	}
 	
 	protected static void buildProject() {
-		new ProjectBuildService().buildProject();
+		new ProjectBuilder().buildProject();
 	}
 	
 }

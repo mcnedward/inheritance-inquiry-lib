@@ -11,7 +11,7 @@ public class Constants {
 	public static final String METRIC_DIRECTORY_PATH = "C:/users/edward/dev/IIMetrics";
 
 	// For buildSystem()
-	public static final String SYSTEM = "azureus";
+	public static final String SYSTEM = "freecol";
 	public static final String SYSTEM_PATH = QUALITUS_CORPUS_SYSTEMS_PATH + SYSTEM;
 
 	// For buildProject()

@@ -1,4 +1,4 @@
-package com.mcnedward.ii.analyzer;
+package com.mcnedward.ii.service;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -6,14 +6,17 @@ import java.util.Stack;
 
 import com.mcnedward.ii.element.JavaElement;
 import com.mcnedward.ii.element.JavaProject;
+import com.mcnedward.ii.service.metric.DitMetric;
+import com.mcnedward.ii.service.metric.NocMetric;
+import com.mcnedward.ii.service.metric.WmcMetric;
 
 /**
- * A tool for analyzing the Chidamber & Kemerer metrics for a {@link JavaProject}.
+ * A service tool for analyzing the Chidamber & Kemerer metrics for a {@link JavaProject}.
  * 
  * @author Edward - Jun 22, 2016
  *
  */
-public class Analyzer {
+public class AnalyzerService {
 
 	/**
 	 * Calculates the Depth of Inheritance Tree for all {@link JavaElement}s in the {@link JavaProject}.

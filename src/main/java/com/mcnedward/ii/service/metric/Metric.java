@@ -1,4 +1,4 @@
-package com.mcnedward.ii.analyzer;
+package com.mcnedward.ii.service.metric;
 
 import com.mcnedward.ii.element.JavaElement;
 

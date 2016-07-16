@@ -1,4 +1,4 @@
-package com.mcnedward.ii.analyzer;
+package com.mcnedward.ii.service.metric;
 
 /**
  * @author Edward - Jul 14, 2016
