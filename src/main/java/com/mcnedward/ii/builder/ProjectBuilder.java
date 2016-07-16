@@ -7,6 +7,7 @@ import java.util.Hashtable;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.compiler.IProblem;
 import org.eclipse.jdt.core.dom.AST;
@@ -15,6 +16,7 @@ import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.FileASTRequestor;
 import org.eclipse.jgit.util.FileUtils;
 
+import com.google.common.base.Stopwatch;
 import com.mcnedward.ii.element.JavaProject;
 import com.mcnedward.ii.jdt.visitor.ClassVisitor;
 import com.mcnedward.ii.listener.ProjectBuildListener;
@@ -23,12 +25,11 @@ import com.mcnedward.ii.utils.ASTUtils;
 import com.mcnedward.ii.utils.IILogger;
 import com.mcnedward.ii.utils.SourcedFile;
 import com.mcnedward.ii.utils.Sourcer;
-import com.mcnedward.ii.utils.Stopwatch;
 
 /**
  * This class is used to build a {@link JavaProject}. This takes a file for a project directory, or path to a project
  * directory, the parses all the .java files to strings. Next, it builds {@link CompilationUnit}s for all of those
- * files. Then it visits all of those CompilationUnits to build the
+ * files. Then it visits all of those CompilationUnits to build the project.
  * 
  * @author Edward - Jun 16, 2016
  *
@@ -51,7 +52,7 @@ public class ProjectBuilder extends FileASTRequestor {
 	 * @param projectName
 	 * @param listener
 	 */
-	public void buildProject(String projectPath, String projectName, ProjectBuildListener listener) {
+	public void buildProjectAsync(String projectPath, String projectName, ProjectBuildListener listener) {
 		Runnable task = () -> {
 			listener.onProgressChange(String.format("Starting to load %s...", projectName), 0);
 			build(projectPath, projectName, listener);
@@ -77,7 +78,7 @@ public class ProjectBuilder extends FileASTRequestor {
 		buildProject(project, listener);
 		return project;
 	}
-
+	
 	/**
 	 * Build a {@link JavaProject}. This method should be used when building a project that is a part of system (for
 	 * projects with multiple versions).
@@ -112,14 +113,17 @@ public class ProjectBuilder extends FileASTRequestor {
 
 			createASTs(project.getProjectFile().getAbsolutePath(), files);
 			if (listener != null)
-				listener.onProgressChange("Finished building ASTs!", 100);
+				listener.onProgressChange("Finished creating ASTs!", 100);
 			else
-				IILogger.debug("Finished building ASTs for %s!", project.toString());
+				IILogger.debug("Finished creating ASTs for %s!", project.toString());
 
 			// Use the visitors to build the JavaProject!
 			visitCompilationUnits(project, files, listener);
 
-			String timeToComplete = stopwatch.stopAndGetTime();
+			afterBuild(project);
+			
+			stopwatch.stop();
+			String timeToComplete = stopwatch.toString();
 			if (listener != null)
 				listener.onProgressChange(String.format("Finished! Time to complete: %s", timeToComplete), 100);
 			else
@@ -162,6 +166,10 @@ public class ProjectBuilder extends FileASTRequestor {
 			}
 		}
 	}
+	
+	private void afterBuild(JavaProject project) {
+//		AnalyzerUtils.calculateExtendedMethods(project);
+	}
 
 	/**
 	 * Setup the ASTParser with the correct options, source files, classPaths, and environment, then creates the ASTs
@@ -197,9 +205,10 @@ public class ProjectBuilder extends FileASTRequestor {
 			filePaths.add(file.getFile().getAbsolutePath());
 		}
 		String[] sourceFiles = filePaths.toArray(new String[filePaths.size()]);
-		parser.createASTs(sourceFiles, null, new String[0], this, null);
+		parser.createASTs(sourceFiles, null, new String[0], this, getProgressMonitor());
+		parser = null;
 	}
-
+	
 	@Override
 	public void acceptAST(String sourceFilePath, CompilationUnit compilationUnit) {
 		CompilationUnitHolder holder = new CompilationUnitHolder();
@@ -242,14 +251,59 @@ public class ProjectBuilder extends FileASTRequestor {
 				for (IProblem problem : problems) {
 					logger.debug(String.format("%s", problem));
 					if (problem.getMessage().contains("import")) {
-						missingImports.add(problem.getArguments()[0]); // This is assuming a lot I think, but should be
-																		// right...
+						// This is assuming a lot I think, but should be right...
+						missingImports.add(problem.getArguments()[0]);
 					}
 				}
 			}
 
 			cu.accept(new ClassVisitor(project, fileName, missingImports));
 		}
+	}
+	
+	private static final IProgressMonitor getProgressMonitor() {
+		return new IProgressMonitor() {
+			private String taskName;
+			private boolean cancelled;
+			
+			@Override
+			public void worked(int arg0) {
+				logger.debug(arg0);
+			}
+			
+			@Override
+			public void subTask(String arg0) {
+			}
+			
+			@Override
+			public void setTaskName(String arg0) {
+				taskName = arg0;
+			}
+			
+			@Override
+			public void setCanceled(boolean arg0) {
+				cancelled = arg0;
+			}
+			
+			@Override
+			public boolean isCanceled() {
+				return cancelled;
+			}
+			
+			@Override
+			public void internalWorked(double arg0) {
+			}
+			
+			@Override
+			public void done() {
+				logger.debug(taskName);
+			}
+			
+			@Override
+			public void beginTask(String arg0, int arg1) {
+				logger.debug(taskName + " - " + arg0 + " - " + arg1);
+			}
+		};
 	}
 
 	private final class CompilationUnitHolder {

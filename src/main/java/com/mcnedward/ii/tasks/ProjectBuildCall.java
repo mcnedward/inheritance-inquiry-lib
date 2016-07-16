@@ -11,16 +11,16 @@ import com.mcnedward.ii.element.JavaSystem;
  * @author Edward - Jul 14, 2016
  *
  */
-public class ProjectBuildTask implements Callable<JavaProject> {
+public class ProjectBuildCall implements Callable<JavaProject> {
 
 	private ProjectBuilder mBuilder;
 	private JavaSystem mSystem;
 	private File mProjectFile;
 	
-	public ProjectBuildTask(ProjectBuilder builder, JavaSystem system, File projectFile) {
-		mBuilder = builder;
+	public ProjectBuildCall(JavaSystem system, File projectFile) {
 		mSystem = system;
 		mProjectFile = projectFile;
+		mBuilder = new ProjectBuilder();
 	}
 
 	@Override
