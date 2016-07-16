@@ -94,14 +94,4 @@ public class ClassVisitor extends JavaProjectVisitor {
 	public JavaElement element() {
 		return mElement;
 	}
-
-	@Override
-	public void preVisit(ASTNode node) {
-		super.preVisit(node);
-	}
-	
-	@Override
-	public void postVisit(ASTNode node) {
-		super.postVisit(node);
-	}
 }

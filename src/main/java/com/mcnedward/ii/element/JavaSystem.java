@@ -4,7 +4,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.mcnedward.ii.utils.Stopwatch;
+import com.google.common.base.Stopwatch;
+
 
 /**
  * @author Edward - Jul 14, 2016
@@ -42,8 +43,8 @@ public class JavaSystem {
 		mStopwatch.stop();
 	}
 	
-	public String getProjectBuildTime() {
-		return mStopwatch.getElapsedTime();
+	public String getBuildTime() {
+		return mStopwatch.toString();
 	}
 	
 	public String getName() {
@@ -60,5 +61,10 @@ public class JavaSystem {
 	
 	public boolean allProjectsBuilt() {
 		return mProjectsBuiltCount == mProjectsCount;
+	}
+	
+	@Override
+	public String toString() {
+		return String.format("%s [%s versions]", mName, mProjects.size());
 	}
 }

@@ -324,10 +324,6 @@ public class JavaProject {
 
 	@Override
 	public String toString() {
-		String out = mName;
-		if (mVersion != null && !mVersion.equals("")) {
-			out += " v. " + mVersion;
-		}
-		return out;
+		return mName;
 	}
 }
