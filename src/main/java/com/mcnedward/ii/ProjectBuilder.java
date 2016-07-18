@@ -10,13 +10,12 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.mcnedward.ii.element.JavaProject;
 import com.mcnedward.ii.element.JavaSystem;
 import com.mcnedward.ii.exception.TaskBuildException;
-import com.mcnedward.ii.listener.ProjectBuildListener;
 import com.mcnedward.ii.service.AnalyzerService;
 import com.mcnedward.ii.service.ProjectService;
+import com.mcnedward.ii.service.graph.GraphService;
 import com.mcnedward.ii.service.metric.MetricService;
 import com.mcnedward.ii.tasks.MonitoringExecutorService;
 import com.mcnedward.ii.tasks.ProjectBuildTask;
-import com.mcnedward.ii.utils.Constants;
 import com.mcnedward.ii.utils.IILogger;
 
 /**
@@ -27,10 +26,22 @@ import com.mcnedward.ii.utils.IILogger;
  */
 public final class ProjectBuilder {
 
+	// Directory paths
+	public static final String QUALITUS_CORPUS_SYSTEMS_PATH = "C:/QC/pt1/Systems/";
+
+	// For buildSystem()
+	private static final String SYSTEM = "freecol";
+	private static final String SYSTEM_PATH = QUALITUS_CORPUS_SYSTEMS_PATH + SYSTEM;
+
+	// For buildProject()
+	private static final String PROJECT_NAME = "azureus";
+	private static final String PROJECT_PATH = QUALITUS_CORPUS_SYSTEMS_PATH + "azureus/azureus-2.0.8.2";
+
 	// Services
 	private ProjectService mProjectService;
 	private AnalyzerService mAnalyzerService;
 	private MetricService mMetricService;
+	private GraphService mGraphService;
 	// Tasks
 	private static final int CORE_POOL_SIZE = 4;
 	private static final int MAX_POOL_SIZE = 8;
@@ -43,7 +54,8 @@ public final class ProjectBuilder {
 		// Setup services
 		mProjectService = new ProjectService();
 		mAnalyzerService = new AnalyzerService();
-		mMetricService = new MetricService(Constants.METRIC_DIRECTORY_PATH);
+		mMetricService = new MetricService();
+		mGraphService = new GraphService();
 		// Setup Threads
 		ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat("Project-%d").setDaemon(true).build();
 		mQueue = new ArrayBlockingQueue<>(100);
@@ -51,9 +63,9 @@ public final class ProjectBuilder {
 	}
 
 	public JavaSystem build() throws TaskBuildException {
-		File systemFile = new File(Constants.SYSTEM_PATH);
+		File systemFile = new File(SYSTEM_PATH);
 		if (systemFile.isFile()) {
-			throw new TaskBuildException(String.format("You need to provide a directory for a system! [Path: %s]", Constants.SYSTEM_PATH));
+			throw new TaskBuildException(String.format("You need to provide a directory for a system! [Path: %s]", SYSTEM_PATH));
 		}
 
 		JavaSystem system = new JavaSystem(systemFile);
@@ -88,9 +100,9 @@ public final class ProjectBuilder {
 	 * @throws TaskBuildException
 	 */
 	public JavaSystem buildAsync() throws TaskBuildException {
-		File systemFile = new File(Constants.SYSTEM_PATH);
+		File systemFile = new File(SYSTEM_PATH);
 		if (systemFile.isFile()) {
-			throw new TaskBuildException(String.format("You need to provide a directory for a system! [Path: %s]", Constants.SYSTEM_PATH));
+			throw new TaskBuildException(String.format("You need to provide a directory for a system! [Path: %s]", SYSTEM_PATH));
 		}
 		COMPLETE_JOBS = 0; // Reset job count
 
@@ -101,7 +113,8 @@ public final class ProjectBuilder {
 
 		for (int i = 0; i < projectCount; i++) {
 			File projectFile = projects[i];
-			ProjectBuildTask task = new ProjectBuildTask(mProjectService, mAnalyzerService, mMetricService, projectFile, system.getName(), projectCount);
+			ProjectBuildTask task = new ProjectBuildTask(mProjectService, mAnalyzerService, mMetricService, mGraphService, projectFile,
+					system.getName(), projectCount);
 			mExecutorService.submit(task);
 		}
 
@@ -117,6 +130,8 @@ public final class ProjectBuilder {
 			done = mExecutorService.awaitTermination(TIMEOUT, TimeUnit.MINUTES);
 		} catch (InterruptedException e) {
 			throw new TaskBuildException("Something went wrong when trying to shutdown tasks...", e);
+		} catch (Exception e) {
+			throw new TaskBuildException("Something went wrong with with the tasks...", e);
 		}
 		IILogger.info("Shutdown tasks. Were all complete? %s [%s/%s]", done, COMPLETE_JOBS, jobCount);
 		COMPLETE_JOBS = 0; // Reset job count
@@ -140,29 +155,10 @@ public final class ProjectBuilder {
 		}
 	}
 
-	public void buildProject() {
-		mProjectService.buildProjectAsync(Constants.PROJECT_PATH, Constants.PROJECT_NAME, new ProjectBuildListener() {
-
-			@Override
-			public void onProgressChange(String message, int progress) {
-				IILogger.info("%s - %s", message, progress);
-			}
-
-			@Override
-			public void finished(JavaProject project) {
-				System.out.println(project);
-				System.out.println("Number of classes: " + project.getClasses().size());
-				System.out.println("Number of interfaces: " + project.getInterfaces().size());
-				System.out.println();
-
-				mMetricService.buildMetrics(mAnalyzerService.analyze(project));
-			}
-
-			@Override
-			public void onBuildError(String message, Exception exception) {
-				IILogger.error(message, exception);
-			}
-
-		});
+	public void buildProject() throws TaskBuildException {
+		File projectFile = new File(PROJECT_PATH);
+		ProjectBuildTask task = new ProjectBuildTask(mProjectService, mAnalyzerService, mMetricService, mGraphService, projectFile, PROJECT_NAME, 1);
+		mExecutorService.submit(task);
+		waitForTasks(1);
 	}
 }

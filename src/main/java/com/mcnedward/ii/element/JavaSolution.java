@@ -2,6 +2,7 @@ package com.mcnedward.ii.element;
 
 import java.util.List;
 
+import com.mcnedward.ii.service.graph.SolutionMethod;
 import com.mcnedward.ii.service.metric.DitMetric;
 import com.mcnedward.ii.service.metric.NocMetric;
 import com.mcnedward.ii.service.metric.WmcMetric;
@@ -18,15 +19,19 @@ public class JavaSolution {
 	private List<DitMetric> mDitMetrics;
 	private List<NocMetric> mNocMetrics;
 	private List<WmcMetric> mWmcMetrics;
+	private List<SolutionMethod> mOMethods;
+	private List<SolutionMethod> mEMethods;
 	
 	public JavaSolution(String projectName, String systemName, String version, List<DitMetric> ditMetrics, List<NocMetric> nocMetrics,
-			List<WmcMetric> wmcMetrics) {
+			List<WmcMetric> wmcMetrics, List<SolutionMethod> oMethods, List<SolutionMethod> eMethods) {
 		mProjectName = projectName;
 		mSystemName = systemName;
 		mVersion = version;
 		mDitMetrics = ditMetrics;
 		mNocMetrics = nocMetrics;
 		mWmcMetrics = wmcMetrics;
+		mOMethods = oMethods;
+		mEMethods = eMethods;
 	}
 	
 	public String getProjectName() {
@@ -51,6 +56,14 @@ public class JavaSolution {
 
 	public List<WmcMetric> getWmcMetrics() {
 		return mWmcMetrics;
+	}
+	
+	public List<SolutionMethod> getOMethods() {
+		return mOMethods;
+	}
+	
+	public List<SolutionMethod> getEMethods() {
+		return mEMethods;
 	}
 
 }

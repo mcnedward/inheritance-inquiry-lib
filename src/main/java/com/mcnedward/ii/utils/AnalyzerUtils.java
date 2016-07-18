@@ -11,6 +11,7 @@ import com.mcnedward.ii.element.method.JavaMethod;
 import com.mcnedward.ii.element.method.JavaMethodInvocation;
 
 /**
+ * TODO This should either be deleted, or replaced with AnalyzerService methods
  * @author Edward - Jul 14, 2016
  *
  */
@@ -20,7 +21,7 @@ public final class AnalyzerUtils {
 		calculateDepthOfInheritanceTree(project);
 		calculateNumberOfChildren(project);
 		calculateWeightedMethodsPerClass(project);
-		findClassesWithHighNOCAndWMC(project);
+		calculateClassesWithHighNOCAndWMC(project);
 		calculateOverridenMethods(project);
 		calculateExtendedMethods(project);
 	}
@@ -150,7 +151,7 @@ public final class AnalyzerUtils {
 		IILogger.analysis("\n\n");
 	}
 
-	public static void findClassesWithHighNOCAndWMC(JavaProject project) {
+	public static void calculateClassesWithHighNOCAndWMC(JavaProject project) {
 		IILogger.analysis("********** CLASSES WITH HIGH NOC & WMC **********");
 		for (JavaElement element : project.getAllElements()) {
 			int total = project.findNOCAndWMCFor(element);
