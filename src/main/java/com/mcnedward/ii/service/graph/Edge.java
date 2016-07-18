@@ -4,7 +4,7 @@ package com.mcnedward.ii.service.graph;
  * @author Edward - Jul 16, 2016
  *
  */
-public abstract class Edge implements IGraphItem {
+public class Edge implements IGraphItem {
 	
 	private static int EDGE_ID = 1;
 	

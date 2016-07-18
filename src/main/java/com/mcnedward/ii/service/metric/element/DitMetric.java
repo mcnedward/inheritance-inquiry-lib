@@ -1,6 +1,8 @@
-package com.mcnedward.ii.service.metric;
+package com.mcnedward.ii.service.metric.element;
 
 import com.mcnedward.ii.element.JavaElement;
+import com.mcnedward.ii.service.metric.MType;
+import com.mcnedward.ii.service.metric.Metric;
 
 /**
  * Metric for the Depth of Inheritance of a class or interface. Defined by

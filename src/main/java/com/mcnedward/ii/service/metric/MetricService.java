@@ -9,6 +9,9 @@ import java.util.List;
 import com.mcnedward.ii.element.JavaElement;
 import com.mcnedward.ii.element.JavaSolution;
 import com.mcnedward.ii.exception.MetricBuildException;
+import com.mcnedward.ii.service.metric.element.DitMetric;
+import com.mcnedward.ii.service.metric.element.NocMetric;
+import com.mcnedward.ii.service.metric.element.WmcMetric;
 import com.mcnedward.ii.utils.IILogger;
 
 /**

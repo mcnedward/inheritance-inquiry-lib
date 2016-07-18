@@ -4,7 +4,7 @@ package com.mcnedward.ii.service.graph;
  * @author Edward - Jul 16, 2016
  *
  */
-public abstract class Node implements IGraphItem {
+public class Node implements IGraphItem {
 	
 	private static int NODE_ID = 1;
 	
