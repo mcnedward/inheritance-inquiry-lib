@@ -2,10 +2,11 @@ package com.mcnedward.ii.element;
 
 import java.util.List;
 
-import com.mcnedward.ii.service.graph.SolutionMethod;
-import com.mcnedward.ii.service.metric.DitMetric;
-import com.mcnedward.ii.service.metric.NocMetric;
-import com.mcnedward.ii.service.metric.WmcMetric;
+import com.mcnedward.ii.service.graph.element.HierarchyTree;
+import com.mcnedward.ii.service.graph.element.SolutionMethod;
+import com.mcnedward.ii.service.metric.element.DitMetric;
+import com.mcnedward.ii.service.metric.element.NocMetric;
+import com.mcnedward.ii.service.metric.element.WmcMetric;
 
 /**
  * @author Edward - Jul 16, 2016
@@ -21,9 +22,10 @@ public class JavaSolution {
 	private List<WmcMetric> mWmcMetrics;
 	private List<SolutionMethod> mOMethods;
 	private List<SolutionMethod> mEMethods;
+	private List<HierarchyTree> mTrees; 
 	
 	public JavaSolution(String projectName, String systemName, String version, List<DitMetric> ditMetrics, List<NocMetric> nocMetrics,
-			List<WmcMetric> wmcMetrics, List<SolutionMethod> oMethods, List<SolutionMethod> eMethods) {
+			List<WmcMetric> wmcMetrics, List<SolutionMethod> oMethods, List<SolutionMethod> eMethods, List<HierarchyTree> trees) {
 		mProjectName = projectName;
 		mSystemName = systemName;
 		mVersion = version;
@@ -32,6 +34,7 @@ public class JavaSolution {
 		mWmcMetrics = wmcMetrics;
 		mOMethods = oMethods;
 		mEMethods = eMethods;
+		mTrees = trees;
 	}
 	
 	public String getProjectName() {
@@ -66,4 +69,7 @@ public class JavaSolution {
 		return mEMethods;
 	}
 
+	public List<HierarchyTree> getTrees() {
+		return mTrees;
+	}
 }

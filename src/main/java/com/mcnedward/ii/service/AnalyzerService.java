@@ -11,10 +11,11 @@ import com.mcnedward.ii.element.JavaProject;
 import com.mcnedward.ii.element.JavaSolution;
 import com.mcnedward.ii.element.method.JavaMethod;
 import com.mcnedward.ii.element.method.JavaMethodInvocation;
-import com.mcnedward.ii.service.graph.SolutionMethod;
-import com.mcnedward.ii.service.metric.DitMetric;
-import com.mcnedward.ii.service.metric.NocMetric;
-import com.mcnedward.ii.service.metric.WmcMetric;
+import com.mcnedward.ii.service.graph.element.HierarchyTree;
+import com.mcnedward.ii.service.graph.element.SolutionMethod;
+import com.mcnedward.ii.service.metric.element.DitMetric;
+import com.mcnedward.ii.service.metric.element.NocMetric;
+import com.mcnedward.ii.service.metric.element.WmcMetric;
 import com.mcnedward.ii.utils.IILogger;
 
 /**
@@ -28,7 +29,7 @@ public class AnalyzerService {
 	public JavaSolution analyze(JavaProject project) {
 		return new JavaSolution(project.getName(), project.getSystemName(), project.getVersion(), calculateDepthOfInheritanceTree(project),
 				calculateNumberOfChildren(project), calculateWeightedMethodsPerClass(project), calculateOverriddenMethods(project),
-				calculateExtendedMethods(project));
+				calculateExtendedMethods(project), calculateHierarchyTrees(project));
 	}
 
 	/**
@@ -146,8 +147,8 @@ public class AnalyzerService {
 	}
 
 	/**
-	 * Check all the child methods of the {@link JavaElement}s in the {@link JavaProject} to see if they override any of
-	 * their parent methods.
+	 * Calculates all the child methods of the {@link JavaElement}s in the {@link JavaProject} to see if they override
+	 * any of their parent methods.
 	 * 
 	 * @param project
 	 *            The {@link JavaProject}.
@@ -166,7 +167,8 @@ public class AnalyzerService {
 				for (JavaMethod parentMethod : parent.getMethods()) {
 					IMethodBinding parentBinding = parentMethod.getMethodBinding();
 					if (childBinding.overrides(parentBinding)) {
-						overriddenMethods.add(new SolutionMethod(childMethod.getName(), childMethod.getSignature(), parent.getName(), child.getName()));
+						overriddenMethods
+								.add(new SolutionMethod(childMethod.getName(), childMethod.getSignature(), parent.getName(), child.getName()));
 						IILogger.analysis("Method %s in element %s is overriding method %s defined in parent class %s.", childMethod.getSignature(),
 								child, parentMethod.getSignature(), parent);
 					}
@@ -177,8 +179,8 @@ public class AnalyzerService {
 	}
 
 	/**
-	 * Checks all the child methods of the {@link JavaElement}s in the {@link JavaProject} to see if they extend any of
-	 * their parent methods.
+	 * Calculates all the child methods of the {@link JavaElement}s in the {@link JavaProject} to see if they extend any
+	 * of their parent methods.
 	 * <p>
 	 * Extending a parent method is when a method in a child class overrides a superclass method to provide additional
 	 * functionality, while still invoking the superclass method.
@@ -227,8 +229,8 @@ public class AnalyzerService {
 							// defined (declared)
 							IMethodBinding methodDeclaration = invocation.getMethodBinding().getMethodDeclaration();
 							if (methodDeclaration == parentBinding) {
-								extendedMethods
-										.add(new SolutionMethod(childMethod.getName(), childMethod.getSignature(), parent.getName(), child.getName()));
+								extendedMethods.add(
+										new SolutionMethod(childMethod.getName(), childMethod.getSignature(), parent.getName(), child.getName()));
 								IILogger.analysis("Method %s in element %s is extending method %s defined in parent class %s.",
 										childMethod.getSignature(), child, parentMethod.getSignature(), parent);
 							}
@@ -240,4 +242,25 @@ public class AnalyzerService {
 		return extendedMethods;
 	}
 
+	/**
+	 * Calculates the hierarchy trees for all of the {@link JavaElement}s in the {@link JavaProject}.
+	 * <p>Currently, this only builds for classes, and only if the DIT is greater than 0.</p>
+	 * @param project
+	 *            The JavaProject
+	 * @return The {@link HierarchyTree}s
+	 */
+	public List<HierarchyTree> calculateHierarchyTrees(JavaProject project) {
+		List<HierarchyTree> trees = new ArrayList<>();
+
+		for (JavaElement element : project.getAllElements()) {
+			if (!element.isInterface()) {
+				Stack<JavaElement> classStack = project.findDepthOfInheritanceTreeFor(element);
+				int dit = classStack.size();
+				if (dit > 0)
+					trees.add(new HierarchyTree(element));
+			}
+		}
+
+		return trees;
+	}
 }

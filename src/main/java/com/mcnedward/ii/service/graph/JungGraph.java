@@ -44,10 +44,22 @@ public class JungGraph extends JFrame {
 	private Map<String, Node> mNodeMap;
 	private Map<String, Edge> mEdgeMap;
 
+	// Distance between graphs
+	private static final int DEFAULT_X_DIST = 200;
+	private static final int DEFAULT_Y_DIST = 200;
+	private int mXDist;
+	private int mYDist;
+	
 	public JungGraph() {
+		this(DEFAULT_X_DIST, DEFAULT_Y_DIST);
+	}
+	
+	public JungGraph(int xDist, int yDist) {
 		mGraph = new DirectedSparseMultigraph<>();
 		mNodeMap = new TreeMap<>();
 		mEdgeMap = new TreeMap<>();
+		mXDist = xDist;
+		mYDist = yDist;
 	}
 
 	public void plotGraph(List<Node> nodes, List<Edge> edges) throws GraphBuildException {
@@ -65,7 +77,7 @@ public class JungGraph extends JFrame {
 	
 	private void initializeComponents() {
 		mForest = new DelegateForest<>(mGraph);
-		mLayout = new TreeLayout<>(mForest, 200, 200);
+		mLayout = new TreeLayout<>(mForest, mXDist, mYDist);
 		mViewer = new VisualizationViewer<>(mLayout);
 		mImageServer = new VisualizationImageServer<>(mViewer.getGraphLayout(), mViewer.getGraphLayout().getSize());
 	}

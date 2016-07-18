@@ -4,11 +4,14 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Stack;
 
 import javax.imageio.ImageIO;
 
 import com.mcnedward.ii.element.JavaSolution;
 import com.mcnedward.ii.exception.GraphBuildException;
+import com.mcnedward.ii.service.graph.element.HierarchyTree;
+import com.mcnedward.ii.service.graph.element.SolutionMethod;
 import com.mcnedward.ii.utils.IILogger;
 
 /**
@@ -26,6 +29,7 @@ public class GraphService {
 		try {
 			buildOverriddenMethodsGraph(solution);
 			buildExtendedMethodsGraph(solution);
+			buildInheritanceTreeGraph(solution);
 			return true;
 		} catch (GraphBuildException e) {
 			IILogger.error(e);
@@ -46,13 +50,14 @@ public class GraphService {
 	private void buildMethodsGraph(JavaSolution solution, List<SolutionMethod> methods, GType graphType) throws GraphBuildException {
 		List<Node> nodes = new ArrayList<>();
 		List<Edge> edges = new ArrayList<>();
+		
 		for (SolutionMethod method : methods) {
-			Node methodNode = new MethodNode(method.methodSignature);
-			Node parentNode = new MethodNode(method.parentElementName);
-			Node elementNode = new MethodNode(method.elementName);
+			Node methodNode = new Node(method.methodSignature);
+			Node parentNode = new Node(method.parentElementName);
+			Node elementNode = new Node(method.elementName);
 
-			Edge edge1 = new MethodEdge("Parent", methodNode, parentNode);
-			Edge edge2 = new MethodEdge("Element", methodNode, elementNode);
+			Edge edge1 = new Edge("Parent", methodNode, parentNode);
+			Edge edge2 = new Edge("Element", methodNode, elementNode);
 
 			nodes.add(methodNode);
 			nodes.add(parentNode);
@@ -61,10 +66,36 @@ public class GraphService {
 			edges.add(edge1);
 			edges.add(edge2);
 		}
+		
 		JungGraph graph = new JungGraph();
 		graph.plotGraph(nodes, edges);
 		BufferedImage image = graph.createImage();
 		writeToFile(solution, graphType, image);
+	}
+	
+	private void buildInheritanceTreeGraph(JavaSolution solution) throws GraphBuildException {
+		List<HierarchyTree> trees = solution.getTrees();
+		List<Node> nodes = new ArrayList<>();
+		List<Edge> edges = new ArrayList<>();
+		
+		for (HierarchyTree hTree : trees) {
+			Stack<String> tree = hTree.tree;
+			Node previousNode = null;
+			while (!tree.isEmpty()) {
+				String element = tree.pop();
+				Node treeNode = new Node(element);
+				nodes.add(treeNode);
+				if (previousNode != null) {
+					edges.add(new Edge("", previousNode, treeNode));
+				}
+				previousNode = treeNode;
+			}
+		}
+		
+		JungGraph graph = new JungGraph(500, 200);
+		graph.plotGraph(nodes, edges);
+		BufferedImage image = graph.createImage();
+		writeToFile(solution, GType.TREE, image);
 	}
 	
 	private String getFileName(JavaSolution solution, GType graphType) {

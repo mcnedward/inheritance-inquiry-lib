@@ -7,7 +7,8 @@ package com.mcnedward.ii.service.graph;
 public enum GType {
 
 	OMETHODS("Overridden Methods"),
-	EMETHODS("Extended Methods");
+	EMETHODS("Extended Methods"),
+	TREE("Hierarchy Tree");
 	
 	public String graphType;
 	
