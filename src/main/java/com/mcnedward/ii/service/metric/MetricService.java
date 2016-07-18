@@ -9,7 +9,6 @@ import java.util.List;
 import com.mcnedward.ii.element.JavaElement;
 import com.mcnedward.ii.element.JavaSolution;
 import com.mcnedward.ii.exception.MetricBuildException;
-import com.mcnedward.ii.service.AnalyzerService;
 import com.mcnedward.ii.utils.IILogger;
 
 /**
@@ -19,17 +18,11 @@ import com.mcnedward.ii.utils.IILogger;
  *
  */
 public final class MetricService {
+
+	private static final String METRIC_DIRECTORY_PATH = "C:/users/edward/dev/IIMetrics";
 	private static final String FILE_EXTENSION = "txt";
 	private static final String NEWLINE = "\n";
 	private static final String DELIMITER = "\t";
-
-	private String mPath;
-	private AnalyzerService mAnalyzer;
-
-	public MetricService(String metricDirectoryPath) {
-		mPath = metricDirectoryPath;
-		mAnalyzer = new AnalyzerService();
-	}
 
 	public boolean buildMetrics(JavaSolution solution) {
 		try {
@@ -128,7 +121,6 @@ public final class MetricService {
 
 		try {
 			String basePath = getDirectoryPath(solution);
-
 			String filePath = String.format("%s/%s", basePath, fileName);
 			File file = new File(filePath);
 			PrintWriter writer = new PrintWriter(file, "UTF-8");
@@ -136,7 +128,7 @@ public final class MetricService {
 			writer.write(output);
 			writer.close();
 
-			IILogger.info(String.format("Created file %s for project [%s] version [%s]!", fileName, solution.getProjectName(), solution.getVersion()));
+			IILogger.info(String.format("Created file for project [%s] version [%s]! [%s]", solution.getProjectName(), solution.getVersion(), filePath));
 		} catch (FileNotFoundException e) {
 			throw new MetricBuildException(
 					String.format("File %s for solution [%s] project [%s] was not found...", fileName, solution.getProjectName(), solution.getVersion()), e);
@@ -155,7 +147,7 @@ public final class MetricService {
 	 * @return The base path for the solution directory
 	 */
 	private String getDirectoryPath(JavaSolution solution) {
-		String filePath = String.format("%s/%s/%s", mPath, solution.getSystemName(), solution.getProjectName());
+		String filePath = String.format("%s/%s/%s", METRIC_DIRECTORY_PATH, solution.getSystemName(), solution.getProjectName());
 		File metricDirectory = new File(filePath);
 		metricDirectory.mkdirs();
 		return filePath;

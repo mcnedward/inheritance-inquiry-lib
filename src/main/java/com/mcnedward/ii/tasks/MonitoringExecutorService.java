@@ -2,6 +2,8 @@ package com.mcnedward.ii.tasks;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
@@ -62,5 +64,27 @@ public class MonitoringExecutorService extends ThreadPoolExecutor implements Exe
             }
         });
 	}
+	
+	@Override
+	 protected void afterExecute(Runnable r, Throwable t) {
+	      super.afterExecute(r, t);
+	      if (t == null && r instanceof Future<?>) {
+	        try {
+	          Future<?> future = (Future<?>) r;
+	          if (future.isDone()) {
+	            future.get();
+	          }
+	        } catch (CancellationException ce) {
+	            t = ce;
+	        } catch (ExecutionException ee) {
+	            t = ee.getCause();
+	        } catch (InterruptedException ie) {
+	            Thread.currentThread().interrupt(); // ignore/reset
+	        }
+	      }
+	      if (t != null) {
+	            IILogger.error("There was a problem inside the running task " + r + "...", t);
+	      }
+	 }
 
 }

@@ -45,23 +45,6 @@ public class ProjectService extends FileASTRequestor {
 	}
 
 	/**
-	 * Builds a {@link JavaProject} in a separate task.
-	 * 
-	 * @param projectPath
-	 * @param projectName
-	 * @param listener
-	 */
-	public void buildProjectAsync(String projectPath, String projectName, ProjectBuildListener listener) {
-		Runnable task = () -> {
-			listener.onProgressChange(String.format("Starting to load %s...", projectName), 0);
-			build(projectPath, projectName, listener);
-		};
-
-		Thread thread = new Thread(task);
-		thread.start();
-	}
-
-	/**
 	 * Build a {@link JavaProject}.
 	 * 
 	 * @param projectPath
@@ -77,7 +60,7 @@ public class ProjectService extends FileASTRequestor {
 		buildProject(project, listener);
 		return project;
 	}
-	
+
 	/**
 	 * Build a {@link JavaProject}. This method should be used when building a project that is a part of system (for
 	 * projects with multiple versions).
@@ -89,8 +72,24 @@ public class ProjectService extends FileASTRequestor {
 	 * @return The JavaProject
 	 */
 	public JavaProject build(File projectFile, String systemName) {
+		return build(projectFile, systemName, null);
+	}
+
+	/**
+	 * Build a {@link JavaProject}. This method should be used when building a project that is a part of system (for
+	 * projects with multiple versions).
+	 * 
+	 * @param projectFile
+	 *            The project file
+	 * @param systemName
+	 *            The name of the system that this project belongs to.
+	 * @param listener
+	 *            The {@link ProjectBuildListener}
+	 * @return The JavaProject
+	 */
+	public JavaProject build(File projectFile, String systemName, ProjectBuildListener listener) {
 		JavaProject project = new JavaProject(projectFile, systemName);
-		buildProject(project, null);
+		buildProject(project, listener);
 		return project;
 	}
 
@@ -120,7 +119,7 @@ public class ProjectService extends FileASTRequestor {
 			visitCompilationUnits(project, files, listener);
 
 			afterBuild(project);
-			
+
 			stopwatch.stop();
 			String timeToComplete = stopwatch.toString();
 			if (listener != null)
@@ -165,9 +164,9 @@ public class ProjectService extends FileASTRequestor {
 			}
 		}
 	}
-	
+
 	private void afterBuild(JavaProject project) {
-//		AnalyzerUtils.calculateExtendedMethods(project);
+		// AnalyzerUtils.calculateExtendedMethods(project);
 	}
 
 	/**
@@ -207,7 +206,7 @@ public class ProjectService extends FileASTRequestor {
 		parser.createASTs(sourceFiles, null, new String[0], this, getProgressMonitor());
 		parser = null;
 	}
-	
+
 	@Override
 	public void acceptAST(String sourceFilePath, CompilationUnit compilationUnit) {
 		CompilationUnitHolder holder = new CompilationUnitHolder();
@@ -259,45 +258,45 @@ public class ProjectService extends FileASTRequestor {
 			cu.accept(new ClassVisitor(project, fileName, missingImports));
 		}
 	}
-	
+
 	private static final IProgressMonitor getProgressMonitor() {
 		return new IProgressMonitor() {
 			private String taskName;
 			private boolean cancelled;
-			
+
 			@Override
 			public void worked(int arg0) {
 				logger.debug(arg0);
 			}
-			
+
 			@Override
 			public void subTask(String arg0) {
 			}
-			
+
 			@Override
 			public void setTaskName(String arg0) {
 				taskName = arg0;
 			}
-			
+
 			@Override
 			public void setCanceled(boolean arg0) {
 				cancelled = arg0;
 			}
-			
+
 			@Override
 			public boolean isCanceled() {
 				return cancelled;
 			}
-			
+
 			@Override
 			public void internalWorked(double arg0) {
 			}
-			
+
 			@Override
 			public void done() {
 				logger.debug(taskName);
 			}
-			
+
 			@Override
 			public void beginTask(String arg0, int arg1) {
 				logger.debug(taskName + " - " + arg0 + " - " + arg1);

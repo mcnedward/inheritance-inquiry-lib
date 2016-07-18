@@ -10,7 +10,7 @@ public final class IILogger {
 	public static boolean ANALYSIS = false;
 	
 	public static void info(String out) {
-		System.out.println("INFO " + out);
+		System.out.println("INFO  " + out);
 	}
 	
 	public static void info(String out, Object...args) {
@@ -33,7 +33,7 @@ public final class IILogger {
 		if (ANALYSIS) System.out.println("ANALYSIS " + String.format(out, args));
 	}
 	
-	public static void error(String out, Exception e) {
+	public static void error(String out, Throwable e) {
 		System.out.println("ERROR " + out);
 		e.printStackTrace();
 	}

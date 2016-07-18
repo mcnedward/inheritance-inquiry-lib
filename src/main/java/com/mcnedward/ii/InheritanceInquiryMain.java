@@ -1,7 +1,5 @@
 package com.mcnedward.ii;
 
-import org.apache.log4j.Logger;
-
 import com.mcnedward.ii.element.JavaProject;
 import com.mcnedward.ii.element.JavaSystem;
 import com.mcnedward.ii.exception.TaskBuildException;
@@ -12,11 +10,9 @@ import com.mcnedward.ii.utils.IILogger;
  *
  */
 public final class InheritanceInquiryMain {
-	private static final Logger logger = Logger.getLogger(InheritanceInquiryMain.class);
-	
 	
 	public static void main(String[] args) {
-		buildSystem();
+		buildProject();
 	}
 	
 	protected static void buildSystem() {
@@ -30,12 +26,16 @@ public final class InheritanceInquiryMain {
 				IILogger.info(project.toString());
 			}
 		} catch (TaskBuildException e) {
-			logger.error(e.getMessage(), e);
+			IILogger.error(e.getMessage(), e);
 		}
 	}
 	
 	protected static void buildProject() {
-		new ProjectBuilder().buildProject();
+		try {
+			new ProjectBuilder().buildProject();
+		} catch (TaskBuildException e) {
+			IILogger.error(e.getMessage(), e);
+		}
 	}
 	
 }
