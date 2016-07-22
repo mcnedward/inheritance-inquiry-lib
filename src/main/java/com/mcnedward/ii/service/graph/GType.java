@@ -8,7 +8,8 @@ public enum GType {
 
 	OMETHODS("Overridden Methods"),
 	EMETHODS("Extended Methods"),
-	TREE("Hierarchy Tree");
+	I_TREE("Inheritance Tree"),
+	H_TREE("Hierarchy Tree");
 	
 	public String graphType;
 	

@@ -2,16 +2,22 @@ package com.mcnedward.ii.service.graph;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Paint;
 import java.awt.Shape;
 import java.awt.Stroke;
 import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.List;
 import java.util.Map;
+import java.util.Stack;
 import java.util.TreeMap;
 
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 
 import org.apache.commons.collections15.Transformer;
@@ -24,10 +30,11 @@ import edu.uci.ics.jung.graph.DelegateForest;
 import edu.uci.ics.jung.graph.DirectedGraph;
 import edu.uci.ics.jung.graph.DirectedSparseMultigraph;
 import edu.uci.ics.jung.visualization.BasicVisualizationServer;
+import edu.uci.ics.jung.visualization.RenderContext;
 import edu.uci.ics.jung.visualization.VisualizationImageServer;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
+import edu.uci.ics.jung.visualization.renderers.DefaultVertexLabelRenderer;
 import edu.uci.ics.jung.visualization.renderers.Renderer;
-import edu.uci.ics.jung.visualization.util.VertexShapeFactory;
 
 /**
  * @author Edward - Jul 18, 2016
@@ -49,11 +56,11 @@ public class JungGraph extends JFrame {
 	private static final int DEFAULT_Y_DIST = 200;
 	private int mXDist;
 	private int mYDist;
-	
+
 	public JungGraph() {
 		this(DEFAULT_X_DIST, DEFAULT_Y_DIST);
 	}
-	
+
 	public JungGraph(int xDist, int yDist) {
 		mGraph = new DirectedSparseMultigraph<>();
 		mNodeMap = new TreeMap<>();
@@ -68,13 +75,19 @@ public class JungGraph extends JFrame {
 		configure(mImageServer);
 	}
 
+	public void plotGraph(Stack<Node> nodes, Stack<Edge> edges) throws GraphBuildException {
+		buildGraph(nodes, edges);
+		initializeComponents();
+		configure(mImageServer);
+	}
+
 	public BufferedImage createImage() {
 		BufferedImage image = (BufferedImage) mImageServer.getImage(
 				new Point2D.Double(mViewer.getGraphLayout().getSize().getWidth() / 2, mViewer.getGraphLayout().getSize().getHeight() / 2),
 				new Dimension(mViewer.getGraphLayout().getSize()));
 		return image;
 	}
-	
+
 	private void initializeComponents() {
 		mForest = new DelegateForest<>(mGraph);
 		mLayout = new TreeLayout<>(mForest, mXDist, mYDist);
@@ -86,13 +99,17 @@ public class JungGraph extends JFrame {
 		try {
 			server.setBackground(Color.WHITE);
 
-			server.getRenderContext().setVertexShapeTransformer(vertexShapeTransformer());
-			server.getRenderContext().setVertexFillPaintTransformer(vertexFillPaintTransformer());
-			server.getRenderContext().setVertexLabelTransformer(vertexLabelTransformer());
-			server.getRenderer().getVertexLabelRenderer().setPosition(Renderer.VertexLabel.Position.E);
+			RenderContext<String, String> context = server.getRenderContext();
 
-			server.getRenderContext().setEdgeStrokeTransformer(edgeStrokeTransformer());
-			server.getRenderContext().setEdgeLabelTransformer(edgeLabelTransformer());
+			context.setVertexShapeTransformer(vertexShapeTransformer());
+			context.setVertexFillPaintTransformer(vertexFillPaintTransformer());
+			context.setVertexLabelTransformer(vertexLabelTransformer());
+			context.setVertexLabelRenderer(vertexLabelRenderer());
+			server.getRenderer().getVertexLabelRenderer().setPosition(Renderer.VertexLabel.Position.CNTR);
+
+			context.setEdgeStrokeTransformer(edgeStrokeTransformer());
+			context.setEdgeLabelTransformer(edgeLabelTransformer());
+			server.getRenderer().setEdgeRenderer(new ReverseEdgeRenderer<String, String>());
 		} catch (Exception e) {
 			throw new GraphBuildException("There was a problem with configuring the graph...", e);
 		}
@@ -109,20 +126,40 @@ public class JungGraph extends JFrame {
 		}
 	}
 
+	private void buildGraph(Stack<Node> nodes, Stack<Edge> edges) {
+		while (!nodes.isEmpty()) {
+			Node node = nodes.pop();
+			mGraph.addVertex(node.id());
+			mNodeMap.put(node.id(), node);
+		}
+		while (!edges.isEmpty()) {
+			Edge edge = edges.pop();
+			mGraph.addEdge(edge.id(), edge.to().id(), edge.from().id());
+			mEdgeMap.put(edge.id(), edge);
+		}
+	}
+
 	private final Transformer<String, Paint> vertexFillPaintTransformer() {
 		return new Transformer<String, Paint>() {
 			@Override
 			public Paint transform(String input) {
-				return Color.GREEN;
+				return Color.WHITE;
 			}
 		};
 	}
 
 	private final Transformer<String, Shape> vertexShapeTransformer() {
+		final FontMetrics fm = mViewer.getFontMetrics(mViewer.getFont());
 		return new Transformer<String, Shape>() {
 			@Override
 			public Shape transform(String vertexName) {
-				return new VertexShapeFactory<String>().getEllipse(vertexName);
+				int width = fm.stringWidth(vertexName);
+				int height = 30;
+				int x = -(width / 2);
+				int y = -15;
+				Rectangle2D rect = new java.awt.geom.Rectangle2D.Double(x, y, width, height);
+				rect.getBounds().grow(200, 200);
+				return rect;
 			}
 		};
 	}
@@ -133,6 +170,26 @@ public class JungGraph extends JFrame {
 			public String transform(String nodeName) {
 				Node node = mNodeMap.get(nodeName);
 				return node.name();
+			}
+		};
+	}
+
+	private final DefaultVertexLabelRenderer vertexLabelRenderer() {
+		return new DefaultVertexLabelRenderer(Color.BLACK) {
+			private static final long serialVersionUID = 1909972527171078432L;
+
+			public <V> Component getVertexLabelRendererComponent(JComponent vv, Object value, Font font, boolean isSelected, V vertex) {
+				super.setForeground(Color.BLACK);
+
+				if (font != null) {
+					setFont(font);
+				} else {
+					setFont(vv.getFont());
+				}
+				setIcon(null);
+				setBorder(noFocusBorder);
+				setValue(value);
+				return this;
 			}
 		};
 	}
