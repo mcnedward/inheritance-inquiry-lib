@@ -27,11 +27,21 @@ import com.mcnedward.ii.utils.IILogger;
 public class AnalyzerService {
 
 	public JavaSolution analyze(JavaProject project) {
-		JavaSolution solution = new JavaSolution(project.getName(), project.getSystemName(), project.getVersion());
+		JavaSolution solution = initSolution(project);
 
 		calculateMetricsAndTrees(project, solution, true);
 		calculateMethods(project, solution);
 
+		return solution;
+	}
+	
+	public JavaSolution analyzeDit(JavaProject project) {
+		JavaSolution solution = initSolution(project);
+		
+		for (JavaElement element : project.getAllElements()) {
+			calculateDepthOfInheritanceTree(element, project, solution, true);
+		}
+		
 		return solution;
 	}
 
@@ -203,4 +213,9 @@ public class AnalyzerService {
 		if (tree.hasChildren)
 			solution.addHeirarchyTree(tree);
 	}
+	
+	private JavaSolution initSolution(JavaProject project) {
+		return new JavaSolution(project.getName(), project.getSystemName(), project.getVersion());
+	}
+	
 }
