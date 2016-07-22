@@ -107,4 +107,9 @@ public class JavaSolution {
 	public List<HierarchyTree> getHierarchyTrees() {
 		return mHierarchyTrees;
 	}
+	
+	@Override
+	public String toString() {
+		return String.format("Solution for %s", mProjectName);
+	}
 }

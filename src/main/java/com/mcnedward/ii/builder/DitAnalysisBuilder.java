@@ -10,7 +10,6 @@ import com.mcnedward.ii.element.JavaSystem;
 import com.mcnedward.ii.exception.TaskBuildException;
 import com.mcnedward.ii.tasks.BuildTask;
 import com.mcnedward.ii.tasks.TaskFactory;
-import com.mcnedward.ii.utils.IILogger;
 
 /**
  * A tool for building {@JavaProject}s and {@link JavaSystem}s.
@@ -18,18 +17,15 @@ import com.mcnedward.ii.utils.IILogger;
  * @author Edward - Jul 14, 2016
  *
  */
-public final class SystemBuilder extends Builder {
+public final class DitAnalysisBuilder extends Builder {
 
-	private static final String SYSTEM = "freecol";
-	private static final String SYSTEM_PATH = QUALITUS_CORPUS_SYSTEMS_PATH + SYSTEM;
-
-	public SystemBuilder() {
+	public DitAnalysisBuilder() {
 		super();
 	}
 	
 	@Override
 	protected File setupFile() {
-		return new File(SYSTEM_PATH);
+		return new File(QUALITUS_CORPUS_SYSTEMS_PATH);
 	}
 	
 	/**
@@ -40,23 +36,20 @@ public final class SystemBuilder extends Builder {
 	 */
 	@Override
 	protected Collection<BuildTask> buildSolutions(File buildFile) {
-		JavaSystem system = new JavaSystem(buildFile);
-		File[] projects = system.getFiles();
-		IILogger.info("Starting build for system %s.", system.getName());
-
 		List<BuildTask> tasks = new ArrayList<>();
-		for (File projectFile : projects) {
-			tasks.add(TaskFactory.createBuildTask(projectFile, system.getName()));
+		File[] systemDirs = buildFile.listFiles();
+		for (File systemDir : systemDirs) {
+			File[] systemFiles = systemDir.listFiles();
+			File systemFile = systemFiles[systemFiles.length - 1];
+			
+			tasks.add(TaskFactory.createBuildTask(systemFile, systemFile.getName()));
 		}
-		
 		return tasks;
 	}
 
 	@Override
-	protected int handleSolutions(List<JavaSolution> solutions) {
+	protected int handleSolutions(List<JavaSolution> buildResult) {
 		return 0;
 	}
-
-	
 
 }

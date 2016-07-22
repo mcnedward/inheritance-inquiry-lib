@@ -1,9 +1,13 @@
 package com.mcnedward.ii.builder;
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 
+import com.mcnedward.ii.element.JavaSolution;
 import com.mcnedward.ii.element.JavaSystem;
-import com.mcnedward.ii.tasks.ProjectBuildTask;
+import com.mcnedward.ii.tasks.BuildTask;
 import com.mcnedward.ii.tasks.TaskFactory;
 
 /**
@@ -12,7 +16,7 @@ import com.mcnedward.ii.tasks.TaskFactory;
  * @author Edward - Jul 14, 2016
  *
  */
-public final class ProjectBuilder extends Builder<Void> {
+public final class ProjectBuilder extends Builder {
 
 	private static final String PROJECT_NAME = "azureus";
 	private static final String PROJECT_PATH = QUALITUS_CORPUS_SYSTEMS_PATH + "azureus/azureus-2.0.8.2";
@@ -28,18 +32,14 @@ public final class ProjectBuilder extends Builder<Void> {
 
 
 	@Override
-	protected Void doBuildProcess(File buildFile) {
-		ProjectBuildTask task = TaskFactory.createProjectBuildTask(buildFile, PROJECT_NAME, 1);
-		submit(task);
-		return null;
+	protected Collection<BuildTask> buildSolutions(File buildFile) {
+		BuildTask task = TaskFactory.createBuildTask(buildFile, PROJECT_NAME);
+		return Arrays.asList(task);
 	}
-
 
 	@Override
-	protected int getJobCount() {
-		return 1;
+	protected int handleSolutions(List<JavaSolution> solutions) {
+		return 0;
 	}
-
-	
 
 }

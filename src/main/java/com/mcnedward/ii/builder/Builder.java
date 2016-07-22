@@ -1,6 +1,9 @@
 package com.mcnedward.ii.builder;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ThreadFactory;
@@ -8,8 +11,9 @@ import java.util.concurrent.TimeUnit;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.mcnedward.ii.element.JavaSolution;
 import com.mcnedward.ii.exception.TaskBuildException;
-import com.mcnedward.ii.tasks.IITask;
+import com.mcnedward.ii.tasks.BuildTask;
 import com.mcnedward.ii.tasks.MonitoringExecutorService;
 import com.mcnedward.ii.utils.IILogger;
 
@@ -17,7 +21,7 @@ import com.mcnedward.ii.utils.IILogger;
  * @author Edward - Jul 22, 2016
  *
  */
-public abstract class Builder<T> {
+public abstract class Builder {
 
 	// Directory paths
 	public static final String QUALITUS_CORPUS_SYSTEMS_PATH = "C:/QC/pt1/Systems/";
@@ -26,6 +30,7 @@ public abstract class Builder<T> {
 	private static final int CORE_POOL_SIZE = 4;
 	private static final int MAX_POOL_SIZE = 8;
 	private static final int TIMEOUT = 20;
+	private static final TimeUnit TIMEUNIT = TimeUnit.MINUTES;
 	public static Integer COMPLETE_JOBS = 0; // Keep track of how many jobs are finished
 	private BlockingQueue<Runnable> mQueue;
 	private MonitoringExecutorService mExecutorService;
@@ -37,7 +42,7 @@ public abstract class Builder<T> {
 		mExecutorService = new MonitoringExecutorService(CORE_POOL_SIZE, MAX_POOL_SIZE, 0L, TimeUnit.MILLISECONDS, mQueue, threadFactory);
 	}
 	
-	public T build() throws TaskBuildException {
+	public void build() throws TaskBuildException {
 		COMPLETE_JOBS = 0; // Reset job count
 		Stopwatch stopwatch = new Stopwatch();
 		stopwatch.start();
@@ -47,26 +52,46 @@ public abstract class Builder<T> {
 			throw new TaskBuildException(String.format("You need to provide an existing file! [Path: %s]", buildFile.getAbsolutePath()));
 		}
 		
-		T buildResult = doBuildProcess(buildFile);
+		Collection<BuildTask> tasks = buildSolutions(buildFile);
+		List<JavaSolution> solutions = new ArrayList<>();
 		
-		waitForTasks(getJobCount());
+		try {
+			mExecutorService.invokeAll(tasks, TIMEOUT, TIMEUNIT)
+				.stream()
+				.map(future -> {
+					try {
+						return future.get();
+					} catch (Exception e) {
+						throw new IllegalStateException(e);
+					}
+				})
+				.forEach(solutions::add);
+		} catch (Exception e) {
+			throw new TaskBuildException(e);
+		}
+
+		int totalJobs = tasks.size();
+		int completeJobs = solutions.size();
+		boolean allComplete = totalJobs == completeJobs;
+		IILogger.info("Finished build jobs. Were all complete? %s [%s/%s]", allComplete, completeJobs, totalJobs);
+		COMPLETE_JOBS = 0; // Reset job count
+		
+		int extraTasks = handleSolutions(solutions);
+		
+		waitForTasks(extraTasks);
+		
 		stopwatch.stop();
 		IILogger.info("Finished build! Time to complete: %s", stopwatch.toString());
-		
-		return buildResult;
-	}
-	
-	protected void submit(IITask task) {
-		mExecutorService.submit(task);
 	}
 	
 	protected abstract File setupFile();
 	
-	protected abstract T doBuildProcess(File buildFile);
+	protected abstract Collection<BuildTask> buildSolutions(File buildFile);
 	
-	protected abstract int getJobCount();
+	protected abstract int handleSolutions(List<JavaSolution> solutions);
 	
 	private void waitForTasks(int jobCount) throws TaskBuildException {
+		if (jobCount == 0) return;
 		mExecutorService.shutdown();
 		boolean done;
 		try {

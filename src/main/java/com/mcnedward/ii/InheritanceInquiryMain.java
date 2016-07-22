@@ -2,8 +2,6 @@ package com.mcnedward.ii;
 
 import com.mcnedward.ii.builder.ProjectBuilder;
 import com.mcnedward.ii.builder.SystemBuilder;
-import com.mcnedward.ii.element.JavaProject;
-import com.mcnedward.ii.element.JavaSystem;
 import com.mcnedward.ii.exception.TaskBuildException;
 import com.mcnedward.ii.utils.IILogger;
 
@@ -14,19 +12,13 @@ import com.mcnedward.ii.utils.IILogger;
 public final class InheritanceInquiryMain {
 	
 	public static void main(String[] args) {
-		buildProject();
+		buildSystem();
 	}
 	
 	protected static void buildSystem() {
 		try {
 			IILogger.DEBUG = true;
-			
-			JavaSystem system = new SystemBuilder().build();
-			IILogger.info("Finished building the system%s! Time to complete: %s", system.toString(), system.getBuildTime());
-			
-			for (JavaProject project : system.getProjects()) {
-				IILogger.info(project.toString());
-			}
+			new SystemBuilder().build();
 		} catch (TaskBuildException e) {
 			IILogger.error(e.getMessage(), e);
 		}

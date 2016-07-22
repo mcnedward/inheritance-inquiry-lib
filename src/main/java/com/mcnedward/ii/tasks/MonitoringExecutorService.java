@@ -1,5 +1,7 @@
 package com.mcnedward.ii.tasks;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
@@ -24,17 +26,6 @@ public class MonitoringExecutorService extends ThreadPoolExecutor implements Exe
 		super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, threadFactory);
 	}
 	
-	public Future<?> submit(ProjectBuildTask task) {
-		final Stopwatch stopwatch = new Stopwatch();
-		stopwatch.start();
-		return super.submit(() -> {
-			stopwatch.stop();
-			IILogger.info("%s spent %s in queue.", task, stopwatch.toString());
-			task.run();
-			return null;
-		});
-	}
-
 	@Override
 	public <T> Future<T> submit(Callable<T> task) {
 		Stopwatch stopwatch = new Stopwatch();
@@ -65,6 +56,11 @@ public class MonitoringExecutorService extends ThreadPoolExecutor implements Exe
         });
 	}
 	
+	@Override
+	public <T> List<Future<T>> invokeAll(Collection<? extends Callable<T>> tasks, long timeout, TimeUnit unit) throws InterruptedException {
+		return super.invokeAll(tasks, timeout, unit);
+	}
+
 	@Override
 	 protected void afterExecute(Runnable r, Throwable t) {
 	      super.afterExecute(r, t);
