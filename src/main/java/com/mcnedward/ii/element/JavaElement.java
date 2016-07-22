@@ -187,6 +187,14 @@ public class JavaElement {
 		return mCachedInterfaces;
 	}
 	
+	private int mWmc = 0;
+	public int getWeightedMethodCount() {
+		if (mWmc == 0) {
+			mWmc = mMethods.size();
+		}
+		return mWmc;
+	}
+	
 	public List<JavaElement> getTypeArgs() {
 		return mTypeArgs;
 	}

@@ -6,6 +6,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
+import com.google.common.base.Stopwatch;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.mcnedward.ii.element.JavaProject;
 import com.mcnedward.ii.element.JavaSystem;
@@ -156,9 +157,13 @@ public final class ProjectBuilder {
 	}
 
 	public void buildProject() throws TaskBuildException {
+		Stopwatch stopwatch = new Stopwatch();
+		stopwatch.start();
 		File projectFile = new File(PROJECT_PATH);
 		ProjectBuildTask task = new ProjectBuildTask(mProjectService, mAnalyzerService, mMetricService, mGraphService, projectFile, PROJECT_NAME, 1);
 		mExecutorService.submit(task);
 		waitForTasks(1);
+		stopwatch.stop();
+		IILogger.info("Finished build of project. %s", stopwatch.toString());
 	}
 }

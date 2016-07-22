@@ -1,6 +1,5 @@
 package com.mcnedward.ii.service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
@@ -12,6 +11,7 @@ import com.mcnedward.ii.element.JavaSolution;
 import com.mcnedward.ii.element.method.JavaMethod;
 import com.mcnedward.ii.element.method.JavaMethodInvocation;
 import com.mcnedward.ii.service.graph.element.HierarchyTree;
+import com.mcnedward.ii.service.graph.element.InheritanceTree;
 import com.mcnedward.ii.service.graph.element.SolutionMethod;
 import com.mcnedward.ii.service.metric.element.DitMetric;
 import com.mcnedward.ii.service.metric.element.NocMetric;
@@ -27,9 +27,12 @@ import com.mcnedward.ii.utils.IILogger;
 public class AnalyzerService {
 
 	public JavaSolution analyze(JavaProject project) {
-		return new JavaSolution(project.getName(), project.getSystemName(), project.getVersion(), calculateDepthOfInheritanceTree(project),
-				calculateNumberOfChildren(project), calculateWeightedMethodsPerClass(project), calculateOverriddenMethods(project),
-				calculateExtendedMethods(project), calculateHierarchyTrees(project));
+		JavaSolution solution = new JavaSolution(project.getName(), project.getSystemName(), project.getVersion());
+
+		calculateMetricsAndTrees(project, solution, true);
+		calculateMethods(project, solution);
+
+		return solution;
 	}
 
 	/**
@@ -41,109 +44,92 @@ public class AnalyzerService {
 	 *            If this is true, then the Analyzer will ignore metrics whose value is zero.
 	 * @return
 	 */
-	public List<DitMetric> calculateDepthOfInheritanceTree(JavaProject project, boolean ignoreZero) {
-		List<DitMetric> ditList = new ArrayList<>();
-		List<JavaElement> projectElements = project.getAllElements();
-		for (JavaElement element : projectElements) {
-			Stack<JavaElement> classStack = project.findDepthOfInheritanceTreeFor(element);
-			int dit = classStack.size();
-			int numberOfInheritedMethods = project.findNumberOfInheritedMethodsFor(element);
-
-			if (ignoreZero) {
-				if (dit > 0) {
-					ditList.add(new DitMetric(element, dit, numberOfInheritedMethods));
-				}
-			} else {
-				ditList.add(new DitMetric(element, dit, numberOfInheritedMethods));
-			}
+	public void calculateMetricsAndTrees(JavaProject project, JavaSolution solution, boolean ignoreZero) {
+		for (JavaElement element : project.getAllElements()) {
+			int dit = calculateDepthOfInheritanceTree(element, project, solution, ignoreZero);
+			calculateNumberOfChildren(element, project, solution, ignoreZero);
+			calculateWeightedMethodsPerClass(element, project, solution, ignoreZero);
+			calculateInheritanceTrees(element, project, solution, dit);
+			calculateHierarchyTrees(element, project, solution);
 		}
-		return ditList;
 	}
 
 	/**
-	 * Calculates the Depth of Inheritance Tree for all {@link JavaElement}s in the {@link JavaProject}. This ignores
-	 * metrics whose value is 0.
+	 * Calculates the Depth of Inheritance Tree for a {@link JavaElement} in the {@link JavaProject}.
 	 * 
+	 * @param element
+	 *            The JavaElement
 	 * @param project
 	 *            The JavaProject
-	 * @return
+	 * @param solution
+	 *            The {@JavaSolution} to place the metric into
+	 * @param ignoreZero
+	 *            If this is true, then the Analyzer will ignore metrics whose value is zero.
+	 * @return int The Depth of Inheritance Tree
 	 */
-	public List<DitMetric> calculateDepthOfInheritanceTree(JavaProject project) {
-		return calculateDepthOfInheritanceTree(project, true);
+	private int calculateDepthOfInheritanceTree(JavaElement element, JavaProject project, JavaSolution solution, boolean ignoreZero) {
+		Stack<JavaElement> classStack = project.findDepthOfInheritanceTreeFor(element);
+		int dit = classStack.size();
+		int numberOfInheritedMethods = project.findNumberOfInheritedMethodsFor(element);
+		if (ignoreZero) {
+			if (dit > 0) {
+				solution.addDitMetric(new DitMetric(element, dit, numberOfInheritedMethods));
+			}
+		} else {
+			solution.addDitMetric(new DitMetric(element, dit, numberOfInheritedMethods));
+		}
+		return dit;
 	}
 
 	/**
 	 * Calculates the Number of Children for all {@link JavaElement}s in the {@link JavaProject}.
 	 * 
+	 * @param element
+	 *            The JavaElement
 	 * @param project
 	 *            The JavaProject
+	 * @param solution
+	 *            The {@JavaSolution} to place the metric into
 	 * @param ignoreZero
 	 *            If this is true, then the Analyzer will ignore metrics whose value is zero.
-	 * @return
+	 * @return int The Number of Children
 	 */
-	public List<NocMetric> calculateNumberOfChildren(JavaProject project, boolean ignoreZero) {
-		List<NocMetric> nocList = new ArrayList<>();
-		for (JavaElement element : project.getAllElements()) {
-			List<JavaElement> classChildren = project.findNumberOfChildrenFor(element);
-			int noc = classChildren.size();
-
-			if (ignoreZero) {
-				if (noc > 0) {
-					nocList.add(new NocMetric(element, noc, classChildren));
-				}
-			} else {
-				nocList.add(new NocMetric(element, noc, classChildren));
+	private int calculateNumberOfChildren(JavaElement element, JavaProject project, JavaSolution solution, boolean ignoreZero) {
+		List<JavaElement> classChildren = project.findNumberOfChildrenFor(element);
+		int noc = classChildren.size();
+		if (ignoreZero) {
+			if (noc > 0) {
+				solution.addNocMetric(new NocMetric(element, noc, classChildren));
 			}
+		} else {
+			solution.addNocMetric(new NocMetric(element, noc, classChildren));
 		}
-		return nocList;
-	}
-
-	/**
-	 * Calculates the Number of Children for all {@link JavaElement}s in the {@link JavaProject}. This ignores metrics
-	 * whose value is 0.
-	 * 
-	 * @param project
-	 *            The JavaProject
-	 * @return
-	 */
-	public List<NocMetric> calculateNumberOfChildren(JavaProject project) {
-		return calculateNumberOfChildren(project, true);
+		return noc;
 	}
 
 	/**
 	 * Calculates the Weighted Methods per Class for all {@link JavaElement}s in the {@link JavaProject}.
 	 * 
+	 * @param element
+	 *            The JavaElement
 	 * @param project
 	 *            The JavaProject
+	 * @param solution
+	 *            The {@JavaSolution} to place the metric into
 	 * @param ignoreZero
 	 *            If this is true, then the Analyzer will ignore metrics whose value is zero.
-	 * @return
+	 * @return int The Weighted Methods per Class
 	 */
-	public List<WmcMetric> calculateWeightedMethodsPerClass(JavaProject project, boolean ignoreZero) {
-		List<WmcMetric> wmcList = new ArrayList<>();
-		for (JavaElement element : project.getAllElements()) {
-			int wmc = element.getMethods().size();
-			if (ignoreZero) {
-				if (wmc > 0) {
-					wmcList.add(new WmcMetric(element, wmc));
-				}
-			} else {
-				wmcList.add(new WmcMetric(element, wmc));
+	private int calculateWeightedMethodsPerClass(JavaElement element, JavaProject project, JavaSolution solution, boolean ignoreZero) {
+		int wmc = element.getMethods().size();
+		if (ignoreZero) {
+			if (wmc > 0) {
+				solution.addWmcMetric(new WmcMetric(element, wmc));
 			}
+		} else {
+			solution.addWmcMetric(new WmcMetric(element, wmc));
 		}
-		return wmcList;
-	}
-
-	/**
-	 * Calculates the Weighted Methods per Class for all {@link JavaElement}s in the {@link JavaProject}. This ignores
-	 * metrics whose value is 0.
-	 * 
-	 * @param project
-	 *            The JavaProject
-	 * @return
-	 */
-	public List<WmcMetric> calculateWeightedMethodsPerClass(JavaProject project) {
-		return calculateWeightedMethodsPerClass(project, true);
+		return wmc;
 	}
 
 	/**
@@ -154,8 +140,7 @@ public class AnalyzerService {
 	 *            The {@link JavaProject}.
 	 * @return The {@link SolutionMethod} list
 	 */
-	public List<SolutionMethod> calculateOverriddenMethods(JavaProject project) {
-		List<SolutionMethod> overriddenMethods = new ArrayList<>();
+	public void calculateMethods(JavaProject project, JavaSolution solution) {
 		for (JavaElement child : project.getClasses()) {
 			if (child.getSuperClasses().isEmpty())
 				continue;
@@ -167,61 +152,11 @@ public class AnalyzerService {
 				for (JavaMethod parentMethod : parent.getMethods()) {
 					IMethodBinding parentBinding = parentMethod.getMethodBinding();
 					if (childBinding.overrides(parentBinding)) {
-						overriddenMethods
-								.add(new SolutionMethod(childMethod.getName(), childMethod.getSignature(), parent.getName(), child.getName()));
+						// Add override method to solution
+						solution.addOMethod(new SolutionMethod(childMethod.getName(), childMethod.getSignature(), parent.getName(), child.getName()));
 						IILogger.analysis("Method %s in element %s is overriding method %s defined in parent class %s.", childMethod.getSignature(),
 								child, parentMethod.getSignature(), parent);
-					}
-				}
-			}
-		}
-		return overriddenMethods;
-	}
 
-	/**
-	 * Calculates all the child methods of the {@link JavaElement}s in the {@link JavaProject} to see if they extend any
-	 * of their parent methods.
-	 * <p>
-	 * Extending a parent method is when a method in a child class overrides a superclass method to provide additional
-	 * functionality, while still invoking the superclass method.
-	 * </p>
-	 * <p>
-	 * Superclass:<br>
-	 * 
-	 * <pre>
-	 * <code>public void save(T entity) {
-	 *     persist(entity);
-	 * }
-	 * </pre>
-	 * </p>
-	 * 
-	 * <p>
-	 * Child class:
-	 * 
-	 * <pre>
-	 * <code>public void save(Account account) {
-	 *     validate(account);
-	 *     super.save(account)
-	 * }
-	 * </pre>
-	 * </p>
-	 * 
-	 * @param project
-	 *            The {@link JavaProject}
-	 */
-	public List<SolutionMethod> calculateExtendedMethods(JavaProject project) {
-		List<SolutionMethod> extendedMethods = new ArrayList<>();
-		for (JavaElement child : project.getClasses()) {
-			if (child.getSuperClasses().isEmpty())
-				continue;
-
-			JavaElement parent = child.getSuperClasses().get(0);
-			for (JavaMethod childMethod : child.getMethods()) {
-				IMethodBinding childBinding = childMethod.getMethodBinding();
-
-				for (JavaMethod parentMethod : parent.getMethods()) {
-					IMethodBinding parentBinding = parentMethod.getMethodBinding();
-					if (childBinding.overrides(parentBinding)) {
 						// Child method overrides parent method, so check to see if the child method contains the parent
 						// method's MethodInvocation
 						for (JavaMethodInvocation invocation : childMethod.getMethodInvocations()) {
@@ -229,7 +164,7 @@ public class AnalyzerService {
 							// defined (declared)
 							IMethodBinding methodDeclaration = invocation.getMethodBinding().getMethodDeclaration();
 							if (methodDeclaration == parentBinding) {
-								extendedMethods.add(
+								solution.addEMethod(
 										new SolutionMethod(childMethod.getName(), childMethod.getSignature(), parent.getName(), child.getName()));
 								IILogger.analysis("Method %s in element %s is extending method %s defined in parent class %s.",
 										childMethod.getSignature(), child, parentMethod.getSignature(), parent);
@@ -239,28 +174,33 @@ public class AnalyzerService {
 				}
 			}
 		}
-		return extendedMethods;
 	}
 
 	/**
-	 * Calculates the hierarchy trees for all of the {@link JavaElement}s in the {@link JavaProject}.
-	 * <p>Currently, this only builds for classes, and only if the DIT is greater than 0.</p>
+	 * Calculates the hierarchy trees for a {@link JavaElement} in the {@link JavaProject}.
+	 * <p>
+	 * Currently, this only builds for classes, and only if the DIT is greater than 0.
+	 * </p>
+	 * 
+	 * @param element
+	 *            The JavaElement
 	 * @param project
 	 *            The JavaProject
-	 * @return The {@link HierarchyTree}s
+	 * @param int
+	 *            The Depth of Inheritance Tree
+	 * @param solution
+	 *            The {@link JavaSolution}
 	 */
-	public List<HierarchyTree> calculateHierarchyTrees(JavaProject project) {
-		List<HierarchyTree> trees = new ArrayList<>();
-
-		for (JavaElement element : project.getAllElements()) {
-			if (!element.isInterface()) {
-				Stack<JavaElement> classStack = project.findDepthOfInheritanceTreeFor(element);
-				int dit = classStack.size();
-				if (dit > 0)
-					trees.add(new HierarchyTree(element));
-			}
+	public void calculateInheritanceTrees(JavaElement element, JavaProject project, JavaSolution solution, int dit) {
+		if (!element.isInterface()) {
+			if (dit > 1)
+				solution.addInheritanceTree(new InheritanceTree(element));
 		}
-
-		return trees;
+	}
+	
+	public void calculateHierarchyTrees(JavaElement element, JavaProject project, JavaSolution solution) {
+		HierarchyTree tree = new HierarchyTree(project, element);
+		if (tree.hasChildren)
+			solution.addHeirarchyTree(tree);
 	}
 }

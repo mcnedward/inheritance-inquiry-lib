@@ -1,8 +1,10 @@
 package com.mcnedward.ii.element;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.mcnedward.ii.service.graph.element.HierarchyTree;
+import com.mcnedward.ii.service.graph.element.InheritanceTree;
 import com.mcnedward.ii.service.graph.element.SolutionMethod;
 import com.mcnedward.ii.service.metric.element.DitMetric;
 import com.mcnedward.ii.service.metric.element.NocMetric;
@@ -22,21 +24,50 @@ public class JavaSolution {
 	private List<WmcMetric> mWmcMetrics;
 	private List<SolutionMethod> mOMethods;
 	private List<SolutionMethod> mEMethods;
-	private List<HierarchyTree> mTrees; 
-	
-	public JavaSolution(String projectName, String systemName, String version, List<DitMetric> ditMetrics, List<NocMetric> nocMetrics,
-			List<WmcMetric> wmcMetrics, List<SolutionMethod> oMethods, List<SolutionMethod> eMethods, List<HierarchyTree> trees) {
+	private List<InheritanceTree> mInheritanceTrees;
+	private List<HierarchyTree> mHierarchyTrees;
+
+	public JavaSolution(String projectName, String systemName, String version) {
 		mProjectName = projectName;
 		mSystemName = systemName;
 		mVersion = version;
-		mDitMetrics = ditMetrics;
-		mNocMetrics = nocMetrics;
-		mWmcMetrics = wmcMetrics;
-		mOMethods = oMethods;
-		mEMethods = eMethods;
-		mTrees = trees;
+		mDitMetrics = new ArrayList<>();
+		mNocMetrics = new ArrayList<>();
+		mWmcMetrics = new ArrayList<>();
+		mOMethods = new ArrayList<>();
+		mEMethods = new ArrayList<>();
+		mInheritanceTrees = new ArrayList<>();
+		mHierarchyTrees = new ArrayList<>();
 	}
-	
+
+	public void addDitMetric(DitMetric metric) {
+		mDitMetrics.add(metric);
+	}
+
+	public void addNocMetric(NocMetric metric) {
+		mNocMetrics.add(metric);
+	}
+
+	public void addWmcMetric(WmcMetric metric) {
+		mWmcMetrics.add(metric);
+	}
+
+	public void addOMethod(SolutionMethod method) {
+		mOMethods.add(method);
+	}
+
+	public void addEMethod(SolutionMethod method) {
+		mEMethods.add(method);
+	}
+
+	public void addInheritanceTree(InheritanceTree tree) {
+		mInheritanceTrees.add(tree);
+	}
+
+	public void addHeirarchyTree(HierarchyTree tree) {
+		mHierarchyTrees.add(tree);
+	}
+
 	public String getProjectName() {
 		return mProjectName;
 	}
@@ -60,16 +91,20 @@ public class JavaSolution {
 	public List<WmcMetric> getWmcMetrics() {
 		return mWmcMetrics;
 	}
-	
+
 	public List<SolutionMethod> getOMethods() {
 		return mOMethods;
 	}
-	
+
 	public List<SolutionMethod> getEMethods() {
 		return mEMethods;
 	}
 
-	public List<HierarchyTree> getTrees() {
-		return mTrees;
+	public List<InheritanceTree> getInheritanceTrees() {
+		return mInheritanceTrees;
+	}
+
+	public List<HierarchyTree> getHierarchyTrees() {
+		return mHierarchyTrees;
 	}
 }

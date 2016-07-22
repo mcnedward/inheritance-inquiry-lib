@@ -9,7 +9,7 @@ import org.junit.Test;
 
 import com.mcnedward.ii.element.ClassOrInterfaceElement;
 import com.mcnedward.ii.element.JavaElement;
-import com.mcnedward.ii.service.graph.element.HierarchyTree;
+import com.mcnedward.ii.service.graph.element.InheritanceTree;
 
 /**
  * @author Edward - Jul 18, 2016
@@ -33,8 +33,8 @@ public class HeirarchyTreeTests {
 		parent1.addClassOrInterface(baseCoi);
 
 		// Act
-		HierarchyTree hTree = new HierarchyTree(element);
-		Stack<String> tree = hTree.tree;
+		InheritanceTree hTree = new InheritanceTree(element);
+		Stack<String> tree = hTree.inheritanceTree;
 
 		String expectedTree = "base parent1 parent2 element ";
 		String actualTree = "";
