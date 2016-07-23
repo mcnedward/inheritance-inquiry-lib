@@ -138,6 +138,10 @@ public class JavaElement {
 	public List<String> getImports() {
 		return mImports;
 	}
+	
+	public void setImports(List<String> imports) {
+		mImports = imports;
+	}
 
 	public List<ClassOrInterfaceElement> getClassOrInterfaceElements() {
 		return mClassOrInterfaceElements;

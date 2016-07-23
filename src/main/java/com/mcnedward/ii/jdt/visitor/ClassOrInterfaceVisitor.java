@@ -6,6 +6,7 @@ import org.apache.log4j.Logger;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.ParameterizedType;
 import org.eclipse.jdt.core.dom.SimpleType;
+import org.eclipse.jdt.core.dom.Type;
 
 import com.mcnedward.ii.element.ClassOrInterfaceElement;
 import com.mcnedward.ii.element.JavaElement;
@@ -42,10 +43,10 @@ public class ClassOrInterfaceVisitor extends JavaElementVisitor {
 		coiTypeVisitor.setGenericArgs(parentElement().getGenericTypeArgs());
 
 		@SuppressWarnings("unchecked")
-		List<SimpleType> typeArguments = node.typeArguments();
+		List<Type> typeArguments = node.typeArguments();
 
 		if (element != null) {
-			for (SimpleType t : typeArguments) {
+			for (Type t : typeArguments) {
 				t.accept(coiTypeVisitor);
 			}
 		}

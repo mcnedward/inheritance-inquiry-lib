@@ -29,6 +29,7 @@ public final class MethodUtils {
 	 * @return The method signature
 	 */
 	public static String getMethodSignature(IMethodBinding binding) {
+		if (binding == null) return "";
 		String modifiers = getModifiers(binding);
 		String returnType = getReturnType(binding);
 		String methodName = binding.getName();
@@ -62,12 +63,14 @@ public final class MethodUtils {
 	}
 
 	private static String getModifiers(IMethodBinding binding) {
+		if (binding == null) return "";
 		List<JavaModifier> javaModifiers = ASTUtils.decodeModifiers(binding.getModifiers());
 		String modifiers = String.join(SPACE, javaModifiers.stream().map(modifier -> modifier.name).toArray(String[]::new));
 		return modifiers;
 	}
 
 	private static String getReturnType(IMethodBinding binding) {
+		if (binding == null) return "";
 		String returnType;
 		ITypeBinding returnTypeBinding = binding.getReturnType();
 		if (returnTypeBinding == null) {

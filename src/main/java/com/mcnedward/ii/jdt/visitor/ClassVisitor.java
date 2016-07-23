@@ -1,5 +1,6 @@
 package com.mcnedward.ii.jdt.visitor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -13,6 +14,7 @@ import org.eclipse.jdt.core.dom.TypeParameter;
 
 import com.mcnedward.ii.element.JavaElement;
 import com.mcnedward.ii.element.JavaProject;
+import com.mcnedward.ii.utils.IILogger;
 
 /**
  * @author Edward - Jun 16, 2016
@@ -26,10 +28,12 @@ public class ClassVisitor extends JavaProjectVisitor {
 	private ClassOrInterfaceVisitor mClassOrInterfaceVisitor;
 	private MethodVisitor mMethodVisitor;
 	private TypeParameterVisitor mTypeParameterVisitor;
+	private List<String> mImports;
 	
 	public ClassVisitor(JavaProject project, String elementName) {
 		super(project);
 		mElementName = elementName;
+		mImports = new ArrayList<>();
 	}
 	
 	public ClassVisitor(JavaProject project, String elementName, List<String> missingImports) {
@@ -40,6 +44,11 @@ public class ClassVisitor extends JavaProjectVisitor {
 	@Override
 	public boolean visit(TypeDeclaration node) {
 		try {
+			mClassOrInterfaceVisitor = new ClassOrInterfaceVisitor(project(), element());
+			mMethodVisitor = new MethodVisitor(project(), element());
+			mTypeParameterVisitor = new TypeParameterVisitor(project(), element());
+			
+			element().setImports(mImports);
 			element().setIsInterface(node.isInterface());
 			
 			List<TypeParameter> typeParameters = node.typeParameters();
@@ -67,7 +76,7 @@ public class ClassVisitor extends JavaProjectVisitor {
 				}
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			IILogger.error("Exception in ClassVisitor when visiting node: " + node.getName() + " in project: " + project().getName(), e);
 		}
 		return false;
 	}
@@ -76,22 +85,20 @@ public class ClassVisitor extends JavaProjectVisitor {
 	public boolean visit(PackageDeclaration node) {
 		String packageName = node.getName().getFullyQualifiedName();
 		mElement = project().findOrCreateElement(packageName, mElementName);
-		mElement.setPackageName(packageName);
-
-		mClassOrInterfaceVisitor = new ClassOrInterfaceVisitor(project(), mElement);
-		mMethodVisitor = new MethodVisitor(project(), mElement);
-		mTypeParameterVisitor = new TypeParameterVisitor(project(), mElement);
-		
+		mElement.setPackageName(packageName);		
 		return super.visit(node);
 	}
 
 	@Override
 	public boolean visit(ImportDeclaration node) {
-		mElement.addImport(node.getName().getFullyQualifiedName());
+		mImports.add(node.getName().getFullyQualifiedName());
 		return super.visit(node);
 	}
 
 	public JavaElement element() {
+		if (mElement == null) {
+			mElement = project().findOrCreateElement(null, mElementName);
+		}
 		return mElement;
 	}
 }

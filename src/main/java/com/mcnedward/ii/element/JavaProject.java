@@ -196,9 +196,13 @@ public class JavaProject {
 
 	public JavaElement findOrCreateElement(String packageName, String elementName) {
 		JavaElement element = null;
+		if (packageName == null) {
+			// Use default package
+			packageName = "default";
+		}
 		JavaPackage javaPackage = findPackage(packageName);
 		if (javaPackage == null) {
-			// Package does not exist, so class cannot either.
+			// Package does not exist yet, so create it
 			// Add the class to the package, and the package to the project
 			javaPackage = new JavaPackage(packageName);
 			element = new JavaElement(elementName, javaPackage);
