@@ -2,7 +2,6 @@ package com.mcnedward.ii.jdt.visitor;
 
 import java.util.List;
 
-import org.apache.log4j.Logger;
 import org.eclipse.jdt.core.dom.IPackageBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 
@@ -16,7 +15,6 @@ import com.mcnedward.ii.element.JavaProject;
  * @author Edward - Jul 8, 2016
  */
 public abstract class JavaElementVisitor extends JavaProjectVisitor {
-	private static final Logger logger = Logger.getLogger(JavaElementVisitor.class);
 
 	private JavaElement mParentElement;
 
@@ -40,8 +38,7 @@ public abstract class JavaElementVisitor extends JavaProjectVisitor {
 			}
 		}
 		if (packageName == null) {
-			// TODO Don't like this...
-			logger.error(String.format("Package could not be found for %s in element %s...", name, parentElement().getName()));
+			packageName = "default";
 		}
 
 		return project().findOrCreateElement(packageName, name);

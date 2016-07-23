@@ -34,7 +34,7 @@ public class TaskFactory {
 		return new BuildTask(mProjectService, mAnalyzerService, projectFile, systemName);
 	}
 	
-	public static DitAnalysisTask createDitAnalysisTaskTask(JavaSolution solution) {
+	public static DitAnalysisTask createDitAnalysisTask(JavaSolution solution) {
 		checkContext();
 		return new DitAnalysisTask(mMetricService, mGraphService, solution);
 	}

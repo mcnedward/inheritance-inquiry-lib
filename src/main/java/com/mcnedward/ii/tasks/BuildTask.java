@@ -40,7 +40,7 @@ public class BuildTask implements Callable<JavaSolution> {
 
 		try {
 			JavaProject project = mProjectService.build(mProjectFile, mSystemName, mListener);
-			JavaSolution solution = mAnalyzerService.analyze(project);
+			JavaSolution solution = mAnalyzerService.analyzeDit(project);
 			return solution;
 		} catch (Exception e) {
 			IILogger.error(e);

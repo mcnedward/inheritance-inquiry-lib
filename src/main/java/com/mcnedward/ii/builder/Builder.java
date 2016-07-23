@@ -15,6 +15,7 @@ import com.mcnedward.ii.element.JavaSolution;
 import com.mcnedward.ii.exception.TaskBuildException;
 import com.mcnedward.ii.tasks.BuildTask;
 import com.mcnedward.ii.tasks.MonitoringExecutorService;
+import com.mcnedward.ii.tasks.SolutionTask;
 import com.mcnedward.ii.utils.IILogger;
 
 /**
@@ -82,6 +83,10 @@ public abstract class Builder {
 		
 		stopwatch.stop();
 		IILogger.info("Finished build! Time to complete: %s", stopwatch.toString());
+	}
+	
+	protected void submit(SolutionTask task) {
+		mExecutorService.submit(task);
 	}
 	
 	protected abstract File setupFile();

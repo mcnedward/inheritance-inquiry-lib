@@ -48,8 +48,11 @@ public final class DitAnalysisBuilder extends Builder {
 	}
 
 	@Override
-	protected int handleSolutions(List<JavaSolution> buildResult) {
-		return 0;
+	protected int handleSolutions(List<JavaSolution> solutions) {
+		for (JavaSolution solution : solutions) {
+			submit(TaskFactory.createDitAnalysisTask(solution));
+		}
+		return solutions.size();
 	}
 
 }
