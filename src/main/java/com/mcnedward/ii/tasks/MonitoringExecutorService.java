@@ -12,7 +12,6 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import com.google.common.base.Stopwatch;
 import com.mcnedward.ii.utils.IILogger;
 
 /**
@@ -28,13 +27,14 @@ public class MonitoringExecutorService extends ThreadPoolExecutor implements Exe
 	
 	@Override
 	public <T> Future<T> submit(Callable<T> task) {
-		Stopwatch stopwatch = new Stopwatch();
-		stopwatch.start();
-		return super.submit(() -> {
-			stopwatch.stop();
-			IILogger.info("Task %s spent %s in queue.", task, stopwatch.toString());
-			return task.call();
-		});
+		return super.submit(task);
+//		Stopwatch stopwatch = new Stopwatch();
+//		stopwatch.start();
+//		return super.submit(() -> {
+//			stopwatch.stop();
+//			IILogger.info("Task %s spent %s in queue.", task, stopwatch.toString());
+//			return task.call();
+//		});
 	}
 
 	@Override

@@ -34,14 +34,10 @@ public class AnalyzerService {
 
 		return solution;
 	}
-	
-	public JavaSolution analyzeDit(JavaProject project) {
+
+	public JavaSolution analyzeMetrics(JavaProject project) {
 		JavaSolution solution = initSolution(project);
-		
-		for (JavaElement element : project.getAllElements()) {
-			calculateDepthOfInheritanceTree(element, project, solution, true);
-		}
-		
+		calculateMetricsAndTrees(project, solution, true);
 		return solution;
 	}
 
@@ -207,15 +203,15 @@ public class AnalyzerService {
 				solution.addInheritanceTree(new InheritanceTree(element));
 		}
 	}
-	
+
 	public void calculateHierarchyTrees(JavaElement element, JavaProject project, JavaSolution solution) {
 		HierarchyTree tree = new HierarchyTree(project, element);
 		if (tree.hasChildren)
 			solution.addHeirarchyTree(tree);
 	}
-	
+
 	private JavaSolution initSolution(JavaProject project) {
 		return new JavaSolution(project.getName(), project.getSystemName(), project.getVersion());
 	}
-	
+
 }

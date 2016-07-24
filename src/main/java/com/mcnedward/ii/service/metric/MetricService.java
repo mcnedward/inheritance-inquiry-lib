@@ -27,6 +27,28 @@ public final class MetricService {
 	private static final String NEWLINE = "\n";
 	private static final String DELIMITER = "\t";
 
+	public boolean buildExcel(String[] columns, List<String[]> rows, String title) {
+		try {
+			StringBuilder builder = new StringBuilder(title + NEWLINE);
+			for (String column : columns) {
+				builder.append(column + DELIMITER);
+			}
+
+			for (String[] row : rows) {
+				builder.append(NEWLINE);
+				for (String rowContent : row) {
+					builder.append(rowContent + DELIMITER);
+				}
+			}
+
+			writeToFile(title, builder.toString());
+			return true;
+		} catch (MetricBuildException e) {
+			IILogger.error(e);
+			return false;
+		}
+	}
+
 	public boolean buildMetrics(JavaSolution solution) {
 		try {
 			buildDitMetrics(solution);
@@ -121,23 +143,41 @@ public final class MetricService {
 
 	private void writeToFile(JavaSolution solution, MType metricType, String output) throws MetricBuildException {
 		String fileName = getFileName(solution, metricType);
-
+		String basePath = getDirectoryPath(solution);
+		String filePath = String.format("%s/%s", basePath, fileName);
+		File file = new File(filePath);
 		try {
-			String basePath = getDirectoryPath(solution);
-			String filePath = String.format("%s/%s", basePath, fileName);
-			File file = new File(filePath);
 			PrintWriter writer = new PrintWriter(file, "UTF-8");
 
 			writer.write(output);
 			writer.close();
 
-			IILogger.info(String.format("Created file for project [%s] version [%s]! [%s]", solution.getProjectName(), solution.getVersion(), filePath));
+			IILogger.info(String.format("Created file for project [%s] version [%s]! [%s]", solution.getProjectName(), solution.getVersion(),
+					file.getPath()));
 		} catch (FileNotFoundException e) {
-			throw new MetricBuildException(
-					String.format("File %s for solution [%s] project [%s] was not found...", fileName, solution.getProjectName(), solution.getVersion()), e);
+			throw new MetricBuildException(String.format("File %s for solution [%s] project [%s] was not found...", file.getName(),
+					solution.getProjectName(), solution.getVersion()), e);
 		} catch (UnsupportedEncodingException e) {
-			throw new MetricBuildException(
-					String.format("Error writing to %s for project [%s] version [%s]...", fileName, solution.getProjectName(), solution.getVersion()), e);
+			throw new MetricBuildException(String.format("Error writing to %s for project [%s] version [%s]...", file.getName(),
+					solution.getProjectName(), solution.getVersion()), e);
+		}
+	}
+
+	private void writeToFile(String fileName, String output) throws MetricBuildException {
+		String basePath = getDirectoryPath();
+		String filePath = String.format("%s/%s.%s", basePath, fileName, FILE_EXTENSION);
+		File file = new File(filePath);
+		try {
+			PrintWriter writer = new PrintWriter(file, "UTF-8");
+
+			writer.write(output);
+			writer.close();
+
+			IILogger.info(String.format("Created file [%s]! [%s]", file.getName(), file.getPath()));
+		} catch (FileNotFoundException e) {
+			throw new MetricBuildException(String.format("File %s was not found...", file.getName()), e);
+		} catch (UnsupportedEncodingException e) {
+			throw new MetricBuildException(String.format("Error writing to %s ...", file.getName()), e);
 		}
 	}
 
@@ -156,4 +196,10 @@ public final class MetricService {
 		return filePath;
 	}
 
+	private String getDirectoryPath() {
+		String filePath = String.format("%s", METRIC_DIRECTORY_PATH);
+		File metricDirectory = new File(filePath);
+		metricDirectory.mkdirs();
+		return filePath;
+	}
 }

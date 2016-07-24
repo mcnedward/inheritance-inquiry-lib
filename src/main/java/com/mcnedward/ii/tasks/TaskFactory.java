@@ -4,7 +4,6 @@ import java.io.File;
 
 import com.mcnedward.ii.element.JavaSolution;
 import com.mcnedward.ii.service.AnalyzerService;
-import com.mcnedward.ii.service.ProjectService;
 import com.mcnedward.ii.service.graph.GraphService;
 import com.mcnedward.ii.service.metric.MetricService;
 
@@ -14,7 +13,6 @@ import com.mcnedward.ii.service.metric.MetricService;
  */
 public class TaskFactory {
 	// Services
-	private static ProjectService mProjectService;
 	private static AnalyzerService mAnalyzerService;
 	private static MetricService mMetricService;
 	private static GraphService mGraphService;
@@ -23,15 +21,19 @@ public class TaskFactory {
 
 	public TaskFactory() {
 		// Setup services
-		mProjectService = new ProjectService();
 		mAnalyzerService = new AnalyzerService();
 		mMetricService = new MetricService();
 		mGraphService = new GraphService();
 	}
 
-	public static BuildTask createBuildTask(File projectFile, String systemName) {
+	public static StandardBuildTask createStandardBuildTask(File projectFile, String systemName) {
 		checkContext();
-		return new BuildTask(mProjectService, mAnalyzerService, projectFile, systemName);
+		return new StandardBuildTask(mAnalyzerService, mMetricService, mGraphService, projectFile, systemName);
+	}
+	
+	public static MetricBuildTask createMetricBuildTask(File projectFile, String systemName) {
+		checkContext();
+		return new MetricBuildTask(mAnalyzerService, projectFile, systemName);
 	}
 	
 	public static DitAnalysisTask createDitAnalysisTask(JavaSolution solution) {

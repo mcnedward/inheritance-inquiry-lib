@@ -4,7 +4,6 @@ import java.util.List;
 
 import com.mcnedward.ii.element.JavaElement;
 import com.mcnedward.ii.service.metric.MType;
-import com.mcnedward.ii.service.metric.Metric;
 
 /**
  * Metric for the Number of Children of a class or interface. Defined by http://www.aivosto.com/project/help/pm-oo-ck.html as the 'number of immediate sub-classes of a class'.

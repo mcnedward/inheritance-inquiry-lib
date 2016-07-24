@@ -1,6 +1,6 @@
 package com.mcnedward.ii;
 
-import com.mcnedward.ii.builder.DitAnalysisBuilder;
+import com.mcnedward.ii.builder.MetricAnalysisBuilder;
 import com.mcnedward.ii.builder.ProjectBuilder;
 import com.mcnedward.ii.builder.SystemBuilder;
 import com.mcnedward.ii.exception.TaskBuildException;
@@ -13,13 +13,13 @@ import com.mcnedward.ii.utils.IILogger;
 public final class InheritanceInquiryMain {
 	
 	public static void main(String[] args) {
-		buildSystems();
+		buildDitAnalysis();
 	}
 	
-	protected static void buildSystems() {
+	protected static void buildDitAnalysis() {
 		try {
 			IILogger.DEBUG = true;
-			new DitAnalysisBuilder().build();
+			new MetricAnalysisBuilder().build();
 		} catch (TaskBuildException e) {
 			IILogger.error(e.getMessage(), e);
 		}

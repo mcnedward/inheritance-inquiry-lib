@@ -1,13 +1,9 @@
 package com.mcnedward.ii.builder;
 
 import java.io.File;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
 
-import com.mcnedward.ii.element.JavaSolution;
 import com.mcnedward.ii.element.JavaSystem;
-import com.mcnedward.ii.tasks.BuildTask;
+import com.mcnedward.ii.exception.TaskBuildException;
 import com.mcnedward.ii.tasks.TaskFactory;
 
 /**
@@ -26,20 +22,15 @@ public final class ProjectBuilder extends Builder {
 	}
 	
 	@Override
-	protected File setupFile() {
-		return new File(PROJECT_PATH);
-	}
+	protected void buildProcess() throws TaskBuildException {
+		File buildFile = new File(PROJECT_PATH);
+		if (!buildFile.exists()) {
+			throw new TaskBuildException(String.format("You need to provide an existing file! [Path: %s]", buildFile.getAbsolutePath()));
+		}
+		
+		submit(TaskFactory.createStandardBuildTask(buildFile, PROJECT_NAME));
 
-
-	@Override
-	protected Collection<BuildTask> buildSolutions(File buildFile) {
-		BuildTask task = TaskFactory.createBuildTask(buildFile, PROJECT_NAME);
-		return Arrays.asList(task);
-	}
-
-	@Override
-	protected int handleSolutions(List<JavaSolution> solutions) {
-		return 0;
+		waitForTasks(1);
 	}
 
 }

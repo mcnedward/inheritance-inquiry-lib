@@ -1,6 +1,7 @@
-package com.mcnedward.ii.service.metric;
+package com.mcnedward.ii.service.metric.element;
 
 import com.mcnedward.ii.element.JavaElement;
+import com.mcnedward.ii.service.metric.MType;
 
 /**
  * @author Edward - Jul 14, 2016

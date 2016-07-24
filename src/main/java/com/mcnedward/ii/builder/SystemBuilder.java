@@ -1,14 +1,9 @@
 package com.mcnedward.ii.builder;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 
-import com.mcnedward.ii.element.JavaSolution;
 import com.mcnedward.ii.element.JavaSystem;
 import com.mcnedward.ii.exception.TaskBuildException;
-import com.mcnedward.ii.tasks.BuildTask;
 import com.mcnedward.ii.tasks.TaskFactory;
 import com.mcnedward.ii.utils.IILogger;
 
@@ -27,11 +22,6 @@ public final class SystemBuilder extends Builder {
 		super();
 	}
 	
-	@Override
-	protected File setupFile() {
-		return new File(SYSTEM_PATH);
-	}
-	
 	/**
 	 * Builds a {@link JavaSystem} using separate jobs.
 	 * 
@@ -39,24 +29,21 @@ public final class SystemBuilder extends Builder {
 	 * @throws TaskBuildException
 	 */
 	@Override
-	protected Collection<BuildTask> buildSolutions(File buildFile) {
+	protected void buildProcess() throws TaskBuildException {
+		File buildFile = new File(SYSTEM_PATH);
+		if (!buildFile.exists()) {
+			throw new TaskBuildException(String.format("You need to provide an existing file! [Path: %s]", buildFile.getAbsolutePath()));
+		}
+		
 		JavaSystem system = new JavaSystem(buildFile);
 		File[] projects = system.getFiles();
 		IILogger.info("Starting build for system %s.", system.getName());
 
-		List<BuildTask> tasks = new ArrayList<>();
 		for (File projectFile : projects) {
-			tasks.add(TaskFactory.createBuildTask(projectFile, system.getName()));
+			submit(TaskFactory.createStandardBuildTask(projectFile, system.getName()));
 		}
 		
-		return tasks;
+		waitForTasks(projects.length);
 	}
-
-	@Override
-	protected int handleSolutions(List<JavaSolution> solutions) {
-		return 0;
-	}
-
-	
 
 }
