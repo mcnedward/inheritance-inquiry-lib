@@ -63,7 +63,7 @@ public final class MetricAnalysisBuilder extends Builder {
 		handleSolutions(solutions);
 	}
 
-	private void handleSolutions(List<JavaSolution> solutions) {
+	private void handleSolutions(List<JavaSolution> solutions) throws TaskBuildException {
 		MetricTool tool = new MetricTool();
 		tool.inquire(solutions);
 	}

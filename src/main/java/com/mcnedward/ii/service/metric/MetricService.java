@@ -27,14 +27,14 @@ public final class MetricService {
 	private static final String NEWLINE = "\n";
 	private static final String DELIMITER = "\t";
 
-	public boolean buildExcel(String[] columns, List<String[]> rows, String title) {
+	public boolean buildExcel(List<String> columns, List<List<String>> rows, String title) {
 		try {
 			StringBuilder builder = new StringBuilder(title + NEWLINE);
 			for (String column : columns) {
 				builder.append(column + DELIMITER);
 			}
 
-			for (String[] row : rows) {
+			for (List<String> row : rows) {
 				builder.append(NEWLINE);
 				for (String rowContent : row) {
 					builder.append(rowContent + DELIMITER);
