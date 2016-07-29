@@ -1,5 +1,6 @@
 package com.mcnedward.ii;
 
+import com.mcnedward.ii.builder.GraphBuilder;
 import com.mcnedward.ii.builder.MetricAnalysisBuilder;
 import com.mcnedward.ii.builder.ProjectBuilder;
 import com.mcnedward.ii.builder.SystemBuilder;
@@ -13,12 +14,12 @@ import com.mcnedward.ii.utils.IILogger;
 public final class InheritanceInquiryMain {
 	
 	public static void main(String[] args) {
-		buildDitAnalysis();
+		IILogger.DEBUG = true;
+		buildProject();
 	}
 	
 	protected static void buildDitAnalysis() {
 		try {
-			IILogger.DEBUG = true;
 			new MetricAnalysisBuilder().build();
 		} catch (TaskBuildException e) {
 			IILogger.error(e.getMessage(), e);
@@ -27,7 +28,6 @@ public final class InheritanceInquiryMain {
 	
 	protected static void buildSystem() {
 		try {
-			IILogger.DEBUG = true;
 			new SystemBuilder().build();
 		} catch (TaskBuildException e) {
 			IILogger.error(e.getMessage(), e);
@@ -37,6 +37,14 @@ public final class InheritanceInquiryMain {
 	protected static void buildProject() {
 		try {
 			new ProjectBuilder().build();
+		} catch (TaskBuildException e) {
+			IILogger.error(e.getMessage(), e);
+		}
+	}
+	
+	protected static void buildGraph() {
+		try {
+			new GraphBuilder().build();
 		} catch (TaskBuildException e) {
 			IILogger.error(e.getMessage(), e);
 		}

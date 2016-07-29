@@ -1,7 +1,6 @@
 package com.mcnedward.ii.utils;
 
 import java.util.List;
-import java.util.Stack;
 
 import org.eclipse.jdt.core.dom.IMethodBinding;
 
@@ -18,7 +17,6 @@ import com.mcnedward.ii.element.method.JavaMethodInvocation;
 public final class AnalyzerUtils {
 	
 	public static void analyze(JavaProject project) {
-		calculateDepthOfInheritanceTree(project);
 		calculateNumberOfChildren(project);
 		calculateWeightedMethodsPerClass(project);
 		calculateClassesWithHighNOCAndWMC(project);
@@ -125,19 +123,6 @@ public final class AnalyzerUtils {
 			int NOC = classChildren.size();
 			if (NOC > 0) {
 				IILogger.analysis("Number of children for %s is %s - %s", element, classChildren.size(), classChildren);
-			}
-		}
-		IILogger.analysis("\n\n");
-	}
-
-	public static void calculateDepthOfInheritanceTree(JavaProject project) {
-		IILogger.analysis("********** DEPTH OF INHERITANCE TREE **********");
-		List<JavaElement> projectElements = project.getAllElements();
-		for (JavaElement element : projectElements) {
-			Stack<JavaElement> classStack = project.findDepthOfInheritanceTreeFor(element);
-			int dit = project.findNumberOfInheritedMethodsFor(element);
-			if (dit > 0) {
-				IILogger.analysis("Depth of inheritance for %s is %s - %s\nNumber of inherited methods: %s", element, classStack.size(), classStack, dit);
 			}
 		}
 		IILogger.analysis("\n\n");

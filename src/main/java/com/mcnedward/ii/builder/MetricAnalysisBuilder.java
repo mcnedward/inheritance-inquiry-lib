@@ -9,8 +9,6 @@ import com.mcnedward.ii.element.JavaSystem;
 import com.mcnedward.ii.exception.TaskBuildException;
 import com.mcnedward.ii.service.metric.MetricTool;
 import com.mcnedward.ii.tasks.MetricBuildTask;
-import com.mcnedward.ii.tasks.TaskFactory;
-import com.mcnedward.ii.utils.IILogger;
 
 /**
  * 
@@ -21,7 +19,7 @@ import com.mcnedward.ii.utils.IILogger;
  */
 public final class MetricAnalysisBuilder extends Builder {
 
-	private static final String[] EXCLUSIONS = new String[] { "freecol", "freemind", "hibernate" };
+	private static final String[] EXCLUSIONS = new String[] {};// { "freecol", "freemind", "hibernate" };
 
 	public MetricAnalysisBuilder() {
 		super();
@@ -48,16 +46,19 @@ public final class MetricAnalysisBuilder extends Builder {
 			if (skip) continue;
 			File[] systemFiles = systemDir.listFiles();
 			File systemFile = systemFiles[systemFiles.length - 1];
-			tasks.add(TaskFactory.createMetricBuildTask(systemFile, systemFile.getName()));
+			tasks.add(new MetricBuildTask(systemFile, systemFile.getName()));
 		}
 
 		List<JavaSolution> solutions = invokeAll(tasks);
 
-		int totalJobs = tasks.size();
-		int completeJobs = solutions.size();
-		boolean allComplete = totalJobs == completeJobs;
-		IILogger.info("Finished build jobs. Were all complete? %s [%s/%s]", allComplete, completeJobs, totalJobs);
-		COMPLETE_JOBS = 0; // Reset job count
+		// Shutdown executor service and notify of jobs finished
+		waitForTasks();
+		// Keeping this around in case we need to use it, like if we want to run tasks in the handleSolutions()
+//		int totalJobs = tasks.size();
+//		int completeJobs = solutions.size();
+//		boolean allComplete = totalJobs == completeJobs;
+//		IILogger.info("Finished build jobs. Were all complete? %s [%s/%s]", allComplete, completeJobs, totalJobs);
+//		COMPLETE_JOBS = 0; // Reset job count
 
 		// handle tasks
 		handleSolutions(solutions);

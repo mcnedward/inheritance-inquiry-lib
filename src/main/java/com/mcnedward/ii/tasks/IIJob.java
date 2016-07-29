@@ -1,37 +1,81 @@
 package com.mcnedward.ii.tasks;
 
+import java.io.File;
+
+import com.mcnedward.ii.builder.Builder;
+import com.mcnedward.ii.element.JavaProject;
 import com.mcnedward.ii.element.JavaSolution;
+import com.mcnedward.ii.exception.TaskBuildException;
+import com.mcnedward.ii.listener.ProjectBuildListener;
+import com.mcnedward.ii.service.AnalyzerService;
+import com.mcnedward.ii.service.ProjectService;
 import com.mcnedward.ii.service.graph.GraphService;
 import com.mcnedward.ii.service.metric.MetricService;
 import com.mcnedward.ii.utils.IILogger;
+import com.mcnedward.ii.utils.ServiceFactory;
 
 /**
  * @author Edward - Jul 22, 2016
  *
  */
-public abstract class SolutionTask implements Runnable {
-
+public abstract class IIJob<T> implements Job<T> {
+	
+	private static int JOB_ID = 1;
+	private int mId;
+	
+	private ProjectService mProjectService;
+	private AnalyzerService mAnalyzerService;
 	private MetricService mMetricService;
 	private GraphService mGraphService;
-	private JavaSolution mSolution;
+	private File mProjectFile;
+	private String mSystemName;
+	private ProjectBuildListener mListener;
 	
-	public SolutionTask(MetricService metricService, GraphService graphService, JavaSolution solution) {
-		mMetricService = metricService;
-		mGraphService = graphService;
-		mSolution = solution;
+	public IIJob(File projectFile, String systemName) {
+		this(projectFile, systemName, null);
+	}
+	
+	public IIJob(File projectFile, String systemName, ProjectBuildListener listener) {
+		mId = JOB_ID++;
+		mProjectService = ServiceFactory.projectService();
+		mAnalyzerService = ServiceFactory.analyzerService();
+		mMetricService = ServiceFactory.metricService();
+		mGraphService = ServiceFactory.graphService();
+		mProjectFile = projectFile;
+		mSystemName = systemName;
+		mListener = listener;
 	}
 
-	protected abstract void doWork(JavaSolution solution);
-	
 	@Override
-	public void run() {
-		IILogger.info("Starting SolutionTask for %s...", mSolution.toString());
+	public T call() {
+		IILogger.info("Starting job for %s...", mSystemName);
 		try {
-			doWork(mSolution);
+			JavaSolution solution = buildProject();
+			T result = doWork(solution);
+			
+			Builder.markTaskDone(this);
+			IILogger.info("Completed job for %s...", mSystemName);
+			return result;
 		} catch (Exception e) {
-			IILogger.error(String.format("Error in SolutionTask for %s...", mSolution.toString()), e);
+			IILogger.error(String.format("Error in job for %s...", mSystemName), e);
+			return null;
 		}
-		IILogger.info("Completed SolutionTask for %s...", mSolution.toString());
+	}
+	
+	private JavaSolution buildProject() {
+		// Build project here so it doesn't stay in memory after this method
+		JavaProject project = mProjectService.build(mProjectFile, mSystemName, mListener);
+		return analyze(project);
+	}
+	
+	protected abstract T doWork(JavaSolution solution) throws TaskBuildException;
+
+	protected JavaSolution analyze(JavaProject project) {
+		return mAnalyzerService.analyze(project);
+	}
+	
+	protected AnalyzerService analyzerService() {
+		return mAnalyzerService;
 	}
 	
 	protected MetricService metricService() {
@@ -41,10 +85,20 @@ public abstract class SolutionTask implements Runnable {
 	protected GraphService graphService() {
 		return mGraphService;
 	}
+	
+	@Override
+	public String name() {
+		return toString() + "-" + id();
+	}
+	
+	@Override
+	public int id() {
+		return mId;
+	}
 
 	@Override
 	public String toString() {
-		return "SolutionTask-" + mSolution.getProjectName();
+		return "SolutionTask-" + mSystemName;
 	}
 
 }

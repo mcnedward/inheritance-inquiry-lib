@@ -4,7 +4,7 @@ import java.io.File;
 
 import com.mcnedward.ii.element.JavaSystem;
 import com.mcnedward.ii.exception.TaskBuildException;
-import com.mcnedward.ii.tasks.TaskFactory;
+import com.mcnedward.ii.tasks.StandardBuildTask;
 import com.mcnedward.ii.utils.IILogger;
 
 /**
@@ -40,10 +40,10 @@ public final class SystemBuilder extends Builder {
 		IILogger.info("Starting build for system %s.", system.getName());
 
 		for (File projectFile : projects) {
-			submit(TaskFactory.createStandardBuildTask(projectFile, system.getName()));
+			submit(new StandardBuildTask(projectFile, system.getName()));
 		}
 		
-		waitForTasks(projects.length);
+		waitForTasks();
 	}
 
 }
