@@ -3,8 +3,8 @@ package com.mcnedward.ii.element;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.mcnedward.ii.service.graph.element.HierarchyTree;
-import com.mcnedward.ii.service.graph.element.InheritanceTree;
+import com.mcnedward.ii.service.graph.element.NocHierarchy;
+import com.mcnedward.ii.service.graph.element.DitHierarchy;
 import com.mcnedward.ii.service.graph.element.SolutionMethod;
 import com.mcnedward.ii.service.metric.element.DitMetric;
 import com.mcnedward.ii.service.metric.element.NocMetric;
@@ -24,8 +24,8 @@ public class JavaSolution {
 	private List<WmcMetric> mWmcMetrics;
 	private List<SolutionMethod> mOMethods;
 	private List<SolutionMethod> mEMethods;
-	private List<InheritanceTree> mInheritanceTrees;
-	private List<HierarchyTree> mHierarchyTrees;
+	private List<DitHierarchy> mInheritanceTrees;
+	private List<NocHierarchy> mHierarchyTrees;
 
 	public JavaSolution(String projectName, String systemName, String version) {
 		mProjectName = projectName;
@@ -60,11 +60,11 @@ public class JavaSolution {
 		mEMethods.add(method);
 	}
 
-	public void addInheritanceTree(InheritanceTree tree) {
+	public void addDitHierarchy(DitHierarchy tree) {
 		mInheritanceTrees.add(tree);
 	}
 
-	public void addHeirarchyTree(HierarchyTree tree) {
+	public void addNocHeirarchy(NocHierarchy tree) {
 		mHierarchyTrees.add(tree);
 	}
 
@@ -100,11 +100,11 @@ public class JavaSolution {
 		return mEMethods;
 	}
 
-	public List<InheritanceTree> getInheritanceTrees() {
+	public List<DitHierarchy> getDitHierarchies() {
 		return mInheritanceTrees;
 	}
 
-	public List<HierarchyTree> getHierarchyTrees() {
+	public List<NocHierarchy> getNocHierarchies() {
 		return mHierarchyTrees;
 	}
 	

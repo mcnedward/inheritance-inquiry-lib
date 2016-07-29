@@ -1,7 +1,6 @@
 package com.mcnedward.ii.service;
 
 import java.util.List;
-import java.util.Stack;
 
 import org.eclipse.jdt.core.dom.IMethodBinding;
 
@@ -10,8 +9,8 @@ import com.mcnedward.ii.element.JavaProject;
 import com.mcnedward.ii.element.JavaSolution;
 import com.mcnedward.ii.element.method.JavaMethod;
 import com.mcnedward.ii.element.method.JavaMethodInvocation;
-import com.mcnedward.ii.service.graph.element.HierarchyTree;
-import com.mcnedward.ii.service.graph.element.InheritanceTree;
+import com.mcnedward.ii.service.graph.element.DitHierarchy;
+import com.mcnedward.ii.service.graph.element.NocHierarchy;
 import com.mcnedward.ii.service.graph.element.SolutionMethod;
 import com.mcnedward.ii.service.metric.element.DitMetric;
 import com.mcnedward.ii.service.metric.element.NocMetric;
@@ -24,7 +23,7 @@ import com.mcnedward.ii.utils.IILogger;
  * @author Edward - Jun 22, 2016
  *
  */
-public class AnalyzerService {
+public final class AnalyzerService {
 
 	public JavaSolution analyze(JavaProject project) {
 		JavaSolution solution = initSolution(project);
@@ -37,7 +36,21 @@ public class AnalyzerService {
 
 	public JavaSolution analyzeMetrics(JavaProject project) {
 		JavaSolution solution = initSolution(project);
-		calculateMetricsAndTrees(project, solution, true);
+		calculateMetricsAndTrees(project, solution, false);
+		return solution;
+	}
+	
+	public JavaSolution analyzeForDit(JavaProject project, int ditLimit) {
+		JavaSolution solution = initSolution(project);
+		// Setup the DIT metrics
+		for (JavaElement element : project.getAllElements()) {
+			calculateDepthOfInheritanceTree(project, element, solution, true);
+		}
+		for (DitHierarchy tree : solution.getDitHierarchies()) {
+			if (tree.dit == ditLimit) {
+				solution.addDitHierarchy(tree);
+			}
+		}
 		return solution;
 	}
 
@@ -52,11 +65,10 @@ public class AnalyzerService {
 	 */
 	public void calculateMetricsAndTrees(JavaProject project, JavaSolution solution, boolean ignoreZero) {
 		for (JavaElement element : project.getAllElements()) {
-			int dit = calculateDepthOfInheritanceTree(element, project, solution, ignoreZero);
+			calculateDepthOfInheritanceTree(project, element, solution, ignoreZero);
 			calculateNumberOfChildren(element, project, solution, ignoreZero);
 			calculateWeightedMethodsPerClass(element, project, solution, ignoreZero);
-			calculateInheritanceTrees(element, project, solution, dit);
-			calculateHierarchyTrees(element, project, solution);
+			calculateNocHierarchyTrees(element, project, solution);
 		}
 	}
 
@@ -73,10 +85,12 @@ public class AnalyzerService {
 	 *            If this is true, then the Analyzer will ignore metrics whose value is zero.
 	 * @return int The Depth of Inheritance Tree
 	 */
-	private int calculateDepthOfInheritanceTree(JavaElement element, JavaProject project, JavaSolution solution, boolean ignoreZero) {
-		Stack<JavaElement> classStack = project.findDepthOfInheritanceTreeFor(element);
-		int dit = classStack.size();
-		int numberOfInheritedMethods = project.findNumberOfInheritedMethodsFor(element);
+	private int calculateDepthOfInheritanceTree(JavaProject project, JavaElement element, JavaSolution solution, boolean ignoreZero) {
+		DitHierarchy hierarchy = new DitHierarchy(element);
+		solution.addDitHierarchy(hierarchy);
+		
+		int dit = hierarchy.dit;
+		int numberOfInheritedMethods = hierarchy.inheritedMethodCount;
 		if (ignoreZero) {
 			if (dit > 0) {
 				solution.addDitMetric(new DitMetric(element, dit, numberOfInheritedMethods));
@@ -154,9 +168,12 @@ public class AnalyzerService {
 			JavaElement parent = child.getSuperClasses().get(0);
 			for (JavaMethod childMethod : child.getMethods()) {
 				IMethodBinding childBinding = childMethod.getMethodBinding();
-
+				if (childBinding == null) continue;
+				
 				for (JavaMethod parentMethod : parent.getMethods()) {
 					IMethodBinding parentBinding = parentMethod.getMethodBinding();
+					if (parentBinding == null) continue;
+					
 					if (childBinding.overrides(parentBinding)) {
 						// Add override method to solution
 						solution.addOMethod(new SolutionMethod(childMethod.getName(), childMethod.getSignature(), parent.getName(), child.getName()));
@@ -182,32 +199,10 @@ public class AnalyzerService {
 		}
 	}
 
-	/**
-	 * Calculates the hierarchy trees for a {@link JavaElement} in the {@link JavaProject}.
-	 * <p>
-	 * Currently, this only builds for classes, and only if the DIT is greater than 0.
-	 * </p>
-	 * 
-	 * @param element
-	 *            The JavaElement
-	 * @param project
-	 *            The JavaProject
-	 * @param int
-	 *            The Depth of Inheritance Tree
-	 * @param solution
-	 *            The {@link JavaSolution}
-	 */
-	public void calculateInheritanceTrees(JavaElement element, JavaProject project, JavaSolution solution, int dit) {
-		if (!element.isInterface()) {
-			if (dit > 1)
-				solution.addInheritanceTree(new InheritanceTree(element));
-		}
-	}
-
-	public void calculateHierarchyTrees(JavaElement element, JavaProject project, JavaSolution solution) {
-		HierarchyTree tree = new HierarchyTree(project, element);
+	public void calculateNocHierarchyTrees(JavaElement element, JavaProject project, JavaSolution solution) {
+		NocHierarchy tree = new NocHierarchy(project, element);
 		if (tree.hasChildren)
-			solution.addHeirarchyTree(tree);
+			solution.addNocHeirarchy(tree);
 	}
 
 	private JavaSolution initSolution(JavaProject project) {

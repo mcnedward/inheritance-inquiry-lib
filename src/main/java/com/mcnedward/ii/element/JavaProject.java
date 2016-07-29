@@ -23,7 +23,7 @@ public class JavaProject {
 	private File mProjectFile;
 	private List<File> mFiles;
 	private List<JavaPackage> mPackages;
-
+	
 	public JavaProject(String projectPath, String projectName) {
 		mPath = projectPath;
 		mName = projectName;
@@ -68,62 +68,6 @@ public class JavaProject {
 		return null;
 	}
 
-	/**
-	 * Finds the Depth of Inheritance Tree (DIT) for a JavaElement.
-	 * <p>
-	 * DIT equals the maximum inheritance path from the class to the root class.
-	 * (http://www.aivosto.com/project/help/pm-oo-ck.html)
-	 * </p>
-	 * 
-	 * @param element
-	 *            The element to find the DIT for.
-	 * @return A Stack of JavaElements that are a part of the inheritance tree for the element given to this method.
-	 */
-	public Stack<JavaElement> findDepthOfInheritanceTreeFor(JavaElement element) {
-		Stack<JavaElement> classStack = new Stack<>();
-		if (element.isInterface()) {
-			recurseInterfaces(element, classStack);
-		} else {
-			// Class can only extend one class
-			recurseSuperClasses(element, classStack);
-		}
-		return classStack;
-	}
-
-	/**
-	 * Calculates the number of inherited methods of a JavaElement, based on their DIT.
-	 * 
-	 * @param element
-	 *            The element to find the number of inherited methods for.
-	 * @return The number of inherited methods.
-	 */
-	public int findNumberOfInheritedMethodsFor(JavaElement element) {
-		Stack<JavaElement> classStack = findDepthOfInheritanceTreeFor(element);
-		if (classStack.size() == 0)
-			return 0;
-		int numOfInheritedMethods = 0;
-		for (JavaElement child : classStack) {
-			numOfInheritedMethods += child.getMethods().size();
-		}
-		return numOfInheritedMethods;
-	}
-
-	private void recurseSuperClasses(JavaElement javaClass, Stack<JavaElement> classStack) {
-		if (javaClass.getSuperClasses().isEmpty())
-			return;
-		JavaElement elementSuperClass = javaClass.getSuperClasses().get(0);
-		classStack.push(elementSuperClass);
-		recurseSuperClasses(elementSuperClass, classStack);
-	}
-
-	private void recurseInterfaces(JavaElement javaInterface, Stack<JavaElement> classStack) {
-		if (javaInterface.getInterfaces().isEmpty())
-			return;
-		for (JavaElement elementInterface : javaInterface.getInterfaces()) {
-			recurseInterfaces(elementInterface, classStack);
-			classStack.push(elementInterface);
-		}
-	}
 
 	/**
 	 * Finds the Number of Children (NOC) for a JavaElement.
@@ -217,6 +161,63 @@ public class JavaProject {
 			}
 		}
 		return element;
+	}
+	
+	/**
+	 * Finds the Depth of Inheritance Tree (DIT) for a JavaElement.
+	 * <p>
+	 * DIT equals the maximum inheritance path from the class to the root class.
+	 * (http://www.aivosto.com/project/help/pm-oo-ck.html)
+	 * </p>
+	 * 
+	 * @param element
+	 *            The element to find the DIT for.
+	 * @return A Stack of JavaElements that are a part of the inheritance tree for the element given to this method.
+	 */
+	public Stack<JavaElement> findDepthOfInheritanceTreeFor(JavaElement element) {
+		Stack<JavaElement> classStack = new Stack<>();
+		if (element.isInterface()) {
+			recurseInterfaces(element, classStack);
+		} else {
+			// Class can only extend one class
+			recurseSuperClasses(element, classStack);
+		}
+		return classStack;
+	}
+
+	/**
+	 * Calculates the number of inherited methods of a JavaElement, based on their DIT.
+	 * 
+	 * @param element
+	 *            The element to find the number of inherited methods for.
+	 * @return The number of inherited methods.
+	 */
+	public int findNumberOfInheritedMethodsFor(JavaElement element) {
+		Stack<JavaElement> classStack = findDepthOfInheritanceTreeFor(element);
+		if (classStack.size() == 0)
+			return 0;
+		int numOfInheritedMethods = 0;
+		for (JavaElement child : classStack) {
+			numOfInheritedMethods += child.getMethods().size();
+		}
+		return numOfInheritedMethods;
+	}
+
+	private void recurseSuperClasses(JavaElement javaClass, Stack<JavaElement> classStack) {
+		if (javaClass.getSuperClasses().isEmpty())
+			return;
+		JavaElement elementSuperClass = javaClass.getSuperClasses().get(0);
+		classStack.push(elementSuperClass);
+		recurseSuperClasses(elementSuperClass, classStack);
+	}
+
+	private void recurseInterfaces(JavaElement javaInterface, Stack<JavaElement> classStack) {
+		if (javaInterface.getInterfaces().isEmpty())
+			return;
+		for (JavaElement elementInterface : javaInterface.getInterfaces()) {
+			recurseInterfaces(elementInterface, classStack);
+			classStack.push(elementInterface);
+		}
 	}
 
 	// Cache the search for classes
