@@ -6,7 +6,6 @@ import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
 
-import com.mcnedward.ii.element.JavaElement;
 import com.mcnedward.ii.element.JavaSolution;
 import com.mcnedward.ii.exception.MetricBuildException;
 import com.mcnedward.ii.service.metric.element.DitMetric;
@@ -71,7 +70,7 @@ public final class MetricService {
 		StringBuilder builder = new StringBuilder(docTitle + NEWLINE);
 		builder.append(rowTitles + NEWLINE);
 		for (DitMetric metric : ditMetrics) {
-			builder.append(buildRow(metric.element, metric.metric, String.valueOf(metric.numberOfInheritedMethods)) + NEWLINE);
+			builder.append(buildRow(metric.fullyQualifiedName, metric.metric, String.valueOf(metric.numberOfInheritedMethods)) + NEWLINE);
 		}
 
 		writeToFile(solution, metricType, builder.toString());
@@ -87,7 +86,7 @@ public final class MetricService {
 		StringBuilder builder = new StringBuilder(docTitle + NEWLINE);
 		builder.append(rowTitles + NEWLINE);
 		for (NocMetric metric : nocMetrics) {
-			builder.append(buildRow(metric.element, metric.metric, metric.classChildren.toString()) + NEWLINE);
+			builder.append(buildRow(metric.fullyQualifiedName, metric.metric, metric.classChildren.toString()) + NEWLINE);
 		}
 
 		writeToFile(solution, metricType, builder.toString());
@@ -103,22 +102,22 @@ public final class MetricService {
 		StringBuilder builder = new StringBuilder(docTitle + NEWLINE);
 		builder.append(rowTitles + NEWLINE);
 		for (WmcMetric metric : wmcMetrics) {
-			builder.append(buildRow(metric.element, metric.metric) + NEWLINE);
+			builder.append(buildRow(metric.fullyQualifiedName, metric.metric) + NEWLINE);
 		}
 
 		writeToFile(solution, metricType, builder.toString());
 	}
 
-	private String buildRow(JavaElement element, int metric) {
-		return buildRow(element, metric, null);
+	private String buildRow(String fullyQualifiedName, int metric) {
+		return buildRow(fullyQualifiedName, metric, null);
 	}
 
-	private String buildRow(JavaElement element, int metric, String extra) {
+	private String buildRow(String fullyQualifiedName, int metric, String extra) {
 		String extraColumn = "";
 		if (extra != null && !extra.equals("")) {
 			extraColumn += DELIMITER + extra;
 		}
-		return String.format("%s%s %s%s", element.getFullyQualifiedName(), DELIMITER, String.valueOf(metric), extraColumn);
+		return String.format("%s%s %s%s", fullyQualifiedName, DELIMITER, String.valueOf(metric), extraColumn);
 	}
 
 	private String getRowTitles(MType metricType) {

@@ -10,12 +10,14 @@ import com.mcnedward.ii.service.metric.MType;
 public abstract class Metric {
 
 	public MType type;
-	public JavaElement element;
+	public String elementName;
+	public String fullyQualifiedName;
 	public int metric;
 
 	public Metric(MType type, JavaElement element, int metric) {
 		this.type = type;
-		this.element = element;
+		elementName = element.getName();
+		fullyQualifiedName = element.getFullyQualifiedName();
 		this.metric = metric;
 	}
 }

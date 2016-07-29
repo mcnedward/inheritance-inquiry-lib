@@ -33,7 +33,7 @@ import com.mcnedward.ii.utils.Sourcer;
  * @author Edward - Jun 16, 2016
  *
  */
-public class ProjectService extends FileASTRequestor {
+public final class ProjectService extends FileASTRequestor {
 	private static final Logger logger = Logger.getLogger(ProjectService.class);
 
 	private Sourcer mSourcer;

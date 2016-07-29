@@ -37,9 +37,6 @@ public abstract class JavaElementVisitor extends JavaProjectVisitor {
 				}
 			}
 		}
-		if (packageName == null) {
-			packageName = "default";
-		}
 
 		return project().findOrCreateElement(packageName, name);
 	}

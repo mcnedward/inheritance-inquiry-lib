@@ -19,7 +19,7 @@ import com.mcnedward.ii.listener.GitDownloadListener;
  * @author Edward - Jun 24, 2016
  *
  */
-public class GitService {
+public final class GitService {
 	protected static final Logger logger = Logger.getLogger(GitService.class);
 
 	/**

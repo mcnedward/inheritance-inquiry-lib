@@ -21,7 +21,7 @@ public class DitMetric extends Metric {
 	
 	@Override
 	public String toString() {
-		return String.format("%s: DIT[%s] - Inherited Methods[%s]", element.getName(), metric, numberOfInheritedMethods);
+		return String.format("%s: DIT[%s] - Inherited Methods[%s]", elementName, metric, numberOfInheritedMethods);
 	}
 
 }
