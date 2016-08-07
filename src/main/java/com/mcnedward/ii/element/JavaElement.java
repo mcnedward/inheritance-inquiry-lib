@@ -199,6 +199,18 @@ public class JavaElement {
 		return mWmc;
 	}
 	
+	private int mInheritableMethodCount = 0;
+	public int getInheritableMethodCount() {
+		if (mInheritableMethodCount == 0) {
+			for (JavaMethod method : mMethods) {
+				// Don't include private methods
+				if (method.mModifiers.contains(JavaModifier.PRIVATE)) continue;
+				mInheritableMethodCount++;
+			}
+		}
+		return mInheritableMethodCount;
+	}
+	
 	public List<JavaElement> getTypeArgs() {
 		return mTypeArgs;
 	}

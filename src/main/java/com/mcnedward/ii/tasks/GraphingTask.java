@@ -13,8 +13,6 @@ import com.mcnedward.ii.exception.TaskBuildException;
  */
 public class GraphingTask extends IIJob<Void> {
 
-	private static final int DIT_LIMIT = 7;
-	
 	public GraphingTask(File projectFile, String systemName) {
 		super(projectFile, systemName);
 	}
@@ -22,7 +20,8 @@ public class GraphingTask extends IIJob<Void> {
 	@Override
 	protected Void doWork(JavaSolution solution) throws TaskBuildException {
 		try {
-			graphService().buildNocHierarchyTreeGraphs(solution);
+//			graphService().buildDitHierarchyTreeGraph(solution);
+			graphService().buildNocHierarchyTreeGraphs(solution, 39);
 		} catch (GraphBuildException e) {
 			throw new TaskBuildException(e);
 		}
@@ -31,7 +30,7 @@ public class GraphingTask extends IIJob<Void> {
 	
 	@Override
 	protected JavaSolution analyze(JavaProject project) {
-		return analyzerService().analyzeForDit(project, DIT_LIMIT);
+		return analyzerService().analyzeForNoc(project);
 	}
 
 }

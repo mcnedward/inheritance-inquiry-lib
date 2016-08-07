@@ -18,7 +18,7 @@ public final class InheritanceInquiryMain {
 		buildProject();
 	}
 	
-	protected static void buildDitAnalysis() {
+	protected static void buildMetricAnalysis() {
 		try {
 			new MetricAnalysisBuilder().build();
 		} catch (TaskBuildException e) {
@@ -26,6 +26,9 @@ public final class InheritanceInquiryMain {
 		}
 	}
 	
+	/**
+	 * Build all versions of a specific system.
+	 */
 	protected static void buildSystem() {
 		try {
 			new SystemBuilder().build();
@@ -34,6 +37,9 @@ public final class InheritanceInquiryMain {
 		}
 	}
 	
+	/**
+	 * Builds a single project.
+	 */
 	protected static void buildProject() {
 		try {
 			new ProjectBuilder().build();

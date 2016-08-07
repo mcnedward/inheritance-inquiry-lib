@@ -24,8 +24,8 @@ public class JavaSolution {
 	private List<WmcMetric> mWmcMetrics;
 	private List<SolutionMethod> mOMethods;
 	private List<SolutionMethod> mEMethods;
-	private List<DitHierarchy> mInheritanceTrees;
-	private List<NocHierarchy> mHierarchyTrees;
+	private List<DitHierarchy> mDitHierarchyTrees;
+	private List<NocHierarchy> mNocHierarchyTrees;
 
 	public JavaSolution(String projectName, String systemName, String version) {
 		mProjectName = projectName;
@@ -36,8 +36,8 @@ public class JavaSolution {
 		mWmcMetrics = new ArrayList<>();
 		mOMethods = new ArrayList<>();
 		mEMethods = new ArrayList<>();
-		mInheritanceTrees = new ArrayList<>();
-		mHierarchyTrees = new ArrayList<>();
+		mDitHierarchyTrees = new ArrayList<>();
+		mNocHierarchyTrees = new ArrayList<>();
 	}
 
 	public void addDitMetric(DitMetric metric) {
@@ -61,11 +61,11 @@ public class JavaSolution {
 	}
 
 	public void addDitHierarchy(DitHierarchy tree) {
-		mInheritanceTrees.add(tree);
+		mDitHierarchyTrees.add(tree);
 	}
 
 	public void addNocHeirarchy(NocHierarchy tree) {
-		mHierarchyTrees.add(tree);
+		mNocHierarchyTrees.add(tree);
 	}
 
 	public String getProjectName() {
@@ -101,11 +101,11 @@ public class JavaSolution {
 	}
 
 	public List<DitHierarchy> getDitHierarchies() {
-		return mInheritanceTrees;
+		return mDitHierarchyTrees;
 	}
 
 	public List<NocHierarchy> getNocHierarchies() {
-		return mHierarchyTrees;
+		return mNocHierarchyTrees;
 	}
 	
 	@Override

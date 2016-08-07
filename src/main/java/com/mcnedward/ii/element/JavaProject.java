@@ -84,15 +84,17 @@ public class JavaProject {
 	public List<JavaElement> findNumberOfChildrenFor(JavaElement element) {
 		List<JavaElement> classChildren = new ArrayList<>();
 
+		if (element.isInterface()) {
+			return classChildren;
+		}
+
 		// Go through every class and interface in the project to find elements that extend this one
 		for (JavaElement projectElement : getAllElements()) {
-			if (projectElement.isInterface()) {
-				if (projectElement.getInterfaces().contains(element))
-					classChildren.add(projectElement);
-			} else {
-				if (projectElement.getSuperClasses().contains(element)) {
-					classChildren.add(projectElement);
-				}
+			if (projectElement.isInterface())
+				continue;
+
+			if (projectElement.getSuperClasses().contains(element)) {
+				classChildren.add(projectElement);
 			}
 		}
 		return classChildren;

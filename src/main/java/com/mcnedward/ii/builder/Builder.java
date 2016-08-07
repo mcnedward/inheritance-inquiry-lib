@@ -33,7 +33,7 @@ public abstract class Builder {
 	private static final int MAX_POOL_SIZE = 8;
 	private static final int TIMEOUT = 10;
 	private static final TimeUnit TIMEUNIT = TimeUnit.MINUTES;
-	private static final int INVOKE_TIMEOUT = 4;
+	private static final int INVOKE_TIMEOUT = 5;
 	private static final TimeUnit INVOKE_TIMEUNIT = TimeUnit.MINUTES;
 	public static Integer COMPLETE_JOBS = 0; // Keep track of how many jobs are finished
 	private BlockingQueue<Runnable> mQueue;
@@ -98,7 +98,7 @@ public abstract class Builder {
 		mExecutorService.shutdown();
 		boolean done;
 		try {
-			done = mExecutorService.awaitTermination(TIMEOUT, TIMEUNIT);
+			done = mExecutorService.awaitTermination(timeout(), timeUnit());
 		} catch (InterruptedException e) {
 			throw new TaskBuildException("Something went wrong when trying to shutdown tasks...", e);
 		} catch (Exception e) {
@@ -126,4 +126,12 @@ public abstract class Builder {
 		}
 	}
 
+	protected int timeout() {
+		return TIMEOUT;
+	}
+	
+	protected TimeUnit timeUnit() {
+		return TIMEUNIT;
+	}
+	
 }
