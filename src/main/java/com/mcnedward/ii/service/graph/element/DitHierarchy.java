@@ -14,23 +14,39 @@ public class DitHierarchy {
 
 	public int dit;
 	public String element;
-	public int inheritedMethodCount;
+	public String path;
+	public boolean isInterface;
 	public Stack<List<DitHierarchy>> tree;
 	public List<DitHierarchy> ancestors;
-	protected int elementMethodCount;
-
+	public int inheritedMethodCount;
+	public int elementMethodCount;
+	
 	public DitHierarchy(JavaElement element) {
-		this.element = element.getName();
+		init(element);
+		// Get all the methods for the element that this metric is for
 		elementMethodCount = element.getWeightedMethodCount();
-		tree = new Stack<>();
-		ancestors = new ArrayList<>();
 		buildTree(element);
 	}
 
+	private DitHierarchy(JavaElement element, boolean isParent) {
+		init(element);
+		elementMethodCount = element.getInheritableMethodCount();
+		buildTree(element);
+	}
+	
+	private void init(JavaElement element) {
+		this.element = element.getFullyQualifiedName();
+		path = element.getPackageName().replace(".", "/");
+		isInterface = element.isInterface();
+		tree = new Stack<>();
+		ancestors = new ArrayList<>();
+	}
+	
 	private void buildTree(JavaElement element) {
 		List<DitHierarchy> holder = travelHierarchies(element);
 		ancestors = holder;
-		dit = tree.size();
+		// +1 for classes since they inherit from java.lang.Object 
+		dit = tree.size() + (isInterface ? 0 : 1);
 	}
 
 	private List<DitHierarchy> travelHierarchies(JavaElement element) {
@@ -44,11 +60,14 @@ public class DitHierarchy {
 		List<DitHierarchy> hierarchies = new ArrayList<>();
 		if (!parents.isEmpty()) {
 			for (JavaElement parent : parents) {
-				DitHierarchy parentHierarchy = new DitHierarchy(parent);
+				DitHierarchy parentHierarchy = new DitHierarchy(parent, true);
 				hierarchies.add(parentHierarchy);
 				
 				List<DitHierarchy> parentHierarchies = travelHierarchies(parent);
 				parentHierarchy.tree.add(parentHierarchies);
+				
+				// Add to the inherited method count
+				inheritedMethodCount += parentHierarchy.elementMethodCount;
 			}
 			tree.add(hierarchies);
 		}

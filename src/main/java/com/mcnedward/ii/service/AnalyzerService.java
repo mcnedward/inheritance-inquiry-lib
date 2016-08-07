@@ -28,7 +28,7 @@ public final class AnalyzerService {
 	public JavaSolution analyze(JavaProject project) {
 		JavaSolution solution = initSolution(project);
 
-		calculateMetricsAndTrees(project, solution, true);
+		calculateMetricsAndTrees(project, solution, false);
 		calculateMethods(project, solution);
 
 		return solution;
@@ -39,7 +39,7 @@ public final class AnalyzerService {
 		calculateMetricsAndTrees(project, solution, false);
 		return solution;
 	}
-	
+
 	public JavaSolution analyzeForDit(JavaProject project, int ditLimit) {
 		JavaSolution solution = initSolution(project);
 		// Setup the DIT metrics
@@ -51,6 +51,16 @@ public final class AnalyzerService {
 				solution.addDitHierarchy(tree);
 			}
 		}
+		return solution;
+	}
+
+	public JavaSolution analyzeForNoc(JavaProject project) {
+		JavaSolution solution = initSolution(project);
+		// Setup the DIT metrics
+		for (JavaElement element : project.getAllElements()) {
+			calculateNumberOfChildren(project, element, solution, true);
+		}
+		
 		return solution;
 	}
 
@@ -66,8 +76,8 @@ public final class AnalyzerService {
 	public void calculateMetricsAndTrees(JavaProject project, JavaSolution solution, boolean ignoreZero) {
 		for (JavaElement element : project.getAllElements()) {
 			calculateDepthOfInheritanceTree(project, element, solution, ignoreZero);
-			calculateNumberOfChildren(element, project, solution, ignoreZero);
-			calculateWeightedMethodsPerClass(element, project, solution, ignoreZero);
+			calculateNumberOfChildren(project, element, solution, ignoreZero);
+			calculateWeightedMethodsPerClass(project, element, solution, ignoreZero);
 			calculateNocHierarchyTrees(element, project, solution);
 		}
 	}
@@ -88,7 +98,7 @@ public final class AnalyzerService {
 	private int calculateDepthOfInheritanceTree(JavaProject project, JavaElement element, JavaSolution solution, boolean ignoreZero) {
 		DitHierarchy hierarchy = new DitHierarchy(element);
 		solution.addDitHierarchy(hierarchy);
-		
+
 		int dit = hierarchy.dit;
 		int numberOfInheritedMethods = hierarchy.inheritedMethodCount;
 		if (ignoreZero) {
@@ -114,9 +124,17 @@ public final class AnalyzerService {
 	 *            If this is true, then the Analyzer will ignore metrics whose value is zero.
 	 * @return int The Number of Children
 	 */
-	private int calculateNumberOfChildren(JavaElement element, JavaProject project, JavaSolution solution, boolean ignoreZero) {
+	private int calculateNumberOfChildren(JavaProject project, JavaElement element, JavaSolution solution, boolean ignoreZero) {
 		List<JavaElement> classChildren = project.findNumberOfChildrenFor(element);
 		int noc = classChildren.size();
+		
+		NocHierarchy tree = new NocHierarchy(project, element);
+		if (tree.hasChildren)
+			solution.addNocHeirarchy(tree);
+		
+		if (noc > 40) {
+			IILogger.info("NOC for %s is %s", element.getName(), noc);
+		}
 		if (ignoreZero) {
 			if (noc > 0) {
 				solution.addNocMetric(new NocMetric(element, noc, classChildren));
@@ -140,7 +158,7 @@ public final class AnalyzerService {
 	 *            If this is true, then the Analyzer will ignore metrics whose value is zero.
 	 * @return int The Weighted Methods per Class
 	 */
-	private int calculateWeightedMethodsPerClass(JavaElement element, JavaProject project, JavaSolution solution, boolean ignoreZero) {
+	private int calculateWeightedMethodsPerClass(JavaProject project, JavaElement element, JavaSolution solution, boolean ignoreZero) {
 		int wmc = element.getMethods().size();
 		if (ignoreZero) {
 			if (wmc > 0) {
@@ -168,12 +186,14 @@ public final class AnalyzerService {
 			JavaElement parent = child.getSuperClasses().get(0);
 			for (JavaMethod childMethod : child.getMethods()) {
 				IMethodBinding childBinding = childMethod.getMethodBinding();
-				if (childBinding == null) continue;
-				
+				if (childBinding == null)
+					continue;
+
 				for (JavaMethod parentMethod : parent.getMethods()) {
 					IMethodBinding parentBinding = parentMethod.getMethodBinding();
-					if (parentBinding == null) continue;
-					
+					if (parentBinding == null)
+						continue;
+
 					if (childBinding.overrides(parentBinding)) {
 						// Add override method to solution
 						solution.addOMethod(new SolutionMethod(childMethod.getName(), childMethod.getSignature(), parent.getName(), child.getName()));

@@ -29,8 +29,8 @@ public final class GraphService {
 
 	public boolean buildGraphs(JavaSolution solution) {
 		try {
-			buildOverriddenMethodsGraph(solution);
-			buildExtendedMethodsGraph(solution);
+			// buildOverriddenMethodsGraph(solution);
+			// buildExtendedMethodsGraph(solution);
 			buildDitHierarchyTreeGraph(solution);
 			buildNocHierarchyTreeGraphs(solution);
 			return true;
@@ -52,7 +52,7 @@ public final class GraphService {
 		buildMethodsGraph(solution, methods, GType.EMETHODS);
 	}
 
-	private void buildMethodsGraph(JavaSolution solution, List<SolutionMethod> methods, GType graphType) throws GraphBuildException {
+	public void buildMethodsGraph(JavaSolution solution, List<SolutionMethod> methods, GType graphType) throws GraphBuildException {
 		IILogger.info("Building graph for solution methods in solution %s...", solution.getSystemName());
 		List<Node> nodes = new ArrayList<>();
 		List<Edge> edges = new ArrayList<>();
@@ -86,7 +86,7 @@ public final class GraphService {
 			Node hierarchyNode = new Node(ditH.element);
 			nodes.add(hierarchyNode);
 
-			Edge edge = new Edge("", parentNode, hierarchyNode);
+			Edge edge = new Edge(String.valueOf(ditH.inheritedMethodCount), parentNode, hierarchyNode);
 			edges.add(edge);
 
 			recurseDit(ditH.ancestors, nodes, edges, hierarchyNode);
@@ -94,36 +94,66 @@ public final class GraphService {
 	}
 
 	public boolean buildDitHierarchyTreeGraph(JavaSolution solution) throws GraphBuildException {
+		return buildDitHierarchyTreeGraph(solution, null);
+	}
+
+	public boolean buildDitHierarchyTreeGraph(JavaSolution solution, Integer ditLimit) throws GraphBuildException {
 		IILogger.info("Building graph for DIT hierarchy tree in solution %s...", solution.getSystemName());
 		List<DitHierarchy> trees = solution.getDitHierarchies();
 		List<Node> nodes = new ArrayList<>();
 		List<Edge> edges = new ArrayList<>();
 
 		for (DitHierarchy hierarchy : trees) {
+			if (hierarchy.dit == 0 || hierarchy.isInterface || (ditLimit != null && hierarchy.dit < ditLimit))
+				continue;
+			// Skip elements that have generic parameters
+			// TODO This is messy, and should be fixed in the Visitors, but I don't have time for that now...
+			if (hierarchy.element.contains("<") && hierarchy.element.contains(">"))
+				continue;
 			Node parent = new Node(hierarchy.element);
 			nodes.add(parent);
 			recurseDit(hierarchy.ancestors, nodes, edges, parent);
-		}
 
-		JungGraph graph = new JungGraph(500, 200);
-		graph.plotGraph(nodes, edges);
-		try {
-			BufferedImage image = graph.createImage();
-			writeToFile(solution, GType.I_TREE, image);
-			return true;
-		} catch (OutOfMemoryError e) {
-			IILogger.error(String.format("Could not create an inheritance tree graph for %s...", solution.getSystemName()), e);
-			return false;
+			JungGraph graph = new JungGraph(500, 200);
+			graph.plotGraph(nodes, edges);
+			try {
+				BufferedImage image = graph.createImage();
+				writeToFile(solution, GType.I_TREE, image, hierarchy.path, hierarchy.element);
+			} catch (OutOfMemoryError e) {
+				IILogger.error(String.format("Could not create an inheritance tree graph for %s...", solution.getSystemName()), e);
+				return false;
+			}
+
+			nodes.clear();
+			edges.clear();
 		}
+		return true;
 	}
 
 	public void buildNocHierarchyTreeGraphs(JavaSolution solution) throws GraphBuildException {
+		buildNocHierarchyTreeGraphs(solution, null);
+	}
+
+	/**
+	 * Builds the NOC hierarchy tree. If the nocLimit is not null, then only trees with an NOC higher than the limit
+	 * will be created.
+	 * 
+	 * @param solution
+	 * @param nocLimit
+	 * @throws GraphBuildException
+	 */
+	public void buildNocHierarchyTreeGraphs(JavaSolution solution, Integer nocLimit) throws GraphBuildException {
 		IILogger.info("Building graph for NOC hierarchy tree in solution %s...", solution.getSystemName());
 		List<NocHierarchy> trees = solution.getNocHierarchies();
 		Stack<Node> nodes = new Stack<>();
 		Stack<Edge> edges = new Stack<>();
 
 		for (NocHierarchy tree : trees) {
+			if (nocLimit != null) {
+				if (tree.noc < nocLimit) {
+					continue;
+				}
+			}
 			String parentElement = tree.element;
 			Node parentNode = new Node(parentElement);
 			nodes.add(parentNode);
@@ -141,14 +171,14 @@ public final class GraphService {
 	}
 
 	private void recurseHierarchyTrees(NocHierarchy tree, Node parentNode, Stack<Node> nodes, Stack<Edge> edges) {
-		Stack<NocHierarchy> hierarchyTree = tree.hierarchyTrees;
+		Stack<NocHierarchy> hierarchyTree = tree.tree;
 		while (!hierarchyTree.isEmpty()) {
 			NocHierarchy childTree = hierarchyTree.pop();
 			String element = childTree.element;
 
 			Node childNode = new Node(element);
 			nodes.add(childNode);
-			edges.add(new Edge(String.valueOf(tree.inheritedMethodCount), parentNode, childNode));
+			edges.add(new Edge(String.valueOf(childTree.inheritedMethodCount), parentNode, childNode));
 
 			recurseHierarchyTrees(childTree, childNode, nodes, edges);
 		}
@@ -172,7 +202,7 @@ public final class GraphService {
 			File file = new File(filePath);
 			ImageIO.write(image, IMAGE_TYPE, file);
 
-			IILogger.info(String.format("Created graph for project [%s]! [%s]", solution.getProjectName(), filePath));
+			IILogger.debug(String.format("Created graph for project [%s]! [%s]", solution.getProjectName(), filePath));
 		} catch (Exception e) {
 			throw new GraphBuildException(String.format("There was a problem creating the graph for project [%s]...", solution.getProjectName()), e);
 		}

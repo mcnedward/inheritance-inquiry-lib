@@ -8,8 +8,8 @@ import java.util.List;
 
 import com.mcnedward.ii.element.JavaSolution;
 import com.mcnedward.ii.exception.MetricBuildException;
-import com.mcnedward.ii.service.metric.element.DitMetric;
-import com.mcnedward.ii.service.metric.element.NocMetric;
+import com.mcnedward.ii.service.graph.element.DitHierarchy;
+import com.mcnedward.ii.service.graph.element.NocHierarchy;
 import com.mcnedward.ii.service.metric.element.WmcMetric;
 import com.mcnedward.ii.utils.IILogger;
 
@@ -61,23 +61,24 @@ public final class MetricService {
 	}
 
 	private void buildDitMetrics(JavaSolution solution) throws MetricBuildException {
-		List<DitMetric> ditMetrics = solution.getDitMetrics();
+		List<DitHierarchy> ditHierarchies = solution.getDitHierarchies();
 		MType metricType = MType.DIT;
 
 		String docTitle = getDocTitle(solution, metricType);
-		String rowTitles = getRowTitles(metricType, "Number of Inherited Methods");
+		String rowTitles = getRowTitles(metricType, "Number of Inherited Methods" + DELIMITER + "Total Number of Methods");
 
 		StringBuilder builder = new StringBuilder(docTitle + NEWLINE);
 		builder.append(rowTitles + NEWLINE);
-		for (DitMetric metric : ditMetrics) {
-			builder.append(buildRow(metric.fullyQualifiedName, metric.metric, String.valueOf(metric.numberOfInheritedMethods)) + NEWLINE);
+		for (DitHierarchy hierarchy : ditHierarchies) {
+			builder.append(buildRow(hierarchy.element, hierarchy.dit, String.valueOf(hierarchy.inheritedMethodCount)) + DELIMITER
+					+ String.valueOf(hierarchy.elementMethodCount) + NEWLINE);
 		}
 
 		writeToFile(solution, metricType, builder.toString());
 	}
 
 	private void buildNocMetrics(JavaSolution solution) throws MetricBuildException {
-		List<NocMetric> nocMetrics = solution.getNocMetrics();
+		List<NocHierarchy> nocMetrics = solution.getNocHierarchies();
 		MType metricType = MType.NOC;
 
 		String docTitle = getDocTitle(solution, metricType);
@@ -85,8 +86,8 @@ public final class MetricService {
 
 		StringBuilder builder = new StringBuilder(docTitle + NEWLINE);
 		builder.append(rowTitles + NEWLINE);
-		for (NocMetric metric : nocMetrics) {
-			builder.append(buildRow(metric.fullyQualifiedName, metric.metric, metric.classChildren.toString()) + NEWLINE);
+		for (NocHierarchy metric : nocMetrics) {
+			builder.append(buildRow(metric.element, metric.noc, metric.tree.toString()) + NEWLINE);
 		}
 
 		writeToFile(solution, metricType, builder.toString());
