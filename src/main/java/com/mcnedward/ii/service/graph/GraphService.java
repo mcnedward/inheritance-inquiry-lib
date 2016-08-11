@@ -195,13 +195,13 @@ public final class GraphService {
 		List<FullHierarchy> trees = solution.getFullHierarchies();
 		for (FullHierarchy tree : trees) {
 			if (tree.elementName.equals(elementName)) {
-				String parentElement = tree.fullElementName;
-				Node parentNode = new Node(parentElement);
+				String parentElement = tree.elementName;
+				Node parentNode = new Node(parentElement, tree.isInterface);
 				nodes.add(parentNode);
 				// Create an individual graph for each hierarchy tree
 				recurseFullHierarchyTrees(tree, parentNode, nodes, edges);
 
-				JungGraph graph = new JungGraph(500, 100);
+				JungGraph graph = new JungGraph();
 				graph.plotGraph(nodes, edges);
 				BufferedImage image = graph.createImage();
 				writeToFile(solution, GType.H_TREE, image, HIERARCHY_TREE_DIRECTORY, tree.fullElementName);
@@ -217,23 +217,23 @@ public final class GraphService {
 	}
 	
 	private void recurseFullHierarchyTrees(FullHierarchy tree, Node parentNode, List<Node> nodes, List<Edge> edges) {
-		Collection<FullHierarchy> subTrees = tree.subclasses;
+		Collection<FullHierarchy> subTrees = tree.exts;
 		for (FullHierarchy subclass : subTrees) {
-			String element = subclass.fullElementName;
+			String element = subclass.elementName;
 
-			Node childNode = new Node(element);
+			Node childNode = new Node(element, subclass.isInterface);
 			nodes.add(childNode);
-			edges.add(new Edge("e", parentNode, childNode));
+			edges.add(new Edge("extends", parentNode, childNode));
 
 			recurseFullHierarchyTrees(subclass, childNode, nodes, edges);
 		}
 		Collection<FullHierarchy> implTrees = tree.impls;
 		for (FullHierarchy impl : implTrees) {
-			String element = impl.fullElementName;
+			String element = impl.elementName;
 
-			Node childNode = new Node(element, true);
+			Node childNode = new Node(element, impl.isInterface);
 			nodes.add(childNode);
-			edges.add(new Edge("i", parentNode, childNode));
+			edges.add(new Edge("implements", parentNode, childNode, true));
 
 			recurseFullHierarchyTrees(impl, childNode, nodes, edges);
 		}

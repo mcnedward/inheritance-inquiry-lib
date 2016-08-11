@@ -52,8 +52,8 @@ public class JungGraph extends JFrame {
 	private Map<String, Edge> mEdgeMap;
 
 	// Distance between graphs
-	private static final int DEFAULT_X_DIST = 200;
-	private static final int DEFAULT_Y_DIST = 200;
+	private static final int DEFAULT_X_DIST = 150;
+	private static final int DEFAULT_Y_DIST = 300;
 	private int mXDist;
 	private int mYDist;
 
@@ -100,7 +100,7 @@ public class JungGraph extends JFrame {
 			server.setBackground(Color.WHITE);
 
 			RenderContext<String, String> context = server.getRenderContext();
-
+			
 			context.setVertexShapeTransformer(vertexShapeTransformer());
 			context.setVertexFillPaintTransformer(vertexFillPaintTransformer());
 			context.setVertexLabelTransformer(vertexLabelTransformer());
@@ -109,6 +109,8 @@ public class JungGraph extends JFrame {
 
 			context.setEdgeStrokeTransformer(edgeStrokeTransformer());
 			context.setEdgeLabelTransformer(edgeLabelTransformer());
+			context.setArrowDrawPaintTransformer(arrowFillPaintTransformer());
+			context.setArrowFillPaintTransformer(arrowFillPaintTransformer());
 			server.getRenderer().setEdgeRenderer(new ReverseEdgeRenderer<String, String>());
 		} catch (Exception e) {
 			throw new GraphBuildException("There was a problem with configuring the graph...", e);
@@ -162,7 +164,7 @@ public class JungGraph extends JFrame {
 				int x = -(width / 2);
 				int y = -15;
 				Rectangle2D rect = new java.awt.geom.Rectangle2D.Double(x, y, width, height);
-				rect.getBounds().grow(200, 200);
+				rect.getBounds().grow(100, 250);
 				return rect;
 			}
 		};
@@ -185,7 +187,12 @@ public class JungGraph extends JFrame {
 			public <V> Component getVertexLabelRendererComponent(JComponent vv, Object nodeName, Font font, boolean isSelected, V vertex) {
 				super.setForeground(Color.BLACK);
 
-				Node node = mNodeMap.get(nodeName);
+				Node node = null;
+				for (Map.Entry<String, Node> entry : mNodeMap.entrySet()) {
+					Node n = entry.getValue();
+					if (n.name().equals(nodeName))
+						node = n;
+				}
 				int fontStyle;
 				if (node != null && node.isInterface()) {
 					fontStyle = Font.ITALIC;
@@ -199,7 +206,7 @@ public class JungGraph extends JFrame {
 				} else {
 					currentFont = vv.getFont();
 				}
-				Font theFont = new Font(currentFont.getName(), fontStyle, currentFont.getSize());
+				Font theFont = new Font(currentFont.getName(), fontStyle, 18);
 				setFont(theFont);
 				setIcon(null);
 				setBorder(noFocusBorder);
@@ -211,9 +218,14 @@ public class JungGraph extends JFrame {
 
 	private final Transformer<String, Stroke> edgeStrokeTransformer() {
 		return new Transformer<String, Stroke>() {
+			private final Stroke NORMAL = new BasicStroke(1.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER);
+			private final Stroke DASHED = new BasicStroke(3, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{9}, 0);
 			@Override
-			public Stroke transform(String s) {
-				return new BasicStroke(1.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER);
+			public Stroke transform(String edgeName) {
+				Edge edge = mEdgeMap.get(edgeName);
+				if (edge.isImplements())
+					return DASHED;
+				return NORMAL; 
 			}
 		};
 	}
@@ -224,6 +236,19 @@ public class JungGraph extends JFrame {
 			public String transform(String edgeName) {
 				Edge edge = mEdgeMap.get(edgeName);
 				return edge.name();
+			}
+		};
+	}
+	
+	private final Transformer<String, Paint> arrowFillPaintTransformer() {
+		return new Transformer<String, Paint>() {
+			@Override
+			public Paint transform(String edgeName) {
+				Edge edge = mEdgeMap.get(edgeName);
+				if (edge.isImplements())
+					return Color.WHITE;
+				else
+					return Color.BLACK;
 			}
 		};
 	}

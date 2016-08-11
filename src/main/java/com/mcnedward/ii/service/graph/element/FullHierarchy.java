@@ -16,7 +16,7 @@ public class FullHierarchy {
 	public String elementName;
 	public String fullElementName;
 	public boolean isInterface;
-	public Collection<FullHierarchy> subclasses;
+	public Collection<FullHierarchy> exts;
 	public Collection<FullHierarchy> impls;
 	
 	/**
@@ -39,42 +39,44 @@ public class FullHierarchy {
 		elementName = element.getName();
 		fullElementName = element.getFullyQualifiedName();
 		isInterface = element.isInterface();
-		subclasses = new ArrayList<>();
+		exts = new ArrayList<>();
 		impls = new ArrayList<>();
 	}
 	
 	protected void buildTree(JavaElement element, Collection<JavaElement> projectElements) {
-		subclasses.addAll(findSubClasses(element, projectElements));
-		impls.addAll(findInterfaceChildren(element, projectElements));
+		findSubClasses(element, projectElements);
+		findInterfaceChildren(element, projectElements);
 	}
 	
-	private Collection<FullHierarchy> findSubClasses(JavaElement element, Collection<JavaElement> projectElements) {
-		List<FullHierarchy> subclasses = new ArrayList<>();
-		
+	private void findSubClasses(JavaElement element, Collection<JavaElement> projectElements) {
 		for (JavaElement projectElement : projectElements) {
 			if (projectElement.getSuperClasses().contains(element)) {
-				subclasses.add(new FullHierarchy(projectElements, projectElement));
+				exts.add(new FullHierarchy(projectElements, projectElement));
 			}
 		}
-		
-		return subclasses;
 	}
 	
-	private Collection<FullHierarchy> findInterfaceChildren(JavaElement element, Collection<JavaElement> projectElements) {
-		List<FullHierarchy> children = new ArrayList<>();
-		
+	private void findInterfaceChildren(JavaElement element, Collection<JavaElement> projectElements) {
 		for (JavaElement projectElement : projectElements) {
 			if (projectElement.getInterfaces().contains(element)) {
-				children.add(new FullHierarchy(projectElements, projectElement));
+				FullHierarchy full = new FullHierarchy(projectElements, projectElement);	
+				if (isInterface) {
+					if (projectElement.isInterface()) {
+						exts.add(full);
+					} else {
+						impls.add(full);
+					}
+				} else {
+					// Otherwise, this element is a class and is implementing the projectElement
+					impls.add(new FullHierarchy(projectElements, projectElement));
+				}
 			}
 		}
-		
-		return children;
 	}
 
 	@Override
 	public String toString() {
-		return elementName + " - sub[" + subclasses.size() + "] - impl[" + impls.size() + "]";
+		return elementName + " - sub[" + exts.size() + "] - impl[" + impls.size() + "]";
 	}
 	
 }

@@ -12,12 +12,18 @@ public class Edge implements IGraphItem {
 	private Node mTo;
 	private int mId;
 	private String mName;
+	private boolean mIsImplements;
 	
 	public Edge(String name, Node to, Node from) {
+		this(name, to, from, false);
+	}
+	
+	public Edge(String name, Node to, Node from, boolean isImplements) {
 		mId = EDGE_ID++;
 		mName = name;
 		mTo = to;
 		mFrom = from;
+		mIsImplements = isImplements;
 	}
 	
 	public Node from() {
@@ -26,6 +32,10 @@ public class Edge implements IGraphItem {
 	
 	public Node to() {
 		return mTo;
+	}
+	
+	public boolean isImplements() {
+		return mIsImplements;
 	}
 
 	@Override

@@ -64,6 +64,21 @@ public final class AnalyzerService {
 		
 		return solution;
 	}
+	
+	public JavaSolution analyzeForFullHierarchy(JavaProject project, String elementToFind) {
+		JavaSolution solution = initSolution(project);
+		for (JavaElement element : project.getAllElements()) {
+			if (elementToFind != null) {
+				if (!elementToFind.equals(element.getName())) continue;
+			}
+			calculateFullHierarcyTrees(element, project, solution);
+		}
+		return solution;
+	}
+	
+	public JavaSolution analyzeForFullHierarchy(JavaProject project) {
+		return analyzeForFullHierarchy(project, null);
+	}
 
 	/**
 	 * Calculates the Depth of Inheritance Tree for all {@link JavaElement}s in the {@link JavaProject}.
