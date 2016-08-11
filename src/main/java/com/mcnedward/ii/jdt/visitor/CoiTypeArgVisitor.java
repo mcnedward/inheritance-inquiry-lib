@@ -44,8 +44,8 @@ public class CoiTypeArgVisitor extends JavaElementVisitor {
 		}
 
 		// Element is not generic, create if it doesn't exist. Also set the isInterface here
-		JavaElement element = findOrCreateElement(name, binding);
-		element.setIsInterface(mIsInterface);
+		JavaElement element = findOrCreateElement(name, binding, mIsInterface);
+//		element.setIsInterface(mIsInterface);
 		mCoi.addTypeArg(element);
 
 		return false;

@@ -28,6 +28,10 @@ public abstract class JavaElementVisitor extends JavaProjectVisitor {
 	}
 
 	protected JavaElement findOrCreateElement(String name, ITypeBinding binding) {
+		return findOrCreateElement(name, binding, false);
+	}
+	
+	protected JavaElement findOrCreateElement(String name, ITypeBinding binding, boolean isInterface) {
 		String packageName = checkImportsForPackage(name, parentElement().getImports());
 		if (packageName == null) {
 			if (binding != null) {
@@ -38,7 +42,7 @@ public abstract class JavaElementVisitor extends JavaProjectVisitor {
 			}
 		}
 
-		return project().findOrCreateElement(packageName, name);
+		return project().findOrCreateElement(packageName, name, isInterface);
 	}
 
 	/**

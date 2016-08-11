@@ -21,7 +21,7 @@ public final class ProjectBuilder extends Builder {
 	protected static final String HIBERNATE_PROJECT_NAME = "hibernate";
 	protected static final String HIBERNATE_PROJECT_PATH = QUALITUS_CORPUS_SYSTEMS_PATH + "hibernate/hibernate-0.8.1";
 	protected static final String JHOTDRAW_PROJECT_NAME = "JHotdraw";
-	protected static final String JHOTDRAW_PROJECT_PATH = "C:/Users/Edward/Dev/jhotdraw-6.0.1";
+	protected static final String JHOTDRAW_PROJECT_PATH = "C:/Users/Edward/Dev/Workspace/JHD_2016_1.0.0";
 	
 	public ProjectBuilder() {
 		super();

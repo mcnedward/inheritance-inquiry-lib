@@ -22,8 +22,8 @@ public class JavaElement {
 	private List<GenericParameter> mGenericTypeArgs;
 	private List<JavaMethod> mMethods;
 	private List<String> mMissingTypeArgs, mMissingClassOrInterfaceList;
-	private boolean mIsInterface;
 	private File mSourceFile;
+	private boolean mIsInterface;
 
 	public JavaElement() {
 		mImports = new ArrayList<>();
@@ -34,22 +34,23 @@ public class JavaElement {
 		mMissingTypeArgs = new ArrayList<>();
 		mMissingClassOrInterfaceList = new ArrayList<>();
 	}
-
+	
 	public JavaElement(String name, JavaPackage javaPackage) {
-		this(name, false); // Default to not an interface
+		this();
+		mName = name;
 		mPackage = javaPackage;
 		mPackageName = javaPackage.getName();
 	}
-
-	public JavaElement(String name, boolean isInterface) {
-		this();
-		mName = name;
+	
+	public JavaElement(String name, JavaPackage javaPackage, boolean isInterface) {
+		this(name, javaPackage);
 		mIsInterface = isInterface;
 	}
-	
+
 	public JavaElement(String name) {
 		this();
 		mName = name;
+		mPackageName = "default";
 	}
 
 	public void addImport(String importName) {
@@ -231,14 +232,6 @@ public class JavaElement {
 		return mMissingClassOrInterfaceList;
 	}
 
-	public boolean isInterface() {
-		return mIsInterface;
-	}
-
-	public void setIsInterface(boolean isInterface) {
-		mIsInterface = isInterface;
-	}
-
 	public File getSourceFile() {
 		return mSourceFile;
 	}
@@ -247,6 +240,14 @@ public class JavaElement {
 		mSourceFile = sourceFile;
 	}
 
+	public boolean isInterface() {
+		return mIsInterface;
+	}
+
+	public void setIsInterface(boolean isInterface) {
+		mIsInterface = isInterface;
+	}
+	
 	@Override
 	public String toString() {
 		return getFullyQualifiedName();

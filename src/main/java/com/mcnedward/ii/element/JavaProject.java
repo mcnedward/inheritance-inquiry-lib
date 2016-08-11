@@ -141,6 +141,10 @@ public class JavaProject {
 	}
 
 	public JavaElement findOrCreateElement(String packageName, String elementName) {
+		return findOrCreateElement(packageName, elementName, false);
+	}
+	
+	public JavaElement findOrCreateElement(String packageName, String elementName, boolean isInterface) {
 		JavaElement element = null;
 		if (packageName == null) {
 			// Use default package
@@ -151,14 +155,14 @@ public class JavaProject {
 			// Package does not exist yet, so create it
 			// Add the class to the package, and the package to the project
 			javaPackage = new JavaPackage(packageName);
-			element = new JavaElement(elementName, javaPackage);
+			element = new JavaElement(elementName, javaPackage, isInterface);
 			javaPackage.addElement(element);
 			addPackage(javaPackage);
 		} else {
 			// Find the class in the package
 			element = javaPackage.find(elementName);
 			if (element == null) {
-				element = new JavaElement(elementName, javaPackage);
+				element = new JavaElement(elementName, javaPackage, isInterface);
 				javaPackage.addElement(element);
 			}
 		}
@@ -268,10 +272,12 @@ public class JavaProject {
 		return mInterfaces;
 	}
 
+	private List<JavaElement> mCachedElements;
 	public List<JavaElement> getAllElements() {
-		List<JavaElement> elements = new ArrayList<>(getClasses());
-		elements.addAll(getInterfaces());
-		return elements;
+		if (mCachedElements != null) return mCachedElements;
+		mCachedElements = new ArrayList<>(getClasses());
+		mCachedElements.addAll(getInterfaces());
+		return mCachedElements;
 	}
 
 	/**

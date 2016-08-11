@@ -5,6 +5,7 @@ import java.io.File;
 import com.mcnedward.ii.builder.Builder;
 import com.mcnedward.ii.element.JavaProject;
 import com.mcnedward.ii.element.JavaSolution;
+import com.mcnedward.ii.exception.GraphBuildException;
 import com.mcnedward.ii.exception.TaskBuildException;
 import com.mcnedward.ii.listener.ProjectBuildListener;
 import com.mcnedward.ii.service.AnalyzerService;
@@ -68,7 +69,7 @@ public abstract class IIJob<T> implements Job<T> {
 		return analyze(project);
 	}
 	
-	protected abstract T doWork(JavaSolution solution) throws TaskBuildException;
+	protected abstract T doWork(JavaSolution solution) throws TaskBuildException, GraphBuildException;
 
 	protected JavaSolution analyze(JavaProject project) {
 		return mAnalyzerService.analyze(project);

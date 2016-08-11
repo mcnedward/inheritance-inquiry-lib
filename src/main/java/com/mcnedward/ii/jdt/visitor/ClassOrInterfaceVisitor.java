@@ -32,8 +32,7 @@ public class ClassOrInterfaceVisitor extends JavaElementVisitor {
 		String name = node.getType().toString();
 		ITypeBinding binding = node.resolveBinding();
 
-		JavaElement element = findOrCreateElement(name, binding);
-		element.setIsInterface(mIsInterface);
+		JavaElement element = findOrCreateElement(name, binding, mIsInterface);
 		
 		ClassOrInterfaceElement coi = new ClassOrInterfaceElement(element);
 		parentElement().addClassOrInterface(coi);

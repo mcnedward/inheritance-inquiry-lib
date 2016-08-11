@@ -28,8 +28,7 @@ public class SimpleTypeVisitor extends JavaElementVisitor {
 		ITypeBinding binding = node.resolveBinding();
 
 		// Element is not generic, create if it doesn't exist. Also set the isInterface here
-		JavaElement element = findOrCreateElement(name, binding);
-		element.setIsInterface(mIsInterface);
+		JavaElement element = findOrCreateElement(name, binding, mIsInterface);
 		parentElement().addClassOrInterface(new ClassOrInterfaceElement(element));
 
 		return false;

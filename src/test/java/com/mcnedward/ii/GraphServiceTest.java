@@ -3,7 +3,6 @@ package com.mcnedward.ii;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.mcnedward.ii.element.ClassOrInterfaceElement;
@@ -20,7 +19,6 @@ import com.mcnedward.ii.service.graph.element.DitHierarchy;
 public class GraphServiceTest extends ProjectTest {
 
 	@Test
-	@Ignore
 	public void service_buildsCorrectGraphForInheritance() throws GraphBuildException {
 		// Arrange
 		JavaElement base = new JavaElement("base");
@@ -29,7 +27,7 @@ public class GraphServiceTest extends ProjectTest {
 		ClassOrInterfaceElement parent1Coi = new ClassOrInterfaceElement(parent1);
 		JavaElement parent2 = new JavaElement("parent2");
 		ClassOrInterfaceElement parent2Coi = new ClassOrInterfaceElement(parent2);
-		JavaElement element = new JavaElement("element");
+		JavaElement element = new JavaElement("class");
 
 		element.addClassOrInterface(parent2Coi);
 		parent2.addClassOrInterface(parent1Coi);
@@ -57,7 +55,7 @@ public class GraphServiceTest extends ProjectTest {
 		ClassOrInterfaceElement parent1Coi = new ClassOrInterfaceElement(parent1);
 		JavaElement parent2 = new JavaElement("parent2");
 		ClassOrInterfaceElement parent2Coi = new ClassOrInterfaceElement(parent2);
-		JavaElement element = new JavaElement("element");
+		JavaElement element = new JavaElement("interface");
 
 		base.setIsInterface(true);
 		parent1.setIsInterface(true);
