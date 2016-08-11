@@ -10,10 +10,16 @@ public class Node implements IGraphItem {
 	
 	private int mId;
 	private String mName;
+	private boolean mIsInterface;
 	
 	public Node(String name) {
 		mId = NODE_ID++;
 		mName = name;
+	}
+	
+	public Node(String name, boolean isInterface) {
+		this(name);
+		mIsInterface = isInterface;
 	}
 	
 	@Override
@@ -24,6 +30,10 @@ public class Node implements IGraphItem {
 	@Override
 	public String name() {
 		return mName;
+	}
+	
+	public boolean isInterface() {
+		return mIsInterface;
 	}
 	
 	@Override

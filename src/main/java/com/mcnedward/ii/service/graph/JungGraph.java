@@ -142,8 +142,12 @@ public class JungGraph extends JFrame {
 	private final Transformer<String, Paint> vertexFillPaintTransformer() {
 		return new Transformer<String, Paint>() {
 			@Override
-			public Paint transform(String input) {
-				return Color.WHITE;
+			public Paint transform(String nodeName) {
+				Node node = mNodeMap.get(nodeName);
+				if (node.isInterface())
+					return Color.LIGHT_GRAY;
+				else
+					return Color.WHITE;
 			}
 		};
 	}
@@ -178,17 +182,28 @@ public class JungGraph extends JFrame {
 		return new DefaultVertexLabelRenderer(Color.BLACK) {
 			private static final long serialVersionUID = 1909972527171078432L;
 
-			public <V> Component getVertexLabelRendererComponent(JComponent vv, Object value, Font font, boolean isSelected, V vertex) {
+			public <V> Component getVertexLabelRendererComponent(JComponent vv, Object nodeName, Font font, boolean isSelected, V vertex) {
 				super.setForeground(Color.BLACK);
 
-				if (font != null) {
-					setFont(font);
+				Node node = mNodeMap.get(nodeName);
+				int fontStyle;
+				if (node != null && node.isInterface()) {
+					fontStyle = Font.ITALIC;
 				} else {
-					setFont(vv.getFont());
+					fontStyle = Font.PLAIN;
 				}
+				
+				Font currentFont;
+				if (font != null) {
+					currentFont = font;
+				} else {
+					currentFont = vv.getFont();
+				}
+				Font theFont = new Font(currentFont.getName(), fontStyle, currentFont.getSize());
+				setFont(theFont);
 				setIcon(null);
 				setBorder(noFocusBorder);
-				setValue(value);
+				setValue(nodeName);
 				return this;
 			}
 		};

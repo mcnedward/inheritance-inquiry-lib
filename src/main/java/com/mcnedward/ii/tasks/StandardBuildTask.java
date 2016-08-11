@@ -3,6 +3,7 @@ package com.mcnedward.ii.tasks;
 import java.io.File;
 
 import com.mcnedward.ii.element.JavaSolution;
+import com.mcnedward.ii.exception.GraphBuildException;
 import com.mcnedward.ii.listener.ProjectBuildListener;
 
 /**
@@ -20,9 +21,10 @@ public class StandardBuildTask extends IIJob<Void> {
 	}
 
 	@Override
-	public Void doWork(JavaSolution solution) {
-		metricService().buildMetrics(solution);
-		graphService().buildGraphs(solution);
+	public Void doWork(JavaSolution solution) throws GraphBuildException {
+//		metricService().buildMetrics(solution);
+//		graphService().buildGraphs(solution);
+		graphService().buildFullHierarchyTreeGraph(solution, "Figure");
 		return null;
 	}
 

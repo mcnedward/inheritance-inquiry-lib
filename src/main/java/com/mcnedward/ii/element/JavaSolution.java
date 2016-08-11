@@ -3,8 +3,9 @@ package com.mcnedward.ii.element;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.mcnedward.ii.service.graph.element.NocHierarchy;
 import com.mcnedward.ii.service.graph.element.DitHierarchy;
+import com.mcnedward.ii.service.graph.element.FullHierarchy;
+import com.mcnedward.ii.service.graph.element.NocHierarchy;
 import com.mcnedward.ii.service.graph.element.SolutionMethod;
 import com.mcnedward.ii.service.metric.element.DitMetric;
 import com.mcnedward.ii.service.metric.element.NocMetric;
@@ -26,6 +27,7 @@ public class JavaSolution {
 	private List<SolutionMethod> mEMethods;
 	private List<DitHierarchy> mDitHierarchyTrees;
 	private List<NocHierarchy> mNocHierarchyTrees;
+	private List<FullHierarchy> mFullHierarchyTrees;
 
 	public JavaSolution(String projectName, String systemName, String version) {
 		mProjectName = projectName;
@@ -38,6 +40,7 @@ public class JavaSolution {
 		mEMethods = new ArrayList<>();
 		mDitHierarchyTrees = new ArrayList<>();
 		mNocHierarchyTrees = new ArrayList<>();
+		mFullHierarchyTrees = new ArrayList<>();
 	}
 
 	public void addDitMetric(DitMetric metric) {
@@ -66,6 +69,10 @@ public class JavaSolution {
 
 	public void addNocHeirarchy(NocHierarchy tree) {
 		mNocHierarchyTrees.add(tree);
+	}
+	
+	public void addFullHierarchy(FullHierarchy tree) {
+		mFullHierarchyTrees.add(tree);
 	}
 
 	public String getProjectName() {
@@ -106,6 +113,10 @@ public class JavaSolution {
 
 	public List<NocHierarchy> getNocHierarchies() {
 		return mNocHierarchyTrees;
+	}
+	
+	public List<FullHierarchy> getFullHierarchies() {
+		return mFullHierarchyTrees;
 	}
 	
 	@Override

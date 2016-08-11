@@ -3,6 +3,7 @@ package com.mcnedward.ii.service.graph;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Stack;
 
@@ -11,6 +12,7 @@ import javax.imageio.ImageIO;
 import com.mcnedward.ii.element.JavaSolution;
 import com.mcnedward.ii.exception.GraphBuildException;
 import com.mcnedward.ii.service.graph.element.DitHierarchy;
+import com.mcnedward.ii.service.graph.element.FullHierarchy;
 import com.mcnedward.ii.service.graph.element.NocHierarchy;
 import com.mcnedward.ii.service.graph.element.SolutionMethod;
 import com.mcnedward.ii.utils.IILogger;
@@ -86,7 +88,7 @@ public final class GraphService {
 			Node hierarchyNode = new Node(ditH.element);
 			nodes.add(hierarchyNode);
 
-			Edge edge = new Edge(String.valueOf(ditH.inheritedMethodCount), parentNode, hierarchyNode);
+			Edge edge = new Edge(String.valueOf(ditH.inheritedMethodCount), hierarchyNode, parentNode);
 			edges.add(edge);
 
 			recurseDit(ditH.ancestors, nodes, edges, hierarchyNode);
@@ -110,6 +112,7 @@ public final class GraphService {
 			// TODO This is messy, and should be fixed in the Visitors, but I don't have time for that now...
 			if (hierarchy.element.contains("<") && hierarchy.element.contains(">"))
 				continue;
+			
 			Node parent = new Node(hierarchy.element);
 			nodes.add(parent);
 			recurseDit(hierarchy.ancestors, nodes, edges, parent);
@@ -181,6 +184,58 @@ public final class GraphService {
 			edges.add(new Edge(String.valueOf(childTree.inheritedMethodCount), parentNode, childNode));
 
 			recurseHierarchyTrees(childTree, childNode, nodes, edges);
+		}
+	}
+	
+	public boolean buildFullHierarchyTreeGraph(JavaSolution solution, String elementName) throws GraphBuildException {
+		IILogger.info("Building graph for full hierarchy tree %s in solution %s...", elementName, solution.getSystemName());
+		Stack<Node> nodes = new Stack<>();
+		Stack<Edge> edges = new Stack<>();
+
+		List<FullHierarchy> trees = solution.getFullHierarchies();
+		for (FullHierarchy tree : trees) {
+			if (tree.elementName.equals(elementName)) {
+				String parentElement = tree.fullElementName;
+				Node parentNode = new Node(parentElement);
+				nodes.add(parentNode);
+				// Create an individual graph for each hierarchy tree
+				recurseFullHierarchyTrees(tree, parentNode, nodes, edges);
+
+				JungGraph graph = new JungGraph(500, 100);
+				graph.plotGraph(nodes, edges);
+				BufferedImage image = graph.createImage();
+				writeToFile(solution, GType.H_TREE, image, HIERARCHY_TREE_DIRECTORY, tree.fullElementName);
+
+				nodes = new Stack<>();
+				edges = new Stack<>();
+				
+				return true;
+			}
+		}
+		IILogger.info("Could not find element with the name %s...");
+		return false;
+	}
+	
+	private void recurseFullHierarchyTrees(FullHierarchy tree, Node parentNode, List<Node> nodes, List<Edge> edges) {
+		Collection<FullHierarchy> subTrees = tree.subclasses;
+		for (FullHierarchy subclass : subTrees) {
+			String element = subclass.fullElementName;
+
+			Node childNode = new Node(element);
+			nodes.add(childNode);
+			edges.add(new Edge("e", parentNode, childNode));
+
+			recurseFullHierarchyTrees(subclass, childNode, nodes, edges);
+		}
+		Collection<FullHierarchy> implTrees = tree.impls;
+		for (FullHierarchy impl : implTrees) {
+			String element = impl.fullElementName;
+
+			Node childNode = new Node(element, true);
+			nodes.add(childNode);
+			edges.add(new Edge("i", parentNode, childNode));
+
+			recurseFullHierarchyTrees(impl, childNode, nodes, edges);
 		}
 	}
 

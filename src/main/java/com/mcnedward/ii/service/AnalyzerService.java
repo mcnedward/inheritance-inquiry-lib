@@ -10,6 +10,7 @@ import com.mcnedward.ii.element.JavaSolution;
 import com.mcnedward.ii.element.method.JavaMethod;
 import com.mcnedward.ii.element.method.JavaMethodInvocation;
 import com.mcnedward.ii.service.graph.element.DitHierarchy;
+import com.mcnedward.ii.service.graph.element.FullHierarchy;
 import com.mcnedward.ii.service.graph.element.NocHierarchy;
 import com.mcnedward.ii.service.graph.element.SolutionMethod;
 import com.mcnedward.ii.service.metric.element.DitMetric;
@@ -79,6 +80,7 @@ public final class AnalyzerService {
 			calculateNumberOfChildren(project, element, solution, ignoreZero);
 			calculateWeightedMethodsPerClass(project, element, solution, ignoreZero);
 			calculateNocHierarchyTrees(element, project, solution);
+			calculateFullHierarcyTrees(element, project, solution);
 		}
 	}
 
@@ -223,6 +225,17 @@ public final class AnalyzerService {
 		NocHierarchy tree = new NocHierarchy(project, element);
 		if (tree.hasChildren)
 			solution.addNocHeirarchy(tree);
+	}
+
+	/**
+	 * Used to create the full hierarchy tree structure for an element.
+	 * @param element
+	 * @param project
+	 * @param solution
+	 */
+	private void calculateFullHierarcyTrees(JavaElement element, JavaProject project, JavaSolution solution) {
+		FullHierarchy tree = new FullHierarchy(project, element);
+		solution.addFullHierarchy(tree);
 	}
 
 	private JavaSolution initSolution(JavaProject project) {

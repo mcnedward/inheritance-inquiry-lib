@@ -50,7 +50,7 @@ public class NocHierarchy {
 		elementMethodCount = element.getWeightedMethodCount();		
 	}
 	
-	protected void buildTree(JavaProject project, JavaElement element) {
+	private void buildTree(JavaProject project, JavaElement element) {
 		List<JavaElement> children = project.findNumberOfChildrenFor(element);
 		noc = children.size();
 		hasChildren = children.size() > 0;
