@@ -22,16 +22,15 @@ public class StandardBuildTask extends IIJob<Void> {
 	}
 
 	@Override
-	public Void doWork(JavaSolution solution) throws GraphBuildException {
+	public Void processSolution(JavaSolution solution) throws GraphBuildException {
 //		metricService().buildMetrics(solution);
-//		graphService().buildGraphs(solution);
-		graphService().buildFullHierarchyTreeGraph(solution, "Figure");
+		graphService().buildDitHierarchyTreeGraph(solution, 7);
 		return null;
 	}
 
 	@Override
 	protected JavaSolution analyze(JavaProject project) {
-		return analyzerService().analyzeForFullHierarchy(project, "Figure");
+		return analyzerService().analyzeForDit(project);
 	}
 
 }

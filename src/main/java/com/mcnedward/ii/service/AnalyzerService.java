@@ -41,16 +41,21 @@ public final class AnalyzerService {
 		return solution;
 	}
 
-	public JavaSolution analyzeForDit(JavaProject project, int ditLimit) {
+	public JavaSolution analyzeForDit(JavaProject project) {
+		return analyzeForDit(project, null);
+	}
+	
+	public JavaSolution analyzeForDit(JavaProject project, Integer ditLimit) {
 		JavaSolution solution = initSolution(project);
 		// Setup the DIT metrics
 		for (JavaElement element : project.getAllElements()) {
 			calculateDepthOfInheritanceTree(project, element, solution, true);
 		}
 		for (DitHierarchy tree : solution.getDitHierarchies()) {
-			if (tree.dit == ditLimit) {
-				solution.addDitHierarchy(tree);
-			}
+			if (ditLimit != null)
+				if (tree.dit == ditLimit) {
+					solution.addDitHierarchy(tree);
+				}
 		}
 		return solution;
 	}
@@ -89,7 +94,7 @@ public final class AnalyzerService {
 	 *            If this is true, then the Analyzer will ignore metrics whose value is zero.
 	 * @return
 	 */
-	public void calculateMetricsAndTrees(JavaProject project, JavaSolution solution, boolean ignoreZero) {
+	private void calculateMetricsAndTrees(JavaProject project, JavaSolution solution, boolean ignoreZero) {
 		for (JavaElement element : project.getAllElements()) {
 			calculateDepthOfInheritanceTree(project, element, solution, ignoreZero);
 			calculateNumberOfChildren(project, element, solution, ignoreZero);
@@ -195,7 +200,7 @@ public final class AnalyzerService {
 	 *            The {@link JavaProject}.
 	 * @return The {@link SolutionMethod} list
 	 */
-	public void calculateMethods(JavaProject project, JavaSolution solution) {
+	private void calculateMethods(JavaProject project, JavaSolution solution) {
 		for (JavaElement child : project.getClasses()) {
 			if (child.getSuperClasses().isEmpty())
 				continue;
@@ -236,7 +241,7 @@ public final class AnalyzerService {
 		}
 	}
 
-	public void calculateNocHierarchyTrees(JavaElement element, JavaProject project, JavaSolution solution) {
+	private void calculateNocHierarchyTrees(JavaElement element, JavaProject project, JavaSolution solution) {
 		NocHierarchy tree = new NocHierarchy(project, element);
 		if (tree.hasChildren)
 			solution.addNocHeirarchy(tree);

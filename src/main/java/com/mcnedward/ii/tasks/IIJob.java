@@ -20,10 +20,10 @@ import com.mcnedward.ii.utils.ServiceFactory;
  *
  */
 public abstract class IIJob<T> implements Job<T> {
-	
+
 	private static int JOB_ID = 1;
 	private int mId;
-	
+
 	private ProjectService mProjectService;
 	private AnalyzerService mAnalyzerService;
 	private MetricService mMetricService;
@@ -31,11 +31,11 @@ public abstract class IIJob<T> implements Job<T> {
 	private File mProjectFile;
 	private String mSystemName;
 	private ProjectBuildListener mListener;
-	
+
 	public IIJob(File projectFile, String systemName) {
 		this(projectFile, systemName, null);
 	}
-	
+
 	public IIJob(File projectFile, String systemName, ProjectBuildListener listener) {
 		mId = JOB_ID++;
 		mProjectService = ServiceFactory.projectService();
@@ -52,8 +52,8 @@ public abstract class IIJob<T> implements Job<T> {
 		IILogger.info("Starting job for %s...", mSystemName);
 		try {
 			JavaSolution solution = buildProject();
-			T result = doWork(solution);
-			
+			T result = processSolution(solution);
+
 			Builder.markTaskDone(this);
 			IILogger.info("Completed job for %s...", mSystemName);
 			return result;
@@ -62,36 +62,37 @@ public abstract class IIJob<T> implements Job<T> {
 			return null;
 		}
 	}
-	
+
 	private JavaSolution buildProject() {
-		// Build project here so it doesn't stay in memory after this method
+		// Build project here so it doesn't stay in memory after this method, as long as any references from it are not
+		// kept in the analyze() method
 		JavaProject project = mProjectService.build(mProjectFile, mSystemName, mListener);
 		return analyze(project);
 	}
-	
-	protected abstract T doWork(JavaSolution solution) throws TaskBuildException, GraphBuildException;
+
+	protected abstract T processSolution(JavaSolution solution) throws TaskBuildException, GraphBuildException;
 
 	protected JavaSolution analyze(JavaProject project) {
 		return mAnalyzerService.analyze(project);
 	}
-	
+
 	protected AnalyzerService analyzerService() {
 		return mAnalyzerService;
 	}
-	
+
 	protected MetricService metricService() {
 		return mMetricService;
 	}
-	
+
 	protected GraphService graphService() {
 		return mGraphService;
 	}
-	
+
 	@Override
 	public String name() {
 		return toString() + "-" + id();
 	}
-	
+
 	@Override
 	public int id() {
 		return mId;

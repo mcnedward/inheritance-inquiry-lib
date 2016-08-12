@@ -15,9 +15,15 @@ import com.mcnedward.ii.service.metric.element.Metric;
 public class MetricTool {
 
 	private MetricService mService;
+	private boolean mIgnoreInterfaces;
 
 	public MetricTool() {
 		mService = new MetricService();
+	}
+	
+	public MetricTool(boolean ignoreInterfaces) {
+		this();
+		mIgnoreInterfaces = ignoreInterfaces;
 	}
 
 	public void inquire(List<JavaSolution> solutions) throws TaskBuildException {
@@ -25,7 +31,7 @@ public class MetricTool {
 		inquireMetric(solutions, MType.NOC);
 		inquireMetric(solutions, MType.WMC);
 	}
-
+	
 	private void inquireMetric(List<JavaSolution> solutions, MType metricType) throws TaskBuildException {
 		String title = metricType.name();
 
@@ -98,6 +104,11 @@ public class MetricTool {
 	private ExcelRow getRow(List<? extends Metric> metrics, String systemName, List<String> columnHeaders) {
 		ExcelRow row = new ExcelRow(systemName);
 		for (Metric metric : metrics) {
+			if (mIgnoreInterfaces) {
+				if (metric.isInterface) {
+					continue;
+				}
+			}
 			// Find the correct column, or create if it doesn't exist
 			String columnName = String.valueOf(metric.metric);
 			ExcelColumn column = row.columnMap.get(columnName);

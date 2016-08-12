@@ -17,7 +17,7 @@ import com.mcnedward.ii.tasks.MetricBuildTask;
  * @author Edward - Jul 14, 2016
  *
  */
-public final class MetricAnalysisBuilder extends QQBuilder<JavaSolution> {
+public final class MetricAnalysisBuilder extends QCBuilder<JavaSolution> {
 
 	private static final String[] EXCLUSIONS = new String[] {};// { "freecol", "freemind", "hibernate" };
 
@@ -32,7 +32,7 @@ public final class MetricAnalysisBuilder extends QQBuilder<JavaSolution> {
 
 	@Override
 	protected void handleSolutions(List<JavaSolution> solutions) throws TaskBuildException {
-		MetricTool tool = new MetricTool();
+		MetricTool tool = new MetricTool(true);
 		tool.inquire(solutions);
 	}
 

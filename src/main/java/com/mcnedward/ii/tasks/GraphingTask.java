@@ -18,7 +18,7 @@ public class GraphingTask extends IIJob<Void> {
 	}
 
 	@Override
-	protected Void doWork(JavaSolution solution) throws TaskBuildException {
+	protected Void processSolution(JavaSolution solution) throws TaskBuildException {
 		try {
 //			graphService().buildDitHierarchyTreeGraph(solution);
 			graphService().buildNocHierarchyTreeGraphs(solution, 39);

@@ -11,7 +11,7 @@ import com.mcnedward.ii.tasks.IIJob;
  * @author Edward - Jul 31, 2016
  *
  */
-public abstract class QQBuilder<T> extends Builder {
+public abstract class QCBuilder<T> extends Builder {
 
 	@Override
 	protected void buildProcess() throws TaskBuildException {

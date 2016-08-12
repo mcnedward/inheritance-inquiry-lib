@@ -2,6 +2,7 @@ package com.mcnedward.ii.tasks;
 
 import java.io.File;
 
+import com.mcnedward.ii.element.JavaProject;
 import com.mcnedward.ii.element.JavaSolution;
 import com.mcnedward.ii.exception.TaskBuildException;
 import com.mcnedward.ii.listener.ProjectBuildListener;
@@ -21,8 +22,13 @@ public class MetricBuildTask extends IIJob<JavaSolution> {
 	}
 
 	@Override
-	protected JavaSolution doWork(JavaSolution solution) throws TaskBuildException {
+	protected JavaSolution processSolution(JavaSolution solution) throws TaskBuildException {
 		return solution;
+	}
+	
+	@Override
+	protected JavaSolution analyze(JavaProject project) {
+		return analyzerService().analyzeMetrics(project);
 	}
 
 }

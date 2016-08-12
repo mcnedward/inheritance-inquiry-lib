@@ -17,6 +17,8 @@ import com.mcnedward.ii.element.JavaProject;
 import com.mcnedward.ii.utils.IILogger;
 
 /**
+ * A Visitor for inspecting a Java type, creating a JavaElement, and adding it to the correct JavaPackage.
+ * 
  * @author Edward - Jun 16, 2016
  *
  */
@@ -68,14 +70,14 @@ public class ClassVisitor extends JavaProjectVisitor {
 				typeParameter.accept(mTypeParameterVisitor);
 			}
 
-			// Setup all the interfaces
+			// Visit all the interfaces
 			List<ASTNode> interfaces = node.superInterfaceTypes();
 			for (ASTNode inter : interfaces) {
 				mClassOrInterfaceVisitor.setIsInterface(true);
 				inter.accept(mClassOrInterfaceVisitor);
 			}
 
-			// Set the super class
+			// Visit the super class
 			Type superClassType = node.getSuperclassType();
 			if (superClassType != null) {
 				// If this node is an interface, then it's "extends" will be as well
@@ -83,6 +85,7 @@ public class ClassVisitor extends JavaProjectVisitor {
 				superClassType.accept(mClassOrInterfaceVisitor);
 			}
 
+			// Visit the methods
 			for (Object declaration : node.bodyDeclarations()) {
 				if (declaration instanceof MethodDeclaration) {
 					((MethodDeclaration) declaration).accept(mMethodVisitor);

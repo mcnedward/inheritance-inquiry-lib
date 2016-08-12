@@ -19,7 +19,7 @@ public class TestBuildTask extends IIJob<Integer> {
 	private static int ID = 1;
 	
 	@Override
-	protected Integer doWork(JavaSolution solution) throws TaskBuildException {
+	protected Integer processSolution(JavaSolution solution) throws TaskBuildException {
 		return ID++;
 	}
 

@@ -11,7 +11,7 @@ import com.mcnedward.ii.tasks.IIJob;
  * @author Edward - Jul 28, 2016
  *
  */
-public final class GraphBuilder extends QQBuilder<Void> {
+public final class GraphBuilder extends QCBuilder<Void> {
 
 	@Override
 	protected IIJob<Void> getJob(File systemFile, String name) {
