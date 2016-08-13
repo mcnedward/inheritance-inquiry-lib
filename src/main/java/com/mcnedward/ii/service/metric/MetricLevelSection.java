@@ -8,6 +8,7 @@ import com.mcnedward.ii.exception.TaskBuildException;
 import com.mcnedward.ii.service.metric.element.Metric;
 
 /**
+ * TODO: This should be placed in the AnalyzerService. I think anything that has to do with calculations should be done there
  * @author Edward - Aug 13, 2016
  *
  */

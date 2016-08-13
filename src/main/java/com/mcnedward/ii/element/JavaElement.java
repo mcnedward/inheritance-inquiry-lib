@@ -25,7 +25,7 @@ public class JavaElement {
 	private File mSourceFile;
 	private boolean mIsInterface;
 
-	public JavaElement() {
+	private JavaElement() {
 		mImports = new ArrayList<>();
 		mClassOrInterfaceElements = new ArrayList<>();
 		mTypeArgs = new ArrayList<>();

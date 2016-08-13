@@ -26,7 +26,7 @@ import com.mcnedward.ii.utils.IILogger;
 public abstract class Builder {
 
 	// Directory paths
-	public static final String QUALITUS_CORPUS_SYSTEMS_PATH = "C:/QC/pt1/Systems/";
+	public static final String QUALITUS_CORPUS_SYSTEMS_PATH = "C:/QC/Systems/";
 
 	// Tasks
 	private static final int CORE_POOL_SIZE = 4;

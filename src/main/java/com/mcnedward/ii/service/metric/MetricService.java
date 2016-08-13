@@ -13,6 +13,7 @@ import com.mcnedward.ii.exception.MetricBuildException;
 import com.mcnedward.ii.exception.TaskBuildException;
 import com.mcnedward.ii.service.graph.element.DitHierarchy;
 import com.mcnedward.ii.service.graph.element.NocHierarchy;
+import com.mcnedward.ii.service.metric.element.MetricInfo;
 import com.mcnedward.ii.service.metric.element.WmcMetric;
 import com.mcnedward.ii.utils.IILogger;
 
@@ -56,6 +57,7 @@ public final class MetricService {
 	 */
 	public boolean buildSolutionDetails(JavaSolution solution) throws TaskBuildException {
 		String initialDetails = buildInitialDetails(solution);
+		
 		String ditLevels = buildMetricLevels(solution, MType.DIT);
 		String ditInfo = buildMetricInfo(solution, MType.DIT);
 
@@ -63,7 +65,7 @@ public final class MetricService {
 		String nocInfo = buildMetricInfo(solution, MType.NOC);
 
 		String wmcLevels = buildMetricLevels(solution, MType.WMC);
-		String wmcInfo = buildMetricInfo(solution, MType.NOC);
+		String wmcInfo = buildMetricInfo(solution, MType.WMC);
 
 		return writeExcel(solution, "FullMetrics", initialDetails, ditLevels, ditInfo, nocLevels, nocInfo, wmcLevels, wmcInfo);
 	}
@@ -85,11 +87,18 @@ public final class MetricService {
 		List<String> columns = new ArrayList<>();
 		columns.add("Classes");
 		columns.add("Inheritance Use");
+		columns.add("Max Width");
+		columns.add("Average Width");
+		
 		List<List<String>> rows = new ArrayList<>();
 		List<String> row = new ArrayList<>();
+		
 		row.add(String.valueOf(solution.getClassCount()));
 		row.add(String.valueOf(solution.getInheritanceCount()));
+		row.add(String.valueOf(solution.getMaxWidth()));
+		row.add(String.valueOf(solution.getAverageWidth()));
 		rows.add(row);
+		
 		return buildExcel(columns, rows, null);
 	}
 
@@ -140,7 +149,7 @@ public final class MetricService {
 		ColumnHeaderComparator comp2 = new ColumnHeaderComparator();
 		columnHeaders.sort(comp2);
 		// Add the first column
-		columnHeaders.add(0, "System");
+		columnHeaders.add(0, "System Name");
 
 		List<List<String>> rows = new ArrayList<>();
 		for (ExcelRow excelRow : excelRows) {
@@ -155,8 +164,20 @@ public final class MetricService {
 	}
 
 	private String buildMetricInfo(JavaSolution solution, MType metricType) throws TaskBuildException {
-		MetricInfoSection section = new MetricInfoSection(solution, metricType);
-		return buildExcel(section.columnHeaders, section.rows, null);
+		List<String> columnHeaders = new ArrayList<>();
+		columnHeaders.add("Min");
+		columnHeaders.add("Average");
+		columnHeaders.add("Max");
+		
+		List<List<String>> rows = new ArrayList<>();
+		List<String> row = new ArrayList<>();
+		rows.add(row);
+		MetricInfo metricInfo = solution.getMetricInfo(metricType);
+		row.add(String.valueOf(metricInfo.getMin()));
+		row.add(String.valueOf(metricInfo.getAverage()));
+		row.add(String.valueOf(metricInfo.getMax()));
+		
+		return buildExcel(columnHeaders, rows, null);
 	}
 
 	public void buildDitMetricsDetails(JavaSolution solution) throws MetricBuildException {
@@ -233,11 +254,11 @@ public final class MetricService {
 	}
 
 	private String getDocTitle(JavaSolution solution, MType metricType) {
-		return String.format("%s v. %s - %s", solution.getProjectName(), solution.getVersion(), metricType.metricName);
+		return String.format("%s v. %s - %s", solution.getSystemName(), solution.getVersion(), metricType.metricName);
 	}
 
 	private String getFileName(JavaSolution solution, String fileName) {
-		return String.format("%s_%s_%s.%s", solution.getProjectName(), solution.getVersion(), fileName, FILE_EXTENSION);
+		return String.format("%s_%s_%s.%s", solution.getSystemName(), solution.getVersion(), fileName, FILE_EXTENSION);
 	}
 
 	/**

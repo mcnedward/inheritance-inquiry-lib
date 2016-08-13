@@ -3,11 +3,14 @@ package com.mcnedward.ii.element;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.mcnedward.ii.exception.TaskBuildException;
 import com.mcnedward.ii.service.graph.element.DitHierarchy;
 import com.mcnedward.ii.service.graph.element.FullHierarchy;
 import com.mcnedward.ii.service.graph.element.NocHierarchy;
 import com.mcnedward.ii.service.graph.element.SolutionMethod;
+import com.mcnedward.ii.service.metric.MType;
 import com.mcnedward.ii.service.metric.element.DitMetric;
+import com.mcnedward.ii.service.metric.element.MetricInfo;
 import com.mcnedward.ii.service.metric.element.NocMetric;
 import com.mcnedward.ii.service.metric.element.WmcMetric;
 
@@ -22,6 +25,11 @@ public class JavaSolution {
 	private String mVersion;
 	private int mClassCount;
 	private int mInheritanceCount;
+	private int mMaxWidth;
+	private int mAverageWidth;
+	private MetricInfo mDitMetricInfo;
+	private MetricInfo mNocMetricInfo;
+	private MetricInfo mWmcMetricInfo;
 	private List<DitMetric> mDitMetrics;
 	private List<NocMetric> mNocMetrics;
 	private List<WmcMetric> mWmcMetrics;
@@ -37,7 +45,7 @@ public class JavaSolution {
 		mVersion = version;
 		init();
 	}
-	
+
 	public JavaSolution(JavaProject project) {
 		mProjectName = project.getName();
 		mSystemName = project.getSystemName();
@@ -57,7 +65,7 @@ public class JavaSolution {
 		mNocHierarchyTrees = new ArrayList<>();
 		mFullHierarchyTrees = new ArrayList<>();
 	}
-	
+
 	public void addDitMetric(DitMetric metric) {
 		mDitMetrics.add(metric);
 	}
@@ -85,7 +93,7 @@ public class JavaSolution {
 	public void addNocHeirarchy(NocHierarchy tree) {
 		mNocHierarchyTrees.add(tree);
 	}
-	
+
 	public void addFullHierarchy(FullHierarchy tree) {
 		mFullHierarchyTrees.add(tree);
 	}
@@ -129,23 +137,76 @@ public class JavaSolution {
 	public List<NocHierarchy> getNocHierarchies() {
 		return mNocHierarchyTrees;
 	}
-	
+
 	public List<FullHierarchy> getFullHierarchies() {
 		return mFullHierarchyTrees;
 	}
-	
+
 	public void setInheritanceCount(int inheritanceCount) {
 		mInheritanceCount = inheritanceCount;
 	}
-	
+
 	public int getClassCount() {
 		return mClassCount;
 	}
-	
+
 	public int getInheritanceCount() {
 		return mInheritanceCount;
 	}
+
+	public void setMaxWidth(int maxWidth) {
+		mMaxWidth = maxWidth;
+	}
+
+	public int getMaxWidth() {
+		return mMaxWidth;
+	}
+
+	public void setAverageWidth(int averageWidth) {
+		mAverageWidth = averageWidth;
+	}
+
+	public int getAverageWidth() {
+		return mAverageWidth;
+	}
+
+	public MetricInfo getMetricInfo(MType metricType) throws TaskBuildException {
+		switch (metricType) {
+		case DIT:
+			return mDitMetricInfo;
+		case NOC:
+			return mNocMetricInfo;
+		case WMC:
+			return mWmcMetricInfo;
+		default:
+			throw new TaskBuildException("Metric type " + metricType.name() + " is not acceptable for inquiry...");
+		}
+	}
 	
+	public void setDitMetricInfo(MetricInfo ditMetricInfo) {
+		mDitMetricInfo = ditMetricInfo;
+	}
+
+	public MetricInfo getDitMetricInfo() {
+		return mDitMetricInfo;
+	}
+
+	public void setNocMetricInfo(MetricInfo nocMetricInfo) {
+		mNocMetricInfo = nocMetricInfo;
+	}
+
+	public MetricInfo getNocMetricInfo() {
+		return mNocMetricInfo;
+	}
+
+	public void setWmcMetricInfo(MetricInfo wmcMetricInfo) {
+		mWmcMetricInfo = wmcMetricInfo;
+	}
+
+	public MetricInfo getWmcMetricInfo() {
+		return mWmcMetricInfo;
+	}
+
 	@Override
 	public String toString() {
 		return String.format("Solution for %s", mProjectName);

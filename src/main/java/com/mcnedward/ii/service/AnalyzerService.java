@@ -9,11 +9,15 @@ import com.mcnedward.ii.element.JavaProject;
 import com.mcnedward.ii.element.JavaSolution;
 import com.mcnedward.ii.element.method.JavaMethod;
 import com.mcnedward.ii.element.method.JavaMethodInvocation;
+import com.mcnedward.ii.exception.TaskBuildException;
 import com.mcnedward.ii.service.graph.element.DitHierarchy;
 import com.mcnedward.ii.service.graph.element.FullHierarchy;
 import com.mcnedward.ii.service.graph.element.NocHierarchy;
 import com.mcnedward.ii.service.graph.element.SolutionMethod;
+import com.mcnedward.ii.service.metric.MType;
 import com.mcnedward.ii.service.metric.element.DitMetric;
+import com.mcnedward.ii.service.metric.element.Metric;
+import com.mcnedward.ii.service.metric.element.MetricInfo;
 import com.mcnedward.ii.service.metric.element.NocMetric;
 import com.mcnedward.ii.service.metric.element.WmcMetric;
 import com.mcnedward.ii.utils.IILogger;
@@ -31,6 +35,7 @@ public final class AnalyzerService {
 
 		calculateMetricsAndTrees(project, solution, false);
 		calculateMethods(project, solution);
+		calculateFinalAnalysis(solution);
 
 		return solution;
 	}
@@ -38,18 +43,20 @@ public final class AnalyzerService {
 	public JavaSolution analyzeMetrics(JavaProject project) {
 		JavaSolution solution = initSolution(project);
 		calculateMetricsAndTrees(project, solution, false);
+		calculateFinalAnalysis(solution);
 		return solution;
 	}
 
 	public JavaSolution analyzeForDit(JavaProject project) {
 		return analyzeForDit(project, null);
 	}
-	
+
 	public JavaSolution analyzeForDit(JavaProject project, Integer ditLimit) {
 		JavaSolution solution = initSolution(project);
 		// Setup the DIT metrics
 		for (JavaElement element : project.getAllElements()) {
-			if (element.isInterface()) continue;
+			if (element.isInterface())
+				continue;
 			calculateDepthOfInheritanceTree(project, element, solution, true);
 		}
 		for (DitHierarchy tree : solution.getDitHierarchies()) {
@@ -67,21 +74,22 @@ public final class AnalyzerService {
 		for (JavaElement element : project.getAllElements()) {
 			calculateNumberOfChildren(project, element, solution, true);
 		}
-		
+
 		return solution;
 	}
-	
+
 	public JavaSolution analyzeForFullHierarchy(JavaProject project, String elementToFind) {
 		JavaSolution solution = initSolution(project);
 		for (JavaElement element : project.getAllElements()) {
 			if (elementToFind != null) {
-				if (!elementToFind.equals(element.getName())) continue;
+				if (!elementToFind.equals(element.getName()))
+					continue;
 			}
 			calculateFullHierarcyTrees(element, project, solution);
 		}
 		return solution;
 	}
-	
+
 	public JavaSolution analyzeForFullHierarchy(JavaProject project) {
 		return analyzeForFullHierarchy(project, null);
 	}
@@ -150,7 +158,7 @@ public final class AnalyzerService {
 	private int calculateNumberOfChildren(JavaProject project, JavaElement element, JavaSolution solution, boolean ignoreZero) {
 		List<JavaElement> classChildren = project.findNumberOfChildrenFor(element);
 		int noc = classChildren.size();
-		
+
 		NocHierarchy tree = new NocHierarchy(project, element);
 		if (tree.hasChildren)
 			solution.addNocHeirarchy(tree);
@@ -246,6 +254,7 @@ public final class AnalyzerService {
 
 	/**
 	 * Used to create the full hierarchy tree structure for an element.
+	 * 
 	 * @param element
 	 * @param project
 	 * @param solution
@@ -253,6 +262,77 @@ public final class AnalyzerService {
 	private void calculateFullHierarcyTrees(JavaElement element, JavaProject project, JavaSolution solution) {
 		FullHierarchy tree = new FullHierarchy(project, element);
 		solution.addFullHierarchy(tree);
+	}
+
+	private void calculateFinalAnalysis(JavaSolution solution) {
+		List<FullHierarchy> fullHierarchies = solution.getFullHierarchies();
+		if (!fullHierarchies.isEmpty()) {
+			int solutionMaxWidth = 0;
+			int averageWidth = 0;
+
+			for (FullHierarchy h : fullHierarchies) {
+				if (h.maxWidth > solutionMaxWidth) {
+					solutionMaxWidth = h.maxWidth;
+				}
+				averageWidth += h.maxWidth;
+			}
+			averageWidth = fullHierarchies.size() / averageWidth;
+
+			solution.setMaxWidth(solutionMaxWidth);
+			solution.setAverageWidth(averageWidth);
+		}
+
+		calculateMetricUsages(solution);
+	}
+
+	private void calculateMetricUsages(JavaSolution solution) {
+		try {
+			solution.setDitMetricInfo(getMetricInfo(solution, MType.DIT));
+			solution.setNocMetricInfo(getMetricInfo(solution, MType.NOC));
+			solution.setWmcMetricInfo(getMetricInfo(solution, MType.WMC));
+		} catch (TaskBuildException e) {
+			IILogger.error(e);
+		}
+	}
+
+	private MetricInfo getMetricInfo(JavaSolution solution, MType metricType) throws TaskBuildException {
+		List<? extends Metric> metrics = getMetrics(solution, metricType);
+		int min = 0, average = 0, max = 0;
+
+		for (int i = 0; i < metrics.size(); i++) {
+			int value = metrics.get(i).value;
+			if (i == 0) {
+				min = value;
+				max = value;
+			}
+			if (value > max)
+				max = value;
+			if (value < min)
+				min = value;
+
+			average += value;
+		}
+		average = average / metrics.size();
+
+		return new MetricInfo(metricType, min, average, max);
+	}
+
+	private List<? extends Metric> getMetrics(JavaSolution solution, MType metricType) throws TaskBuildException {
+		List<? extends Metric> metrics;
+		switch (metricType) {
+		case DIT:
+			metrics = solution.getDitMetrics();
+			break;
+		case NOC:
+			metrics = solution.getNocMetrics();
+			break;
+		case WMC:
+			metrics = solution.getWmcMetrics();
+			break;
+		default:
+			throw new TaskBuildException("Metric type " + metricType.name() + " is not acceptable for inquiry...");
+		}
+		return metrics;
 	}
 
 	private JavaSolution initSolution(JavaProject project) {

@@ -1,7 +1,7 @@
 package com.mcnedward.ii;
 
 import com.mcnedward.ii.builder.GraphBuilder;
-import com.mcnedward.ii.builder.MetricAnalysisBuilder;
+import com.mcnedward.ii.builder.MultiSystemsBuilder;
 import com.mcnedward.ii.builder.ProjectBuilder;
 import com.mcnedward.ii.builder.SystemBuilder;
 import com.mcnedward.ii.exception.TaskBuildException;
@@ -15,12 +15,12 @@ public final class InheritanceInquiryMain {
 	
 	public static void main(String[] args) {
 		IILogger.DEBUG = true;
-		buildProject();
+		buildMultiSystems();
 	}
 	
-	protected static void buildMetricAnalysis() {
+	protected static void buildMultiSystems() {
 		try {
-			new MetricAnalysisBuilder().build();
+			new MultiSystemsBuilder().build();
 		} catch (TaskBuildException e) {
 			IILogger.error(e.getMessage(), e);
 		}

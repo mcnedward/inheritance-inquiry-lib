@@ -18,11 +18,11 @@ import com.mcnedward.ii.utils.ServiceFactory;
  * @author Edward - Jul 14, 2016
  *
  */
-public final class MetricAnalysisBuilder extends QCBuilder<JavaSolution> {
+public final class MultiSystemsBuilder extends QCBuilder<JavaSolution> {
 
 	private static final String[] EXCLUSIONS = new String[] {};// { "freecol", "freemind", "hibernate" };
 
-	public MetricAnalysisBuilder() {
+	public MultiSystemsBuilder() {
 		super();
 	}
 
@@ -34,7 +34,10 @@ public final class MetricAnalysisBuilder extends QCBuilder<JavaSolution> {
 	@Override
 	protected void handleSolutions(List<JavaSolution> solutions) throws TaskBuildException {
 		MetricService service = ServiceFactory.metricService();
-		service.buildSolutionsMetricLevels(solutions);
+		for (JavaSolution solution : solutions) {
+			service.buildSolutionDetails(solution);
+		}
+//		service.buildSolutionsMetricLevels(solutions);
 	}
 
 	@Override
