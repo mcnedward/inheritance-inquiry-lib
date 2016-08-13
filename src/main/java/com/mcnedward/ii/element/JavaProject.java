@@ -23,7 +23,9 @@ public class JavaProject {
 	private File mProjectFile;
 	private List<File> mFiles;
 	private List<JavaPackage> mPackages;
-	
+	private int mClassCount;
+	private int mInheritanceCount; // How many times extends is used
+
 	public JavaProject(String projectPath, String projectName) {
 		mPath = projectPath;
 		mName = projectName;
@@ -68,7 +70,6 @@ public class JavaProject {
 		return null;
 	}
 
-
 	/**
 	 * Finds the Number of Children (NOC) for a JavaElement.
 	 * <p>
@@ -105,7 +106,8 @@ public class JavaProject {
 	 * children can be a sign of poor design, since the children elements will inherit many methods and will become more
 	 * complex.
 	 * 
-	 * @param element The element to inspect.
+	 * @param element
+	 *            The element to inspect.
 	 * @return The NOC and WMC for the element.
 	 */
 	public int findNOCAndWMCFor(JavaElement element) {
@@ -143,7 +145,7 @@ public class JavaProject {
 	public JavaElement findOrCreateElement(String packageName, String elementName) {
 		return findOrCreateElement(packageName, elementName, false);
 	}
-	
+
 	public JavaElement findOrCreateElement(String packageName, String elementName, boolean isInterface) {
 		JavaElement element = null;
 		if (packageName == null) {
@@ -168,7 +170,7 @@ public class JavaProject {
 		}
 		return element;
 	}
-	
+
 	/**
 	 * Finds the Depth of Inheritance Tree (DIT) for a JavaElement.
 	 * <p>
@@ -273,11 +275,17 @@ public class JavaProject {
 	}
 
 	private List<JavaElement> mCachedElements;
+
 	public List<JavaElement> getAllElements() {
-		if (mCachedElements != null) return mCachedElements;
+		if (mCachedElements != null)
+			return mCachedElements;
 		mCachedElements = new ArrayList<>(getClasses());
 		mCachedElements.addAll(getInterfaces());
 		return mCachedElements;
+	}
+
+	public void incrementInheritanceUse() {
+		mInheritanceCount++;
 	}
 
 	/**
@@ -293,15 +301,15 @@ public class JavaProject {
 	public String getName() {
 		return mName;
 	}
-	
+
 	public String getSystemName() {
 		return mSystemName;
 	}
-	
+
 	public String getVersion() {
 		return mVersion;
 	}
-	
+
 	public void setVersion(String version) {
 		mVersion = version;
 	}
@@ -333,6 +341,21 @@ public class JavaProject {
 	 */
 	public void setPackages(List<JavaPackage> packages) {
 		this.mPackages = packages;
+	}
+
+	public int getClassCount() {
+		if (mClassCount == 0) {
+			List<JavaElement> allElements = getAllElements();
+			for (JavaElement element : allElements) {
+				if (!element.isInterface())
+					mClassCount++;
+			}
+		}
+		return mClassCount;
+	}
+
+	public int getInheritanceCount() {
+		return mInheritanceCount;
 	}
 
 	@Override

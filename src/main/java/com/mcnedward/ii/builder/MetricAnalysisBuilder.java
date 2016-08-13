@@ -6,9 +6,10 @@ import java.util.List;
 import com.mcnedward.ii.element.JavaSolution;
 import com.mcnedward.ii.element.JavaSystem;
 import com.mcnedward.ii.exception.TaskBuildException;
-import com.mcnedward.ii.service.metric.MetricTool;
+import com.mcnedward.ii.service.metric.MetricService;
 import com.mcnedward.ii.tasks.IIJob;
 import com.mcnedward.ii.tasks.MetricBuildTask;
+import com.mcnedward.ii.utils.ServiceFactory;
 
 /**
  * 
@@ -32,8 +33,8 @@ public final class MetricAnalysisBuilder extends QCBuilder<JavaSolution> {
 
 	@Override
 	protected void handleSolutions(List<JavaSolution> solutions) throws TaskBuildException {
-		MetricTool tool = new MetricTool(true);
-		tool.inquire(solutions);
+		MetricService service = ServiceFactory.metricService();
+		service.buildSolutionsMetricLevels(solutions);
 	}
 
 	@Override

@@ -12,14 +12,14 @@ public abstract class Metric {
 	public MType type;
 	public String elementName;
 	public String fullyQualifiedName;
-	public int metric;
+	public int value;
 	public boolean isInterface;
 
 	public Metric(MType type, JavaElement element, int metric) {
 		this.type = type;
 		elementName = element.getName();
 		fullyQualifiedName = element.getFullyQualifiedName();
-		this.metric = metric;
+		this.value = metric;
 		isInterface = element.isInterface();
 	}
 }

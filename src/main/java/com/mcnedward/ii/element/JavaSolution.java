@@ -20,6 +20,8 @@ public class JavaSolution {
 	private String mProjectName;
 	private String mSystemName;
 	private String mVersion;
+	private int mClassCount;
+	private int mInheritanceCount;
 	private List<DitMetric> mDitMetrics;
 	private List<NocMetric> mNocMetrics;
 	private List<WmcMetric> mWmcMetrics;
@@ -33,6 +35,19 @@ public class JavaSolution {
 		mProjectName = projectName;
 		mSystemName = systemName;
 		mVersion = version;
+		init();
+	}
+	
+	public JavaSolution(JavaProject project) {
+		mProjectName = project.getName();
+		mSystemName = project.getSystemName();
+		mVersion = project.getVersion();
+		mClassCount = project.getClassCount();
+		mInheritanceCount = project.getInheritanceCount();
+		init();
+	}
+
+	private void init() {
 		mDitMetrics = new ArrayList<>();
 		mNocMetrics = new ArrayList<>();
 		mWmcMetrics = new ArrayList<>();
@@ -42,7 +57,7 @@ public class JavaSolution {
 		mNocHierarchyTrees = new ArrayList<>();
 		mFullHierarchyTrees = new ArrayList<>();
 	}
-
+	
 	public void addDitMetric(DitMetric metric) {
 		mDitMetrics.add(metric);
 	}
@@ -117,6 +132,18 @@ public class JavaSolution {
 	
 	public List<FullHierarchy> getFullHierarchies() {
 		return mFullHierarchyTrees;
+	}
+	
+	public void setInheritanceCount(int inheritanceCount) {
+		mInheritanceCount = inheritanceCount;
+	}
+	
+	public int getClassCount() {
+		return mClassCount;
+	}
+	
+	public int getInheritanceCount() {
+		return mInheritanceCount;
 	}
 	
 	@Override

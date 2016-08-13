@@ -24,6 +24,8 @@ public final class ProjectBuilder extends Builder {
 	protected static final String JHOTDRAW_PROJECT_PATH = "C:/Users/Edward/Dev/Workspace/JHD_2016_1.0.0";
 	protected static final String ANT_PROJECT_NAME = "ant";
 	protected static final String ANT_PROJECT_PATH = QUALITUS_CORPUS_SYSTEMS_PATH + "ant/ant-1.8.4";
+	protected static final String ANTLR_PROJECT_NAME = "antlr";
+	protected static final String ANTLR_PROJECT_PATH = QUALITUS_CORPUS_SYSTEMS_PATH + "antlr/antlr-4.0";
 	
 	public ProjectBuilder() {
 		super();
@@ -31,12 +33,12 @@ public final class ProjectBuilder extends Builder {
 	
 	@Override
 	protected void buildProcess() throws TaskBuildException {
-		File buildFile = new File(ANT_PROJECT_PATH);
+		File buildFile = new File(ANTLR_PROJECT_PATH);
 		if (!buildFile.exists()) {
 			throw new TaskBuildException(String.format("You need to provide an existing file! [Path: %s]", buildFile.getAbsolutePath()));
 		}
 		
-		submit(new StandardBuildTask(buildFile, ANT_PROJECT_NAME));
+		submit(new StandardBuildTask(buildFile, ANTLR_PROJECT_NAME));
 
 		waitForTasks();
 	}

@@ -12,6 +12,10 @@ public class GraphBuildException extends Exception {
 	public GraphBuildException(String message) {
 		super(DEFAULT_MESSAGE + ": " + message);
 	}
+
+	public GraphBuildException(Exception e) {
+		super(e);
+	}
 	
 	public GraphBuildException(String message, Exception e) {
 		super(DEFAULT_MESSAGE + ": " + message, e);

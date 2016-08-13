@@ -32,11 +32,17 @@ public class ClassVisitor extends JavaProjectVisitor {
 	private MethodVisitor mMethodVisitor;
 	private TypeParameterVisitor mTypeParameterVisitor;
 	private List<String> mImports;
+	private boolean mIncludeInterfaces;
 
-	public ClassVisitor(JavaProject project, String elementName) {
+	public ClassVisitor(JavaProject project, String elementName, boolean includeInterfaces) {
 		super(project);
 		mElementName = elementName;
 		mImports = new ArrayList<>();
+		mIncludeInterfaces = includeInterfaces;
+	}
+
+	public ClassVisitor(JavaProject project, String elementName) {
+		this(project, elementName, false);	// Don't include interfaces; this should be the default choice
 	}
 
 	public ClassVisitor(JavaProject project, String elementName, List<String> missingImports) {
@@ -70,11 +76,13 @@ public class ClassVisitor extends JavaProjectVisitor {
 				typeParameter.accept(mTypeParameterVisitor);
 			}
 
-			// Visit all the interfaces
-			List<ASTNode> interfaces = node.superInterfaceTypes();
-			for (ASTNode inter : interfaces) {
-				mClassOrInterfaceVisitor.setIsInterface(true);
-				inter.accept(mClassOrInterfaceVisitor);
+			if (mIncludeInterfaces) {
+				// Visit all the interfaces
+				List<ASTNode> interfaces = node.superInterfaceTypes();
+				for (ASTNode inter : interfaces) {
+					mClassOrInterfaceVisitor.setIsInterface(true);
+					inter.accept(mClassOrInterfaceVisitor);
+				}
 			}
 
 			// Visit the super class
@@ -83,6 +91,9 @@ public class ClassVisitor extends JavaProjectVisitor {
 				// If this node is an interface, then it's "extends" will be as well
 				mClassOrInterfaceVisitor.setIsInterface(node.isInterface());
 				superClassType.accept(mClassOrInterfaceVisitor);
+				// If this is a class, increase the inheritance count
+				if (!node.isInterface())
+					project().incrementInheritanceUse();
 			}
 
 			// Visit the methods

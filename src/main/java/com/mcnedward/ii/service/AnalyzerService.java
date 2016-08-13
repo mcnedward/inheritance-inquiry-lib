@@ -49,6 +49,7 @@ public final class AnalyzerService {
 		JavaSolution solution = initSolution(project);
 		// Setup the DIT metrics
 		for (JavaElement element : project.getAllElements()) {
+			if (element.isInterface()) continue;
 			calculateDepthOfInheritanceTree(project, element, solution, true);
 		}
 		for (DitHierarchy tree : solution.getDitHierarchies()) {
@@ -153,10 +154,6 @@ public final class AnalyzerService {
 		NocHierarchy tree = new NocHierarchy(project, element);
 		if (tree.hasChildren)
 			solution.addNocHeirarchy(tree);
-		
-		if (noc > 40) {
-			IILogger.info("NOC for %s is %s", element.getName(), noc);
-		}
 		if (ignoreZero) {
 			if (noc > 0) {
 				solution.addNocMetric(new NocMetric(element, noc, classChildren));
@@ -259,7 +256,7 @@ public final class AnalyzerService {
 	}
 
 	private JavaSolution initSolution(JavaProject project) {
-		return new JavaSolution(project.getName(), project.getSystemName(), project.getVersion());
+		return new JavaSolution(project);
 	}
 
 }

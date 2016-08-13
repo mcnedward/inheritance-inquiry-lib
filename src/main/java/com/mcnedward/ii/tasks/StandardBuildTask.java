@@ -5,6 +5,7 @@ import java.io.File;
 import com.mcnedward.ii.element.JavaProject;
 import com.mcnedward.ii.element.JavaSolution;
 import com.mcnedward.ii.exception.GraphBuildException;
+import com.mcnedward.ii.exception.TaskBuildException;
 import com.mcnedward.ii.listener.ProjectBuildListener;
 
 /**
@@ -24,13 +25,18 @@ public class StandardBuildTask extends IIJob<Void> {
 	@Override
 	public Void processSolution(JavaSolution solution) throws GraphBuildException {
 //		metricService().buildMetrics(solution);
-		graphService().buildDitHierarchyTreeGraph(solution, 7);
+//		graphService().buildDitHierarchyTreeGraph(solution, 7);
+		try {
+			metricService().buildSolutionDetails(solution);
+		} catch (TaskBuildException e) {
+			throw new GraphBuildException(e);
+		}
 		return null;
 	}
 
 	@Override
 	protected JavaSolution analyze(JavaProject project) {
-		return analyzerService().analyzeForDit(project);
+		return analyzerService().analyze(project);
 	}
 
 }
