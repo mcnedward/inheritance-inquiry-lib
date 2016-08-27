@@ -1,11 +1,12 @@
 package com.mcnedward.ii.tasks;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
 
 import com.mcnedward.ii.element.JavaProject;
 import com.mcnedward.ii.element.JavaSolution;
 import com.mcnedward.ii.exception.GraphBuildException;
-import com.mcnedward.ii.exception.TaskBuildException;
 import com.mcnedward.ii.listener.ProjectBuildListener;
 
 /**
@@ -24,19 +25,20 @@ public class StandardBuildTask extends IIJob<Void> {
 
 	@Override
 	public Void processSolution(JavaSolution solution) throws GraphBuildException {
-//		metricService().buildMetrics(solution);
-//		graphService().buildDitHierarchyTreeGraph(solution, 7);
-		try {
-			metricService().buildSolutionDetails(solution);
-		} catch (TaskBuildException e) {
-			throw new GraphBuildException(e);
-		}
+		Collection<String> elements = new ArrayList<>();
+		elements.add("FreeColObject");
+		elements.add("FreeGameObject");
+		elements.add("FreeColPanel");
+		elements.add("FreeColDialog");
+		elements.add("FreeColAction");
+		elements.add("Mission");
+		graphService().buildNocHierarchyTreeGraphs(solution, elements);
 		return null;
 	}
 
 	@Override
 	protected JavaSolution analyze(JavaProject project) {
-		return analyzerService().analyze(project);
+		return analyzerService().analyzeForNoc(project);
 	}
 
 }

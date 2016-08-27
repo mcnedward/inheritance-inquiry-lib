@@ -50,12 +50,8 @@ public class DitHierarchy {
 	}
 
 	private List<DitHierarchy> travelHierarchies(JavaElement element) {
-		List<JavaElement> parents;
-		if (element.isInterface()) {
-			parents = element.getInterfaces();
-		} else {
-			parents = element.getSuperClasses();
-		}
+		List<JavaElement> parents = element.isInterface() ?
+				element.getInterfaces() : element.getSuperClasses();
 
 		List<DitHierarchy> hierarchies = new ArrayList<>();
 		if (!parents.isEmpty()) {

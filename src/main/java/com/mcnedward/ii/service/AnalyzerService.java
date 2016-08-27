@@ -1,6 +1,8 @@
 package com.mcnedward.ii.service;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.jdt.core.dom.IMethodBinding;
 
@@ -29,12 +31,13 @@ import com.mcnedward.ii.utils.IILogger;
  *
  */
 public final class AnalyzerService {
-
+	
 	public JavaSolution analyze(JavaProject project) {
 		JavaSolution solution = initSolution(project);
 
-		calculateMetricsAndTrees(project, solution, false);
 		calculateMethods(project, solution);
+		calculateMetricsAndTrees(project, solution, false);
+		calculateMetricUsages(solution);
 		calculateFinalAnalysis(solution);
 
 		return solution;
@@ -42,7 +45,7 @@ public final class AnalyzerService {
 
 	public JavaSolution analyzeMetrics(JavaProject project) {
 		JavaSolution solution = initSolution(project);
-		calculateMetricsAndTrees(project, solution, false);
+		calculateMetricsAndTrees(project, solution, true);
 		calculateFinalAnalysis(solution);
 		return solution;
 	}
@@ -74,7 +77,7 @@ public final class AnalyzerService {
 		for (JavaElement element : project.getAllElements()) {
 			calculateNumberOfChildren(project, element, solution, true);
 		}
-
+		calculateFinalAnalysis(solution);
 		return solution;
 	}
 
@@ -87,6 +90,7 @@ public final class AnalyzerService {
 			}
 			calculateFullHierarcyTrees(element, project, solution);
 		}
+		calculateFinalAnalysis(solution);
 		return solution;
 	}
 
@@ -108,7 +112,6 @@ public final class AnalyzerService {
 			calculateDepthOfInheritanceTree(project, element, solution, ignoreZero);
 			calculateNumberOfChildren(project, element, solution, ignoreZero);
 			calculateWeightedMethodsPerClass(project, element, solution, ignoreZero);
-			calculateNocHierarchyTrees(element, project, solution);
 			calculateFullHierarcyTrees(element, project, solution);
 		}
 	}
@@ -164,10 +167,10 @@ public final class AnalyzerService {
 			solution.addNocHeirarchy(tree);
 		if (ignoreZero) {
 			if (noc > 0) {
-				solution.addNocMetric(new NocMetric(element, noc, classChildren));
+				solution.addNocMetric(new NocMetric(element, tree.noc, classChildren));
 			}
 		} else {
-			solution.addNocMetric(new NocMetric(element, noc, classChildren));
+			solution.addNocMetric(new NocMetric(element, tree.noc, classChildren));
 		}
 		return noc;
 	}
@@ -221,21 +224,20 @@ public final class AnalyzerService {
 					if (parentBinding == null)
 						continue;
 
-					if (childBinding.overrides(parentBinding)) {
+					if (childBinding.overrides(parentBinding) && !parentMethod.isAbstract()) {
 						// Add override method to solution
-						solution.addOMethod(new SolutionMethod(childMethod.getName(), childMethod.getSignature(), parent.getName(), child.getName()));
+						solution.addOMethod(new SolutionMethod(childMethod.getName(), childMethod.getSignature(), parent.getName(), child.getName(), child.getFullyQualifiedName()));
 						IILogger.analysis("Method %s in element %s is overriding method %s defined in parent class %s.", childMethod.getSignature(),
 								child, parentMethod.getSignature(), parent);
 
 						// Child method overrides parent method, so check to see if the child method contains the parent
 						// method's MethodInvocation
 						for (JavaMethodInvocation invocation : childMethod.getMethodInvocations()) {
-							// The method declaration binding will be the same binding as the one where the method is
-							// defined (declared)
+							// The method declaration binding will be the same binding as the one where the method is defined (declared)
 							IMethodBinding methodDeclaration = invocation.getMethodBinding().getMethodDeclaration();
 							if (methodDeclaration == parentBinding) {
 								solution.addEMethod(
-										new SolutionMethod(childMethod.getName(), childMethod.getSignature(), parent.getName(), child.getName()));
+										new SolutionMethod(childMethod.getName(), childMethod.getSignature(), parent.getName(), child.getName(), child.getFullyQualifiedName()));
 								IILogger.analysis("Method %s in element %s is extending method %s defined in parent class %s.",
 										childMethod.getSignature(), child, parentMethod.getSignature(), parent);
 							}
@@ -245,13 +247,7 @@ public final class AnalyzerService {
 			}
 		}
 	}
-
-	private void calculateNocHierarchyTrees(JavaElement element, JavaProject project, JavaSolution solution) {
-		NocHierarchy tree = new NocHierarchy(project, element);
-		if (tree.hasChildren)
-			solution.addNocHeirarchy(tree);
-	}
-
+	
 	/**
 	 * Used to create the full hierarchy tree structure for an element.
 	 * 
@@ -268,21 +264,83 @@ public final class AnalyzerService {
 		List<FullHierarchy> fullHierarchies = solution.getFullHierarchies();
 		if (!fullHierarchies.isEmpty()) {
 			int solutionMaxWidth = 0;
-			int averageWidth = 0;
+			double averageWidth = 0;
+			int ndcMax = 0;
+			double ndcAverage = 0;
+			int hierarchiesOver0 = 0;
+			String maxWidthClass = null;
 
 			for (FullHierarchy h : fullHierarchies) {
 				if (h.maxWidth > solutionMaxWidth) {
 					solutionMaxWidth = h.maxWidth;
+					maxWidthClass = h.fullElementName;
 				}
+				if (h.hasChildren)
+					hierarchiesOver0++;
 				averageWidth += h.maxWidth;
+				
+				if (h.ndc > ndcMax) {
+					ndcMax = h.ndc;
+				}
+				ndcAverage += h.ndc;
 			}
-			averageWidth = fullHierarchies.size() / averageWidth;
+			averageWidth = hierarchiesOver0 == 0 ? 0 : averageWidth / hierarchiesOver0;
+			ndcAverage = fullHierarchies.size() == 0 ? 0 : ndcAverage / fullHierarchies.size();
 
 			solution.setMaxWidth(solutionMaxWidth);
 			solution.setAverageWidth(averageWidth);
+			solution.setMaxWidthClass(maxWidthClass);
+			solution.setNdcMax(ndcMax);
+			solution.setNdcAverage(ndcAverage);
 		}
-
+		List<NocHierarchy> nocHierarchies = solution.getNocHierarchies();
+		if (!nocHierarchies.isEmpty()) {
+			for (NocHierarchy h : nocHierarchies) {
+				if (h.isOverNocAndWmcLimit) {
+					solution.addInheritedMethodRisk(h.fullyQualifiedElementName);
+				}
+			}
+		}
+		calculateAverageMethodUsage(solution);
 		calculateMetricUsages(solution);
+	}
+	
+	private void calculateAverageMethodUsage(JavaSolution solution) {		
+		int oMax = 0, oMin = 0, oTotal = 0, oCount = 0;
+		List<String> oMaxClasses = new ArrayList<>();
+		for (Map.Entry<String, List<SolutionMethod>> entry : solution.getOMethods().entrySet()) {
+			String element = entry.getKey();
+			int methodCount = entry.getValue().size();
+			
+			if (methodCount > oMax) {
+				oMax = methodCount;
+				oMaxClasses.add(element);
+			}
+			if (oMin == 0 || methodCount < oMin)
+				oMin = methodCount;
+			oTotal += methodCount;
+			oCount++;
+		}
+		double oAverage = oCount == 0 ? 0 : (double) (oTotal / oCount);
+		solution.setOMethodInfo(new MetricInfo(MType.OM, oMin, oAverage, oMax, oMaxClasses));
+
+		int eMax = 0, eMin = 0, eTotal = 0, eCount = 0;
+		List<String> eMaxClasses = new ArrayList<>();
+		for (Map.Entry<String, List<SolutionMethod>> entry : solution.getEMethods().entrySet()) {
+			String element = entry.getKey();
+			int methodCount = entry.getValue().size();
+			
+			if (methodCount > eMax) {
+				eMax = methodCount;
+				eMaxClasses.add(element);
+			}
+			if (eMin == 0 || methodCount < eMin)
+				eMin = methodCount;
+			eTotal += methodCount;
+			eCount++;
+		}
+		int eAverage = eCount == 0 ? 0 : eTotal / eCount;
+		solution.setEMethodInfo(new MetricInfo(MType.EM, eMin, eAverage, eMax, eMaxClasses));
 	}
 
 	private void calculateMetricUsages(JavaSolution solution) {
@@ -298,23 +356,26 @@ public final class AnalyzerService {
 	private MetricInfo getMetricInfo(JavaSolution solution, MType metricType) throws TaskBuildException {
 		List<? extends Metric> metrics = getMetrics(solution, metricType);
 		int min = 0, average = 0, max = 0;
-
+		List<String> maxClasses = new ArrayList<>();
+		
 		for (int i = 0; i < metrics.size(); i++) {
 			int value = metrics.get(i).value;
 			if (i == 0) {
 				min = value;
 				max = value;
 			}
-			if (value > max)
+			if (value > max) {
 				max = value;
+				// TODO This is wrong... this adds max classes that are not the max anymore, I need to filter this at the end of the loop maybe?
+				maxClasses.add(metrics.get(i).fullyQualifiedName);
+			}
 			if (value < min)
 				min = value;
 
 			average += value;
 		}
-		average = average / metrics.size();
-
-		return new MetricInfo(metricType, min, average, max);
+		average = (int) Math.ceil(average > 0 ? (double) average / metrics.size() : 0);
+		return new MetricInfo(metricType, min, average, max, maxClasses);
 	}
 
 	private List<? extends Metric> getMetrics(JavaSolution solution, MType metricType) throws TaskBuildException {

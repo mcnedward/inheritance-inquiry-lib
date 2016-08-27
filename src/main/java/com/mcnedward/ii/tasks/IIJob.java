@@ -67,7 +67,9 @@ public abstract class IIJob<T> implements Job<T> {
 		// Build project here so it doesn't stay in memory after this method, as long as any references from it are not
 		// kept in the analyze() method
 		JavaProject project = mProjectService.build(mProjectFile, mSystemName, mListener);
-		return analyze(project);
+		JavaSolution solution = analyze(project);
+		project = null;	// I don't think this works for garbage collection...
+		return solution;		
 	}
 
 	protected abstract T processSolution(JavaSolution solution) throws TaskBuildException, GraphBuildException;

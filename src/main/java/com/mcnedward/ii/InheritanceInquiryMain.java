@@ -27,22 +27,22 @@ public final class InheritanceInquiryMain {
 	}
 	
 	/**
-	 * Build all versions of a specific system.
+	 * Builds a single project.
 	 */
-	protected static void buildSystem() {
+	protected static void buildProject() {
 		try {
-			new SystemBuilder().build();
+			new ProjectBuilder().build();
 		} catch (TaskBuildException e) {
 			IILogger.error(e.getMessage(), e);
 		}
 	}
 	
 	/**
-	 * Builds a single project.
+	 * Build all versions of a specific system.
 	 */
-	protected static void buildProject() {
+	protected static void buildSystem() {
 		try {
-			new ProjectBuilder().build();
+			new SystemBuilder().build();
 		} catch (TaskBuildException e) {
 			IILogger.error(e.getMessage(), e);
 		}

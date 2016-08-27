@@ -8,7 +8,9 @@ public enum MType {
 
 	DIT("Depth of Inheritance Tree"),
 	NOC("Number of Children"),
-	WMC("Weighted Method Count");
+	WMC("Weighted Method Count"),
+	OM("Overridden Methods"),
+	EM("Extended Methods");
 	
 	public String metricName;
 	

@@ -12,11 +12,11 @@ import com.mcnedward.ii.service.metric.MType;
  */
 public class NocMetric extends Metric {
 
-	public List<JavaElement> classChildren;
+	public int wmc;
 	
 	public NocMetric(JavaElement element, int noc, List<JavaElement> classChildren) {
 		super(MType.NOC, element, noc);
-		this.classChildren = classChildren;
+		wmc = element.getWeightedMethodCount();
 	}
 
 }

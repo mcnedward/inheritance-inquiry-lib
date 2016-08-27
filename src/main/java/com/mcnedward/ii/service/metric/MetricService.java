@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 
@@ -50,14 +51,17 @@ public final class MetricService {
 	}
 
 	/**
-	 * Builds the full details, including the Metric levels and any other analyzed information, for a single {@link JavaSolution}.
-	 * @param solution The solution.
+	 * Builds the full details, including the Metric levels and any other analyzed information, for a single
+	 * {@link JavaSolution}.
+	 * 
+	 * @param solution
+	 *            The solution.
 	 * @return True if the file was created, false otherwise.
 	 * @throws TaskBuildException
 	 */
 	public boolean buildSolutionDetails(JavaSolution solution) throws TaskBuildException {
 		String initialDetails = buildInitialDetails(solution);
-		
+
 		String ditLevels = buildMetricLevels(solution, MType.DIT);
 		String ditInfo = buildMetricInfo(solution, MType.DIT);
 
@@ -67,12 +71,18 @@ public final class MetricService {
 		String wmcLevels = buildMetricLevels(solution, MType.WMC);
 		String wmcInfo = buildMetricInfo(solution, MType.WMC);
 
-		return writeExcel(solution, "FullMetrics", initialDetails, ditLevels, ditInfo, nocLevels, nocInfo, wmcLevels, wmcInfo);
+		String oMethodInfo = buildMetricInfo(solution, MType.OM);
+		String eMethodInfo = buildMetricInfo(solution, MType.EM);
+
+		return writeExcel(solution, "FullMetrics", initialDetails, ditLevels, ditInfo, nocLevels, nocInfo, wmcLevels, wmcInfo, oMethodInfo,
+				eMethodInfo);
 	}
 
 	/**
-	 * Builds the all the Metric levels for a collection of {@link JavaSolution}s. 
-	 * @param solutions The solutions.
+	 * Builds the all the Metric levels for a collection of {@link JavaSolution}s.
+	 * 
+	 * @param solutions
+	 *            The solutions.
 	 * @return True if the files were created, false otherwise.
 	 * @throws TaskBuildException
 	 */
@@ -89,16 +99,26 @@ public final class MetricService {
 		columns.add("Inheritance Use");
 		columns.add("Max Width");
 		columns.add("Average Width");
-		
+		columns.add("Max NDC");
+		columns.add("Average NDC");
+		columns.add("NOC & WMC Danger");
+		columns.add("Overridden Methods");
+		columns.add("Extended Methods");
+
 		List<List<String>> rows = new ArrayList<>();
 		List<String> row = new ArrayList<>();
-		
+
 		row.add(String.valueOf(solution.getClassCount()));
 		row.add(String.valueOf(solution.getInheritanceCount()));
 		row.add(String.valueOf(solution.getMaxWidth()));
 		row.add(String.valueOf(solution.getAverageWidth()));
+		row.add(String.valueOf(solution.getNdcMax()));
+		row.add(String.valueOf(solution.getNdcAverage()));
+		row.add(String.valueOf(solution.getInheritedMethodRisks().size()));
+		row.add(String.valueOf(solution.getOMethods().size()));
+		row.add(String.valueOf(solution.getEMethods().size()));
 		rows.add(row);
-		
+
 		return buildExcel(columns, rows, null);
 	}
 
@@ -164,19 +184,24 @@ public final class MetricService {
 	}
 
 	private String buildMetricInfo(JavaSolution solution, MType metricType) throws TaskBuildException {
+		MetricInfo metricInfo = solution.getMetricInfo(metricType);
+		if (metricInfo == null)
+			return "";
+
 		List<String> columnHeaders = new ArrayList<>();
 		columnHeaders.add("Min");
 		columnHeaders.add("Average");
 		columnHeaders.add("Max");
-		
+		columnHeaders.add("Max Class for " + metricType.metricName);
+
 		List<List<String>> rows = new ArrayList<>();
 		List<String> row = new ArrayList<>();
 		rows.add(row);
-		MetricInfo metricInfo = solution.getMetricInfo(metricType);
 		row.add(String.valueOf(metricInfo.getMin()));
 		row.add(String.valueOf(metricInfo.getAverage()));
 		row.add(String.valueOf(metricInfo.getMax()));
-		
+		row.add(metricInfo.getMaxClasses().toString());
+
 		return buildExcel(columnHeaders, rows, null);
 	}
 
@@ -198,6 +223,10 @@ public final class MetricService {
 	}
 
 	public void buildNocMetricsDetails(JavaSolution solution) throws MetricBuildException {
+		buildNocMetricsDetails(solution, null);
+	}
+
+	public void buildNocMetricsDetails(JavaSolution solution, Collection<String> elements) throws MetricBuildException {
 		List<NocHierarchy> nocMetrics = solution.getNocHierarchies();
 		MType metricType = MType.NOC;
 
@@ -207,10 +236,34 @@ public final class MetricService {
 		StringBuilder builder = new StringBuilder(docTitle + NEWLINE);
 		builder.append(rowTitles + NEWLINE);
 		for (NocHierarchy metric : nocMetrics) {
-			builder.append(buildRow(metric.element, metric.noc, metric.tree.toString()) + NEWLINE);
+			if (elements != null) {
+				if (!elements.contains(metric.elementName))
+					continue;
+			}
+			builder.append(buildRow(metric.fullyQualifiedElementName, metric.noc, metric.tree.toString()) + NEWLINE);
 		}
 
 		writeToFile(solution, metricType, builder.toString());
+	}
+
+	public void buildNocHierarachies(JavaSolution solution, Collection<String> elements) throws MetricBuildException {
+		List<NocHierarchy> nocMetrics = solution.getNocHierarchies();
+
+		for (NocHierarchy metric : nocMetrics) {
+			if (elements != null) {
+				if (!elements.contains(metric.elementName))
+					continue;
+			}
+
+			StringBuilder builder = new StringBuilder(metric.elementName + NEWLINE);
+			builder.append("Children" + DELIMITER + "WMC" + DELIMITER + "Inherited Method Count" + NEWLINE);
+			while (!metric.tree.isEmpty()) {
+				NocHierarchy child = metric.tree.pop();
+				builder.append(child.elementName + DELIMITER + child.wmc + DELIMITER + child.inheritedMethodCount + NEWLINE);
+			}
+			writeToFile(solution, metric.elementName, builder.toString());
+		}
+
 	}
 
 	public void buildWmcMetricsDetails(JavaSolution solution) throws MetricBuildException {
@@ -258,7 +311,7 @@ public final class MetricService {
 	}
 
 	private String getFileName(JavaSolution solution, String fileName) {
-		return String.format("%s_%s_%s.%s", solution.getSystemName(), solution.getVersion(), fileName, FILE_EXTENSION);
+		return String.format("%s_%s.%s", solution.getSystemName(), fileName, FILE_EXTENSION);
 	}
 
 	/**

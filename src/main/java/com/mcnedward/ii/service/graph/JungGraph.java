@@ -52,8 +52,8 @@ public class JungGraph extends JFrame {
 	private Map<String, Edge> mEdgeMap;
 
 	// Distance between graphs
-	private static final int DEFAULT_X_DIST = 150;
-	private static final int DEFAULT_Y_DIST = 300;
+	private static final int DEFAULT_X_DIST = 250;
+	private static final int DEFAULT_Y_DIST = 250;
 	private int mXDist;
 	private int mYDist;
 
@@ -100,11 +100,11 @@ public class JungGraph extends JFrame {
 			server.setBackground(Color.WHITE);
 
 			RenderContext<String, String> context = server.getRenderContext();
-			
-			context.setVertexShapeTransformer(vertexShapeTransformer());
-			context.setVertexFillPaintTransformer(vertexFillPaintTransformer());
+
 			context.setVertexLabelTransformer(vertexLabelTransformer());
 			context.setVertexLabelRenderer(vertexLabelRenderer());
+			context.setVertexShapeTransformer(vertexShapeTransformer());
+			context.setVertexFillPaintTransformer(vertexFillPaintTransformer());
 			server.getRenderer().getVertexLabelRenderer().setPosition(Renderer.VertexLabel.Position.CNTR);
 
 			context.setEdgeStrokeTransformer(edgeStrokeTransformer());
@@ -146,10 +146,10 @@ public class JungGraph extends JFrame {
 			@Override
 			public Paint transform(String nodeName) {
 				Node node = mNodeMap.get(nodeName);
-				if (node.isInterface())
-					return Color.LIGHT_GRAY;
-				else
-					return Color.WHITE;
+				 if (node.isInterface())
+				 return Color.LIGHT_GRAY;
+				 else
+				 return new Color(50, 70, 160);
 			}
 		};
 	}
@@ -159,13 +159,17 @@ public class JungGraph extends JFrame {
 		return new Transformer<String, Shape>() {
 			@Override
 			public Shape transform(String vertexName) {
-				int width = fm.stringWidth(vertexName);
-				int height = 30;
-				int x = -(width / 2);
+				int width = (int) (fm.stringWidth(vertexName) * 2.5);
+				int height = 75;
+				int x = (int) -(width / 1.25);
 				int y = -15;
 				Rectangle2D rect = new java.awt.geom.Rectangle2D.Double(x, y, width, height);
-				rect.getBounds().grow(100, 250);
 				return rect;
+
+				// Rectangle frame = new VertexShapeFactory<String>().getRectangle(vertexName).getBounds();
+				// frame.grow(20, 20);
+				// Rectangle rect = new Rectangle(frame);
+				// return rect;
 			}
 		};
 	}
@@ -199,14 +203,14 @@ public class JungGraph extends JFrame {
 				} else {
 					fontStyle = Font.PLAIN;
 				}
-				
+
 				Font currentFont;
 				if (font != null) {
 					currentFont = font;
 				} else {
 					currentFont = vv.getFont();
 				}
-				Font theFont = new Font(currentFont.getName(), fontStyle, 18);
+				Font theFont = new Font(currentFont.getName(), fontStyle, 28);
 				setFont(theFont);
 				setIcon(null);
 				setBorder(noFocusBorder);
@@ -219,13 +223,14 @@ public class JungGraph extends JFrame {
 	private final Transformer<String, Stroke> edgeStrokeTransformer() {
 		return new Transformer<String, Stroke>() {
 			private final Stroke NORMAL = new BasicStroke(1.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER);
-			private final Stroke DASHED = new BasicStroke(3, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{9}, 0);
+			private final Stroke DASHED = new BasicStroke(3, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[] { 9 }, 0);
+
 			@Override
 			public Stroke transform(String edgeName) {
 				Edge edge = mEdgeMap.get(edgeName);
 				if (edge.isImplements())
 					return DASHED;
-				return NORMAL; 
+				return NORMAL;
 			}
 		};
 	}
@@ -239,7 +244,7 @@ public class JungGraph extends JFrame {
 			}
 		};
 	}
-	
+
 	private final Transformer<String, Paint> arrowFillPaintTransformer() {
 		return new Transformer<String, Paint>() {
 			@Override

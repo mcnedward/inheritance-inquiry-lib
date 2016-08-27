@@ -28,7 +28,7 @@ public class MetricBuildTask extends IIJob<JavaSolution> {
 	
 	@Override
 	protected JavaSolution analyze(JavaProject project) {
-		return analyzerService().analyzeMetrics(project);
+		return analyzerService().analyze(project);
 	}
 
 }

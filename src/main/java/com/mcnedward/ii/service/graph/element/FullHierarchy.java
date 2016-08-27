@@ -15,12 +15,16 @@ import com.mcnedward.ii.element.JavaProject;
  */
 public class FullHierarchy {
 
+	private static final Integer NDC_KEY = -1;
 	public String elementName;
 	public String fullElementName;
 	public boolean isInterface;
-	public Collection<FullHierarchy> exts;
+	public boolean hasChildren;
+	public List<FullHierarchy> exts;
 	public Collection<FullHierarchy> impls;
 	public int maxWidth;
+	public int maxDepth;
+	public int ndc;
 	private Map<Integer, Integer> childWidthMap;
 	private int stackLevel;
 	
@@ -34,28 +38,48 @@ public class FullHierarchy {
 		// Setup the stack for subclasses
 		childWidthMap = new ConcurrentHashMap<>();
 		stackLevel = 1;
+		childWidthMap.put(NDC_KEY, 0);	// TODO: Move Number of Descendants somewhere better
 		
 		List<JavaElement> projectElements = project.getAllElements();
 		buildTree(element, projectElements);
 		
+		Integer ndc = exts.size();
+		childWidthMap.put(stackLevel, ndc);	// Add the root's children
+		hasChildren = ndc > 0;	// Has children if other classes extended it
+		
+		ndc = childWidthMap.get(NDC_KEY);
 		maxWidth = 0;
+		maxDepth = 0;
 		for (Map.Entry<Integer, Integer> childCount : childWidthMap.entrySet()) {
+			// NDC_KEY is for total amount of children, so skip that
+			int depth = childCount.getKey();
+			if (depth == NDC_KEY) continue;
 			Integer width = childCount.getValue();
 			if (width > maxWidth)
 				maxWidth = width;
+			if (depth > maxDepth)
+				maxDepth = depth;
 		}
+		
+		// TODO Can probably remove this, just used for research
+//		if (fullElementName.contains("TestCase")) {
+//			fullElementName += " ---- " + exts.get(0).fullElementName;
+//		}
 	}
 	
-	private FullHierarchy(Collection<JavaElement> projectElements, JavaElement element, Map<Integer, Integer> childCountMap, int stackLevel) {
+	private FullHierarchy(Collection<JavaElement> projectElements, JavaElement element, Map<Integer, Integer> childCountMap, int parentStackLevel) {
 		init(element);
 		// Setup the stack stuff from the parent
 		this.childWidthMap = childCountMap;
-		this.stackLevel = ++stackLevel;
+		stackLevel = parentStackLevel + 1;
 		
 		buildTree(element, projectElements);
 		
 		// Add the width of this subclass to the stack
 		int width = exts.size();
+		Integer ndc = childCountMap.get(NDC_KEY);
+		ndc += width;
+		childCountMap.put(NDC_KEY, ndc);
 		
 		Integer childCount = childCountMap.get(stackLevel);
 		if (childCount == null) {

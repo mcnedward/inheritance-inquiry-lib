@@ -40,7 +40,7 @@ public class GraphServiceTest extends ProjectTest {
 		GraphService service = new GraphService();
 
 		// Act
-		boolean built = service.buildDitHierarchyTreeGraph(solution);
+		boolean built = service.buildDitHierarchyTreeGraphs(solution);
 
 		// Assert
 		assertThat(built, is(true));
@@ -73,7 +73,7 @@ public class GraphServiceTest extends ProjectTest {
 		GraphService service = new GraphService();
 
 		// Act
-		boolean built = service.buildDitHierarchyTreeGraph(solution);
+		boolean built = service.buildDitHierarchyTreeGraphs(solution);
 
 		// Assert
 		assertThat(built, is(true));

@@ -5,6 +5,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Stack;
 
 import javax.imageio.ImageIO;
@@ -33,7 +34,7 @@ public final class GraphService {
 		try {
 			// buildOverriddenMethodsGraph(solution);
 			// buildExtendedMethodsGraph(solution);
-			buildDitHierarchyTreeGraph(solution);
+			buildDitHierarchyTreeGraphs(solution);
 			buildNocHierarchyTreeGraphs(solution);
 			return true;
 		} catch (GraphBuildException e) {
@@ -44,13 +45,19 @@ public final class GraphService {
 
 	public void buildOverriddenMethodsGraph(JavaSolution solution) throws GraphBuildException {
 		IILogger.info("Building graph for overridden methods in solution %s...", solution.getSystemName());
-		List<SolutionMethod> methods = solution.getOMethods();
+		List<SolutionMethod> methods = new ArrayList<>();
+		for (Map.Entry<String, List<SolutionMethod>> entry : solution.getOMethods().entrySet()) {
+			methods.addAll(entry.getValue());
+		}
 		buildMethodsGraph(solution, methods, GType.OMETHODS);
 	}
 
 	public void buildExtendedMethodsGraph(JavaSolution solution) throws GraphBuildException {
 		IILogger.info("Building graph for extended methods in solution %s...", solution.getSystemName());
-		List<SolutionMethod> methods = solution.getEMethods();
+		List<SolutionMethod> methods = new ArrayList<>();
+		for (Map.Entry<String, List<SolutionMethod>> entry : solution.getEMethods().entrySet()) {
+			methods.addAll(entry.getValue());
+		}
 		buildMethodsGraph(solution, methods, GType.EMETHODS);
 	}
 
@@ -95,11 +102,11 @@ public final class GraphService {
 		}
 	}
 
-	public boolean buildDitHierarchyTreeGraph(JavaSolution solution) throws GraphBuildException {
-		return buildDitHierarchyTreeGraph(solution, null);
+	public boolean buildDitHierarchyTreeGraphs(JavaSolution solution) throws GraphBuildException {
+		return buildDitHierarchyTreeGraphs(solution, null);
 	}
 
-	public boolean buildDitHierarchyTreeGraph(JavaSolution solution, Integer ditLimit) throws GraphBuildException {
+	public boolean buildDitHierarchyTreeGraphs(JavaSolution solution, Integer ditLimit) throws GraphBuildException {
 		IILogger.info("Building graph for DIT hierarchy tree in solution %s...", solution.getSystemName());
 		List<DitHierarchy> trees = solution.getDitHierarchies();
 		List<Node> nodes = new ArrayList<>();
@@ -134,9 +141,17 @@ public final class GraphService {
 	}
 
 	public void buildNocHierarchyTreeGraphs(JavaSolution solution) throws GraphBuildException {
-		buildNocHierarchyTreeGraphs(solution, null);
+		buildNocHierarchyTreeGraphs(solution, null, null);
 	}
 
+	public void buildNocHierarchyTreeGraphs(JavaSolution solution, Integer nocLimit) throws GraphBuildException {
+		buildNocHierarchyTreeGraphs(solution, nocLimit, null);
+	}
+	
+	public void buildNocHierarchyTreeGraphs(JavaSolution solution, Collection<String> elements) throws GraphBuildException {
+		buildNocHierarchyTreeGraphs(solution, null, elements);
+	}
+	
 	/**
 	 * Builds the NOC hierarchy tree. If the nocLimit is not null, then only trees with an NOC higher than the limit
 	 * will be created.
@@ -145,7 +160,7 @@ public final class GraphService {
 	 * @param nocLimit
 	 * @throws GraphBuildException
 	 */
-	public void buildNocHierarchyTreeGraphs(JavaSolution solution, Integer nocLimit) throws GraphBuildException {
+	public void buildNocHierarchyTreeGraphs(JavaSolution solution, Integer nocLimit, Collection<String> elements) throws GraphBuildException {
 		IILogger.info("Building graph for NOC hierarchy tree in solution %s...", solution.getSystemName());
 		List<NocHierarchy> trees = solution.getNocHierarchies();
 		Stack<Node> nodes = new Stack<>();
@@ -153,20 +168,21 @@ public final class GraphService {
 
 		for (NocHierarchy tree : trees) {
 			if (nocLimit != null) {
-				if (tree.noc < nocLimit) {
-					continue;
-				}
+				if (tree.noc < nocLimit) continue;
 			}
-			String parentElement = tree.element;
+			if (elements != null) {
+				if (!elements.contains(tree.elementName)) continue;
+			}
+			String parentElement = tree.fullyQualifiedElementName;
 			Node parentNode = new Node(parentElement);
 			nodes.add(parentNode);
 			// Create an individual graph for each hierarchy tree
 			recurseHierarchyTrees(tree, parentNode, nodes, edges);
 
-			JungGraph graph = new JungGraph(500, 100);
+			JungGraph graph = new JungGraph();
 			graph.plotGraph(nodes, edges);
 			BufferedImage image = graph.createImage();
-			writeToFile(solution, GType.H_TREE, image, HIERARCHY_TREE_DIRECTORY, tree.element);
+			writeToFile(solution, GType.H_TREE, image, HIERARCHY_TREE_DIRECTORY, tree.fullyQualifiedElementName);
 
 			nodes = new Stack<>();
 			edges = new Stack<>();
@@ -177,7 +193,7 @@ public final class GraphService {
 		Stack<NocHierarchy> hierarchyTree = tree.tree;
 		while (!hierarchyTree.isEmpty()) {
 			NocHierarchy childTree = hierarchyTree.pop();
-			String element = childTree.element;
+			String element = childTree.fullyQualifiedElementName;
 
 			Node childNode = new Node(element);
 			nodes.add(childNode);
@@ -187,14 +203,21 @@ public final class GraphService {
 		}
 	}
 	
-	public boolean buildFullHierarchyTreeGraph(JavaSolution solution, String elementName) throws GraphBuildException {
-		IILogger.info("Building graph for full hierarchy tree %s in solution %s...", elementName, solution.getSystemName());
+	public boolean buildFullHierarchyTreeGraphs(JavaSolution solution, String elementName) throws GraphBuildException {
+		Collection<String> elements = new ArrayList<String>();
+		elements.add(elementName);
+		return buildFullHierarchyTreeGraphs(solution, elements);
+	}
+	
+	public boolean buildFullHierarchyTreeGraphs(JavaSolution solution, Collection<String> elements) throws GraphBuildException {
+		IILogger.info("Building graph for full hierarchy trees in solution %s...", solution.getSystemName());
 		Stack<Node> nodes = new Stack<>();
 		Stack<Edge> edges = new Stack<>();
 
+		int builtCount = 0;
 		List<FullHierarchy> trees = solution.getFullHierarchies();
 		for (FullHierarchy tree : trees) {
-			if (tree.elementName.equals(elementName)) {
+			if (elements.contains(tree.elementName)) {
 				String parentElement = tree.elementName;
 				Node parentNode = new Node(parentElement, tree.isInterface);
 				nodes.add(parentNode);
@@ -208,11 +231,11 @@ public final class GraphService {
 
 				nodes = new Stack<>();
 				edges = new Stack<>();
-				
-				return true;
+				builtCount++;
 			}
 		}
-		IILogger.info("Could not find element with the name %s...");
+		if (builtCount == elements.size()) return true;
+		IILogger.info("Could not build all full hierarchies for these elements: %s", elements);
 		return false;
 	}
 	
