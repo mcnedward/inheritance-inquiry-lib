@@ -2,7 +2,6 @@ package com.mcnedward.ii.jdt.visitor;
 
 import java.util.List;
 
-import org.apache.log4j.Logger;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.SimpleType;
 
@@ -16,8 +15,6 @@ import com.mcnedward.ii.element.generic.GenericParameter;
  *
  */
 public class CoiTypeArgVisitor extends JavaElementVisitor {
-	@SuppressWarnings("unused")
-	private static final Logger logger = Logger.getLogger(CoiTypeArgVisitor.class);
 
 	private ClassOrInterfaceElement mCoi;
 	private List<GenericParameter> mGenericArgs;

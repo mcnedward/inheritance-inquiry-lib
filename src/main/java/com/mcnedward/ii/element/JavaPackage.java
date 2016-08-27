@@ -3,14 +3,13 @@ package com.mcnedward.ii.element;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
+import com.mcnedward.ii.utils.IILogger;
 
 /**
  * @author Edward - Jun 18, 2016
  *
  */
 public class JavaPackage {
-	private static final Logger logger = Logger.getLogger(JavaPackage.class);
 	
 	private String mName;
 	private Set<JavaElement> mElements;
@@ -29,7 +28,7 @@ public class JavaPackage {
 			}
 			return null;
 		} catch (NullPointerException e) {
-			logger.error(String.format("Could not find the element with the name '%s'.", elementName));
+			IILogger.error(String.format("Could not find the element with the name '%s'.", elementName), e);
 			throw e;
 		}
 	}

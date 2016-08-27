@@ -3,7 +3,6 @@ package com.mcnedward.ii.service;
 import java.io.File;
 import java.io.IOException;
 
-import org.apache.log4j.Logger;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.InvalidRemoteException;
@@ -20,8 +19,6 @@ import com.mcnedward.ii.listener.GitDownloadListener;
  *
  */
 public final class GitService {
-	protected static final Logger logger = Logger.getLogger(GitService.class);
-
 	/**
 	 * Clone a remote git repository. This creates a temporary File directory that holds the contents of that git
 	 * repository. The file should be deleted after the JavaProject build is finished.
@@ -81,7 +78,6 @@ public final class GitService {
  *
  */
 final class ProjectBuildMonitor implements ProgressMonitor {
-	protected static final Logger logger = Logger.getLogger(GitService.class);
 
 	private String mRepoName;
 	private GitDownloadListener mListener;

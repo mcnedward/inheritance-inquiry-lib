@@ -2,7 +2,6 @@ package com.mcnedward.ii.jdt.visitor;
 
 import java.util.List;
 
-import org.apache.log4j.Logger;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.ParameterizedType;
 import org.eclipse.jdt.core.dom.SimpleType;
@@ -19,7 +18,6 @@ import com.mcnedward.ii.element.JavaProject;
  * 
  */
 public class ClassOrInterfaceVisitor extends JavaElementVisitor {
-	protected static final Logger logger = Logger.getLogger(ClassOrInterfaceVisitor.class);
 
 	private boolean mIsInterface;
 

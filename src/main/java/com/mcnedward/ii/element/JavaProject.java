@@ -5,8 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
-import org.apache.log4j.Logger;
-
+import com.mcnedward.ii.utils.IILogger;
 import com.mcnedward.ii.utils.VersionUtils;
 
 /**
@@ -14,7 +13,6 @@ import com.mcnedward.ii.utils.VersionUtils;
  *
  */
 public class JavaProject {
-	protected static final Logger logger = Logger.getLogger(JavaProject.class);
 
 	private String mPath;
 	private String mName;
@@ -56,7 +54,7 @@ public class JavaProject {
 			}
 			return null;
 		} catch (NullPointerException e) {
-			logger.error(String.format("Could not find the element with the name '%s'.", elementName));
+			IILogger.error(String.format("Could not find the element with the name '%s'.", elementName), e);
 			throw e;
 		}
 	}

@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
 
-import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.compiler.IProblem;
@@ -16,7 +15,6 @@ import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.FileASTRequestor;
 import org.eclipse.jgit.util.FileUtils;
 
-import com.google.common.base.Stopwatch;
 import com.mcnedward.ii.element.JavaProject;
 import com.mcnedward.ii.jdt.visitor.ClassVisitor;
 import com.mcnedward.ii.listener.ProjectBuildListener;
@@ -34,7 +32,6 @@ import com.mcnedward.ii.utils.Sourcer;
  *
  */
 public final class ProjectService extends FileASTRequestor {
-	private static final Logger logger = Logger.getLogger(ProjectService.class);
 
 	private Sourcer mSourcer;
 	private List<CompilationUnitHolder> mHolders;
@@ -95,8 +92,6 @@ public final class ProjectService extends FileASTRequestor {
 
 	private void buildProject(JavaProject project, ProjectBuildListener listener) {
 		try {
-			Stopwatch stopwatch = new Stopwatch();
-			stopwatch.start();
 			// Get all the files for the project
 			List<SourcedFile> files = mSourcer.buildSourceForProject(project, listener);
 
@@ -120,20 +115,13 @@ public final class ProjectService extends FileASTRequestor {
 
 			afterBuild(project);
 
-			stopwatch.stop();
-			String timeToComplete = stopwatch.toString();
-			if (listener != null)
-				listener.onProgressChange(String.format("Finished! Time to complete: %s", timeToComplete), 100);
-			else
-				IILogger.debug("Finished building %s! Time to complete: %s", project.toString(), timeToComplete);
-
 			if (project != null && listener != null)
 				listener.finished(project);
 
 		} catch (IOException e) {
 			if (listener != null)
 				listener.onBuildError(String.format("Something went wrong loading the file %s.", project.getProjectFile()), e);
-			logger.error(String.format("Something went wrong loading the file %s.", project.getProjectFile()), e);
+			IILogger.error(String.format("Something went wrong loading the file %s.", project.getProjectFile()), e);
 		}
 	}
 
@@ -153,13 +141,13 @@ public final class ProjectService extends FileASTRequestor {
 		if (deleteAfterBuild) {
 			try {
 				FileUtils.delete(project.getProjectFile(), FileUtils.RECURSIVE | FileUtils.RETRY);
-				logger.info(String.format("Deleting %s", project.getProjectFile().getName()));
+				IILogger.info(String.format("Deleting %s", project.getProjectFile().getName()));
 			} catch (IOException e) {
 				try {
 					FileUtils.delete(project.getProjectFile(), FileUtils.RECURSIVE | FileUtils.RETRY);
-					logger.warn(String.format("Could not delete file: %s... Trying one more time.", project.getProjectFile()));
+					IILogger.info(String.format("Could not delete file: %s... Trying one more time.", project.getProjectFile()));
 				} catch (IOException e1) {
-					logger.error(String.format("Could not delete file: %s after second attempt...", project.getProjectFile()), e);
+					IILogger.error(String.format("Could not delete file: %s after second attempt...", project.getProjectFile()), e);
 				}
 			}
 		}
@@ -245,9 +233,9 @@ public final class ProjectService extends FileASTRequestor {
 			List<String> missingImports = new ArrayList<>();
 			IProblem[] problems = cu.getProblems();
 			if (problems != null && problems.length > 0) {
-				logger.debug(String.format("Got %s problems compiling the source file: %s", problems.length, fileName));
+				IILogger.debug(String.format("Got %s problems compiling the source file: %s", problems.length, fileName));
 				for (IProblem problem : problems) {
-					logger.debug(String.format("%s", problem));
+					IILogger.debug(String.format("%s", problem));
 					if (problem.getMessage().contains("import")) {
 						// This is assuming a lot I think, but should be right...
 						missingImports.add(problem.getArguments()[0]);
@@ -266,7 +254,7 @@ public final class ProjectService extends FileASTRequestor {
 
 			@Override
 			public void worked(int arg0) {
-				logger.debug(arg0);
+				IILogger.info(String.valueOf(arg0));
 			}
 
 			@Override
@@ -294,12 +282,12 @@ public final class ProjectService extends FileASTRequestor {
 
 			@Override
 			public void done() {
-				logger.debug(taskName);
+				IILogger.debug(taskName);
 			}
 
 			@Override
 			public void beginTask(String arg0, int arg1) {
-				logger.debug(taskName + " - " + arg0 + " - " + arg1);
+				IILogger.debug(taskName + " - " + arg0 + " - " + arg1);
 			}
 		};
 	}

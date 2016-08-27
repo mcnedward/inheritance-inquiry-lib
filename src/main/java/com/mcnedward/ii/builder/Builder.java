@@ -8,15 +8,12 @@ import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Future;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
-import com.google.common.base.Stopwatch;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.mcnedward.ii.exception.TaskBuildException;
+import com.mcnedward.ii.tasks.IIJob;
 import com.mcnedward.ii.tasks.Job;
 import com.mcnedward.ii.tasks.MonitoringExecutorService;
-import com.mcnedward.ii.tasks.IIJob;
 import com.mcnedward.ii.utils.IILogger;
 
 /**
@@ -42,21 +39,15 @@ public abstract class Builder {
 
 	public Builder() {
 		// Setup Threads
-		ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat("Project-%d").setDaemon(true).build();
 		mQueue = new ArrayBlockingQueue<>(100);
-		mExecutorService = new MonitoringExecutorService(CORE_POOL_SIZE, MAX_POOL_SIZE, 0L, TimeUnit.MILLISECONDS, mQueue, threadFactory);
+		mExecutorService = new MonitoringExecutorService(CORE_POOL_SIZE, MAX_POOL_SIZE, 0L, TimeUnit.MILLISECONDS, mQueue);
 		mTaskMap = new HashMap<>();
 	}
 
 	public void build() throws TaskBuildException {
 		COMPLETE_JOBS = 0; // Reset job count
-		Stopwatch stopwatch = new Stopwatch();
-		stopwatch.start();
-
 		buildProcess();
-
-		stopwatch.stop();
-		IILogger.info("Finished build! Time to complete: %s", stopwatch.toString());
+		IILogger.info("Finished build!");
 	}
 
 	public static <T> void markTaskDone(Job<T> job) {

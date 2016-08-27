@@ -2,7 +2,6 @@ package com.mcnedward.ii.jdt.visitor;
 
 import java.util.List;
 
-import org.apache.log4j.Logger;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
@@ -20,7 +19,6 @@ import com.mcnedward.ii.utils.MethodUtils;
  *
  */
 public class MethodVisitor extends JavaElementVisitor {
-	private static final Logger logger = Logger.getLogger(MethodVisitor.class);
 
 	public MethodVisitor(JavaProject project, JavaElement parentElement) {
 		super(project, parentElement);
@@ -51,7 +49,6 @@ public class MethodVisitor extends JavaElementVisitor {
 		method.setMethodBinding(binding);
 		String signature = MethodUtils.getMethodSignature(binding);
 		method.setSignature(signature);
-		logger.debug(method.getSignature());
 
 		// Visit all of the method invocations inside this method
 		node.accept(new MethodInvocationVisitor(project(), parentElement(), method));

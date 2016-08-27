@@ -1,6 +1,5 @@
 package com.mcnedward.ii.jdt.visitor;
 
-import org.apache.log4j.Logger;
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
@@ -19,8 +18,6 @@ import com.mcnedward.ii.element.method.JavaMethodInvocation;
  *
  */
 public class MethodInvocationVisitor extends JavaElementVisitor {
-	@SuppressWarnings("unused")
-	private static final Logger logger = Logger.getLogger(MethodInvocationVisitor.class);
 
 	private JavaMethod mMethod;
 

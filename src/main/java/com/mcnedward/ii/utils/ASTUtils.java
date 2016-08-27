@@ -5,7 +5,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.log4j.Logger;
 import org.eclipse.jdt.core.dom.Modifier;
 
 import com.mcnedward.ii.element.JavaModifier;
@@ -15,8 +14,6 @@ import com.mcnedward.ii.element.JavaModifier;
  *
  */
 public final class ASTUtils {
-	@SuppressWarnings("unused")
-	private static final Logger logger = Logger.getLogger(ASTUtils.class);
 
 	private static final String LIB = "/lib";
 	private static final String TARGET = "/target";

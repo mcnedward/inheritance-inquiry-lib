@@ -4,8 +4,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.google.common.base.Stopwatch;
-
 
 /**
  * @author Edward - Jul 14, 2016
@@ -18,7 +16,6 @@ public class JavaSystem {
 	private File[] mFiles;
 	private List<JavaProject> mProjects;
 	private int mProjectsBuiltCount, mProjectsCount;
-	private Stopwatch mStopwatch;
 	
 	public JavaSystem(File systemFile) {
 		this(systemFile, systemFile.getName());
@@ -30,21 +27,11 @@ public class JavaSystem {
 		mFiles = mSystemFile.listFiles();
 		mProjectsCount = mFiles.length;
 		mProjects = new ArrayList<>();
-		mStopwatch = new Stopwatch();
-		mStopwatch.start();
 	}
 
 	public void addProject(JavaProject project) {
 		mProjects.add(project);
 		mProjectsBuiltCount++;
-	}
-	
-	public void stopStopwatch() {
-		mStopwatch.stop();
-	}
-	
-	public String getBuildTime() {
-		return mStopwatch.toString();
 	}
 	
 	public String getName() {

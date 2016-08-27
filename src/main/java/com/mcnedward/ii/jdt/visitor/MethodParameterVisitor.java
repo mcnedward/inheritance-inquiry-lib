@@ -1,6 +1,5 @@
 package com.mcnedward.ii.jdt.visitor;
 
-import org.apache.log4j.Logger;
 import org.eclipse.jdt.core.dom.ParameterizedType;
 import org.eclipse.jdt.core.dom.PrimitiveType;
 import org.eclipse.jdt.core.dom.QualifiedType;
@@ -15,8 +14,6 @@ import com.mcnedward.ii.element.method.MethodParameter;
  *
  */
 public class MethodParameterVisitor extends JavaProjectVisitor {
-	@SuppressWarnings("unused")
-	private static final Logger logger = Logger.getLogger(MethodParameterVisitor.class);
 	
 	private JavaMethod mMethod;
 	

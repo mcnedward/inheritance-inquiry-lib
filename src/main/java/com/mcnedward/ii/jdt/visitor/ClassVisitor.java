@@ -3,7 +3,6 @@ package com.mcnedward.ii.jdt.visitor;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.log4j.Logger;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ImportDeclaration;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
@@ -23,7 +22,6 @@ import com.mcnedward.ii.utils.IILogger;
  *
  */
 public class ClassVisitor extends JavaProjectVisitor {
-	protected static final Logger logger = Logger.getLogger(ClassVisitor.class);
 
 	private JavaElement mElement;
 	private String mPackageName;
