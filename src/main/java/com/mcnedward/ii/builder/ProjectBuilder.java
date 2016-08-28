@@ -15,7 +15,7 @@ import com.mcnedward.ii.tasks.StandardBuildTask;
 public final class ProjectBuilder extends Builder {
 
 	protected static final String PROJECT_NAME = "argouml";
-	protected static final String PROJECT_PATH = QUALITUS_CORPUS_SYSTEMS_PATH + "argouml/argouml-0.34";//azureus/azureus-2.0.8.2";
+	protected static final String PROJECT_PATH = QUALITUS_CORPUS_SYSTEMS_PATH + "argouml/argouml-0.34";
 	protected static final String FREECOL_PROJECT_NAME = "freecol";
 	protected static final String FREECOL_PROJECT_PATH = QUALITUS_CORPUS_SYSTEMS_PATH + "freecol/freecol-0.9.5 ";
 	protected static final String HIBERNATE_PROJECT_NAME = "hibernate";
@@ -33,7 +33,7 @@ public final class ProjectBuilder extends Builder {
 	
 	@Override
 	protected void buildProcess() throws TaskBuildException {
-		String projectPath = FREECOL_PROJECT_PATH;	// TODO Something weird going on with the build, of FreeCol at least, not sure of others 
+		String projectPath = FREECOL_PROJECT_PATH; 
 		String projectName = FREECOL_PROJECT_NAME;
 		File buildFile = new File(projectPath);
 		if (!buildFile.exists()) {

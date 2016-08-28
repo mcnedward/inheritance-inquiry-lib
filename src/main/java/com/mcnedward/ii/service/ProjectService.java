@@ -13,6 +13,7 @@ import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.FileASTRequestor;
+import org.eclipse.jgit.annotations.Nullable;
 import org.eclipse.jgit.util.FileUtils;
 
 import com.mcnedward.ii.element.JavaProject;
@@ -31,63 +32,77 @@ import com.mcnedward.ii.utils.Sourcer;
  * @author Edward - Jun 16, 2016
  *
  */
-public final class ProjectService extends FileASTRequestor {
+public final class ProjectService {
 
 	private Sourcer mSourcer;
 	private List<CompilationUnitHolder> mHolders;
+	private IIFileASTRequestor mRequestor;
+	private boolean mDeleteAfterBuild;
 
 	public ProjectService() {
 		mSourcer = new Sourcer();
 		mHolders = new ArrayList<>();
+		mRequestor = new IIFileASTRequestor();
 	}
 
 	/**
 	 * Build a {@link JavaProject}.
 	 * 
 	 * @param projectPath
-	 *            The path to the project
+	 *            The path to the project.
 	 * @param projectName
-	 *            The name to give the project
+	 *            The name to give the project. This can be null.
 	 * @param listener
-	 *            The {@link ProjectBuildListener}
-	 * @return The JavaProject
+	 *            The {@link ProjectBuildListener}. This can be null.
+	 * @return The JavaProject.
 	 */
-	private JavaProject build(String projectPath, String projectName, ProjectBuildListener listener) {
+	public JavaProject build(String projectPath, @Nullable String projectName, @Nullable ProjectBuildListener listener) {
 		JavaProject project = new JavaProject(projectPath, projectName);
 		buildProject(project, listener);
 		return project;
 	}
-
+	
 	/**
-	 * Build a {@link JavaProject}. This method should be used when building a project that is a part of system (for
-	 * projects with multiple versions).
+	 * Build a {@link JavaProject}.
 	 * 
-	 * @param projectFile
-	 *            The project file
-	 * @param systemName
-	 *            The name of the system that this project belongs to.
-	 * @return The JavaProject
+	 * @param projectPath
+	 *            The path to the project.
+	 * @param projectName
+	 *            The name to give the project. This can be null.
+	 * @return The JavaProject.
 	 */
-	public JavaProject build(File projectFile, String systemName) {
-		return build(projectFile, systemName, null);
+	public JavaProject build(String projectPath, @Nullable String projectName) {
+		return build(projectPath, projectName);
 	}
 
 	/**
-	 * Build a {@link JavaProject}. This method should be used when building a project that is a part of system (for
-	 * projects with multiple versions).
+	 * Build a {@link JavaProject}.
 	 * 
 	 * @param projectFile
-	 *            The project file
+	 *            The project file.
 	 * @param systemName
-	 *            The name of the system that this project belongs to.
+	 *            The name of the system that this project belongs to. This can be null.
 	 * @param listener
-	 *            The {@link ProjectBuildListener}
-	 * @return The JavaProject
+	 *            The {@link ProjectBuildListener}. This can be null.
+	 * @return The JavaProject.
 	 */
-	public JavaProject build(File projectFile, String systemName, ProjectBuildListener listener) {
+	public JavaProject build(File projectFile, @Nullable String systemName, @Nullable ProjectBuildListener listener) {
 		JavaProject project = new JavaProject(projectFile, systemName);
 		buildProject(project, listener);
 		return project;
+	}
+	
+	/**
+	 * Build a {@link JavaProject}.
+	 * 
+	 * @param projectFile
+	 *            The project file.
+	 * @param systemName
+	 *            The name of the system that this project belongs to. This can be null.
+	 * @return The JavaProject.
+	 */
+	public JavaProject build(File projectFile, @Nullable String systemName) {
+		return build(projectFile, systemName, null);
 	}
 
 	private void buildProject(JavaProject project, ProjectBuildListener listener) {
@@ -114,6 +129,7 @@ public final class ProjectService extends FileASTRequestor {
 			visitCompilationUnits(project, files, listener);
 
 			afterBuild(project);
+			mHolders.clear();
 
 			if (project != null && listener != null)
 				listener.finished(project);
@@ -123,22 +139,8 @@ public final class ProjectService extends FileASTRequestor {
 				listener.onBuildError(String.format("Something went wrong loading the file %s.", project.getProjectFile()), e);
 			IILogger.error(String.format("Something went wrong loading the file %s.", project.getProjectFile()), e);
 		}
-	}
 
-	/**
-	 * Build a {@link JavaProject}. This can also delete the project file after the build is complete. Useful when using
-	 * the {@link GitService}, and you need to cleanup the cloned project.
-	 * 
-	 * @param project
-	 *            The JavaProject
-	 * @param listener
-	 *            The {@link ProjectBuildListener}
-	 * @param deleteAfterBuild
-	 *            True if the project file should be deleted after the build is complete
-	 */
-	public void build(String projectPath, String projectName, ProjectBuildListener listener, boolean deleteAfterBuild) {
-		JavaProject project = build(projectPath, projectName, listener);
-		if (deleteAfterBuild) {
+		if (mDeleteAfterBuild) {
 			try {
 				FileUtils.delete(project.getProjectFile(), FileUtils.RECURSIVE | FileUtils.RETRY);
 				IILogger.info(String.format("Deleting %s", project.getProjectFile().getName()));
@@ -191,16 +193,8 @@ public final class ProjectService extends FileASTRequestor {
 			filePaths.add(file.getFile().getAbsolutePath());
 		}
 		String[] sourceFiles = filePaths.toArray(new String[filePaths.size()]);
-		parser.createASTs(sourceFiles, null, new String[0], this, getProgressMonitor());
+		parser.createASTs(sourceFiles, null, new String[0], mRequestor, getProgressMonitor());
 		parser = null;
-	}
-
-	@Override
-	public void acceptAST(String sourceFilePath, CompilationUnit compilationUnit) {
-		CompilationUnitHolder holder = new CompilationUnitHolder();
-		holder.cu = compilationUnit;
-		holder.sourceFilePath = sourceFilePath;
-		mHolders.add(holder);
 	}
 
 	/**
@@ -292,9 +286,31 @@ public final class ProjectService extends FileASTRequestor {
 		};
 	}
 
+	/**
+	 * Determines whether the project should be deleted after the build process is complete. Be careful with this! This
+	 * is mainly used when doing a build for a file from the {@link GitService} and you need to cleanup the cloned project.
+	 * 
+	 * @param deleteAfterBuild
+	 *            True if you want the entire project to be deleted after the build process, false otherwise.
+	 */
+	public void setDeleteAfterBuild(boolean deleteAfterBuild) {
+		mDeleteAfterBuild = deleteAfterBuild;
+	}
+
 	private final class CompilationUnitHolder {
 		public CompilationUnit cu;
 		public String sourceFilePath;
+	}
+
+	private class IIFileASTRequestor extends FileASTRequestor {
+
+		@Override
+		public void acceptAST(String sourceFilePath, CompilationUnit compilationUnit) {
+			CompilationUnitHolder holder = new CompilationUnitHolder();
+			holder.cu = compilationUnit;
+			holder.sourceFilePath = sourceFilePath;
+			mHolders.add(holder);
+		}
 	}
 
 }

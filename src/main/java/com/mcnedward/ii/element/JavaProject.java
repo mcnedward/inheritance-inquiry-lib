@@ -26,8 +26,8 @@ public class JavaProject {
 
 	public JavaProject(String projectPath, String projectName) {
 		mPath = projectPath;
-		mName = projectName;
 		mProjectFile = new File(mPath);
+		mName = projectName != null ? projectName : mProjectFile.getName();
 		mPackages = new ArrayList<>();
 		buildFile();
 		mVersion = VersionUtils.findVersion(mPath);
@@ -35,8 +35,8 @@ public class JavaProject {
 
 	public JavaProject(File projectFile, String systemName) {
 		mPath = projectFile.getAbsolutePath();
+		mSystemName = systemName != null ? systemName : projectFile.getName();
 		mName = projectFile.getName();
-		mSystemName = systemName;
 		mProjectFile = projectFile;
 		mPackages = new ArrayList<>();
 		buildFile();
