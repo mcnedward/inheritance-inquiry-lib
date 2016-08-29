@@ -17,6 +17,8 @@ import org.eclipse.jgit.annotations.Nullable;
 import org.eclipse.jgit.util.FileUtils;
 
 import com.mcnedward.ii.element.JavaProject;
+import com.mcnedward.ii.exception.ProjectBuildException;
+import com.mcnedward.ii.exception.TaskBuildException;
 import com.mcnedward.ii.jdt.visitor.ClassVisitor;
 import com.mcnedward.ii.listener.ProjectBuildListener;
 import com.mcnedward.ii.utils.ASTUtils;
@@ -61,7 +63,7 @@ public final class ProjectService {
 		buildProject(project, listener);
 		return project;
 	}
-	
+
 	/**
 	 * Build a {@link JavaProject}.
 	 * 
@@ -91,7 +93,7 @@ public final class ProjectService {
 		buildProject(project, listener);
 		return project;
 	}
-	
+
 	/**
 	 * Build a {@link JavaProject}.
 	 * 
@@ -134,10 +136,14 @@ public final class ProjectService {
 			if (project != null && listener != null)
 				listener.finished(project);
 
-		} catch (IOException e) {
+		} catch (IOException | IllegalStateException e) {
 			if (listener != null)
 				listener.onBuildError(String.format("Something went wrong loading the file %s.", project.getProjectFile()), e);
 			IILogger.error(String.format("Something went wrong loading the file %s.", project.getProjectFile()), e);
+		} catch (ProjectBuildException e) {
+			if (listener != null)
+				listener.onBuildError(e.getMessage(), e);
+			IILogger.error(e);
 		}
 
 		if (mDeleteAfterBuild) {
@@ -169,8 +175,9 @@ public final class ProjectService {
 	 *            The list of {@link SourcedFile}s.
 	 * @param listener
 	 *            The ProjectBuildListener
+	 * @throws TaskBuildException
 	 */
-	private void createASTs(String projectPath, List<SourcedFile> files) {
+	private void createASTs(String projectPath, List<SourcedFile> files) throws ProjectBuildException {
 		@SuppressWarnings("unchecked")
 		Hashtable<String, String> options = JavaCore.getOptions();
 		options.put(JavaCore.COMPILER_SOURCE, JavaCore.VERSION_1_8);
@@ -243,12 +250,10 @@ public final class ProjectService {
 
 	private static final IProgressMonitor getProgressMonitor() {
 		return new IProgressMonitor() {
-			private String taskName;
 			private boolean cancelled;
 
 			@Override
 			public void worked(int arg0) {
-				IILogger.info(String.valueOf(arg0));
 			}
 
 			@Override
@@ -257,7 +262,6 @@ public final class ProjectService {
 
 			@Override
 			public void setTaskName(String arg0) {
-				taskName = arg0;
 			}
 
 			@Override
@@ -276,19 +280,18 @@ public final class ProjectService {
 
 			@Override
 			public void done() {
-				IILogger.debug(taskName);
 			}
 
 			@Override
 			public void beginTask(String arg0, int arg1) {
-				IILogger.debug(taskName + " - " + arg0 + " - " + arg1);
 			}
 		};
 	}
 
 	/**
 	 * Determines whether the project should be deleted after the build process is complete. Be careful with this! This
-	 * is mainly used when doing a build for a file from the {@link GitService} and you need to cleanup the cloned project.
+	 * is mainly used when doing a build for a file from the {@link GitService} and you need to cleanup the cloned
+	 * project.
 	 * 
 	 * @param deleteAfterBuild
 	 *            True if you want the entire project to be deleted after the build process, false otherwise.

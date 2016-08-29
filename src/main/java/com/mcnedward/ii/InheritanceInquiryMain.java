@@ -14,7 +14,6 @@ import com.mcnedward.ii.utils.IILogger;
 public final class InheritanceInquiryMain {
 	
 	public static void main(String[] args) {
-		IILogger.DEBUG = true;
 		buildMultiSystems();
 	}
 	

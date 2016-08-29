@@ -8,6 +8,7 @@ import java.util.List;
 import org.eclipse.jdt.core.dom.Modifier;
 
 import com.mcnedward.ii.element.JavaModifier;
+import com.mcnedward.ii.exception.ProjectBuildException;
 
 /**
  * @author Edward - Jul 7, 2016
@@ -22,7 +23,12 @@ public final class ASTUtils {
 		return new String[] { "C:/Program Files/Java/jre1.8.0_73/lib/rt.jar" };
 	}
 	
-	public static String[] sourceEntries(String projectPath) {
+	public static String[] sourceEntries(String projectPath) throws ProjectBuildException {
+		File src = new File(projectPath + "/src");
+		File srcMain = new File(projectPath + "/src/main/java");
+		File srcTest = new File(projectPath + "/src/test/java");
+		if (!src.exists() && !srcMain.exists() && !srcTest.exists())
+			throw new ProjectBuildException("The project needs to contain a valid source directory. This should in \"src\", \"src/main/java\", or \"src/test/java\".");
 		return new String[] {
 				projectPath,
 				projectPath + "/src", 

@@ -14,7 +14,7 @@ import com.mcnedward.ii.listener.ProjectBuildListener;
 public class MetricBuildTask extends IIJob<JavaSolution> {
 
 	public MetricBuildTask(File projectFile, String systemName) {
-		this(projectFile, systemName, null);
+		super(projectFile, systemName);
 	}
 
 	public MetricBuildTask(File projectFile, String systemName, ProjectBuildListener listener) {
