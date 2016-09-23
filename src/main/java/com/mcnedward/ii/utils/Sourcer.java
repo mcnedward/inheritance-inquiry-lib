@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.mcnedward.ii.element.JavaProject;
-import com.mcnedward.ii.listener.ProjectBuildListener;
+import com.mcnedward.ii.listener.SolutionBuildListener;
 
 /**
  * Allows for parsing files.
@@ -20,12 +20,10 @@ public class Sourcer {
 	/**
 	 * Parse a directory, and get a list of future promises for parsed files.
 	 * 
-	 * @param directoryPath
-	 *            The path to the directory to parse.
 	 * @return A list of Futures that are the .java contents of a directory.
 	 * @throws IOException
 	 */
-	public List<SourcedFile> buildSourceForProject(JavaProject project, ProjectBuildListener listener) throws IOException {
+	public List<SourcedFile> buildSourceForProject(JavaProject project, SolutionBuildListener listener) throws IOException {
 		List<SourcedFile> sourceFiles = new ArrayList<>();
 		List<File> files = project.getFiles();
 
@@ -48,10 +46,6 @@ public class Sourcer {
 		String fileName = file.getName();
 		String name = fileName.substring(0, fileName.indexOf(getFileExtension(fileName)) - 1);
 		return new SourcedFile(file, source, name);
-	}
-
-	public SourcedFile sourceFile(String filePath) throws IOException {
-		return sourceFile(new File(filePath));
 	}
 
 	private String getFileExtension(String fileName) {

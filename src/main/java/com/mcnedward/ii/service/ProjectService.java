@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
 
+import com.mcnedward.ii.listener.SolutionBuildListener;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.compiler.IProblem;
@@ -20,7 +21,6 @@ import com.mcnedward.ii.element.JavaProject;
 import com.mcnedward.ii.exception.ProjectBuildException;
 import com.mcnedward.ii.exception.TaskBuildException;
 import com.mcnedward.ii.jdt.visitor.ClassVisitor;
-import com.mcnedward.ii.listener.ProjectBuildListener;
 import com.mcnedward.ii.utils.ASTUtils;
 import com.mcnedward.ii.utils.IILogger;
 import com.mcnedward.ii.utils.SourcedFile;
@@ -38,13 +38,13 @@ public final class ProjectService {
 
 	private Sourcer mSourcer;
 	private List<CompilationUnitHolder> mHolders;
-	private IIFileASTRequestor mRequestor;
+	private IIFileASTRequester mRequester;
 	private boolean mDeleteAfterBuild;
 
 	public ProjectService() {
 		mSourcer = new Sourcer();
 		mHolders = new ArrayList<>();
-		mRequestor = new IIFileASTRequestor();
+		mRequester = new IIFileASTRequester();
 	}
 
 	/**
@@ -52,29 +52,13 @@ public final class ProjectService {
 	 * 
 	 * @param projectPath
 	 *            The path to the project.
-	 * @param projectName
-	 *            The name to give the project. This can be null.
 	 * @param listener
-	 *            The {@link ProjectBuildListener}. This can be null.
+	 *            The {@link SolutionBuildListener}. This can be null.
 	 * @return The JavaProject.
 	 */
-	public JavaProject build(String projectPath, @Nullable String projectName, @Nullable ProjectBuildListener listener) {
-		JavaProject project = new JavaProject(projectPath, projectName);
-		buildProject(project, listener);
-		return project;
-	}
-
-	/**
-	 * Build a {@link JavaProject}.
-	 * 
-	 * @param projectPath
-	 *            The path to the project.
-	 * @param projectName
-	 *            The name to give the project. This can be null.
-	 * @return The JavaProject.
-	 */
-	public JavaProject build(String projectPath, @Nullable String projectName) {
-		return build(projectPath, projectName);
+	public JavaProject build(String projectPath, @Nullable SolutionBuildListener listener) throws ProjectBuildException {
+		JavaProject project = new JavaProject(projectPath);
+		return buildProject(project, listener);
 	}
 
 	/**
@@ -82,32 +66,16 @@ public final class ProjectService {
 	 * 
 	 * @param projectFile
 	 *            The project file.
-	 * @param systemName
-	 *            The name of the system that this project belongs to. This can be null.
 	 * @param listener
-	 *            The {@link ProjectBuildListener}. This can be null.
+	 *            The {@link SolutionBuildListener}. This can be null.
 	 * @return The JavaProject.
 	 */
-	public JavaProject build(File projectFile, @Nullable String systemName, @Nullable ProjectBuildListener listener) {
-		JavaProject project = new JavaProject(projectFile, systemName);
-		buildProject(project, listener);
-		return project;
+	public JavaProject build(File projectFile, @Nullable SolutionBuildListener listener) throws ProjectBuildException {
+		JavaProject project = new JavaProject(projectFile);
+		return buildProject(project, listener);
 	}
 
-	/**
-	 * Build a {@link JavaProject}.
-	 * 
-	 * @param projectFile
-	 *            The project file.
-	 * @param systemName
-	 *            The name of the system that this project belongs to. This can be null.
-	 * @return The JavaProject.
-	 */
-	public JavaProject build(File projectFile, @Nullable String systemName) {
-		return build(projectFile, systemName, null);
-	}
-
-	private void buildProject(JavaProject project, ProjectBuildListener listener) {
+	private JavaProject buildProject(JavaProject project, SolutionBuildListener listener) throws ProjectBuildException {
 		try {
 			// Get all the files for the project
 			List<SourcedFile> files = mSourcer.buildSourceForProject(project, listener);
@@ -121,7 +89,7 @@ public final class ProjectService {
 			else
 				IILogger.debug("Creating ASTs for %s...", project.toString());
 
-			createASTs(project.getProjectFile().getAbsolutePath(), files);
+			createASTs(project.getProjectFile().getAbsolutePath(), files, listener);
 			if (listener != null)
 				listener.onProgressChange("Finished creating ASTs!", 100);
 			else
@@ -130,20 +98,13 @@ public final class ProjectService {
 			// Use the visitors to build the JavaProject!
 			visitCompilationUnits(project, files, listener);
 
+            if (listener != null)
+                listener.onProgressChange("Finished building project!", 100);
+
 			afterBuild(project);
 			mHolders.clear();
-
-			if (project != null && listener != null)
-				listener.finished(project);
-
 		} catch (IOException | IllegalStateException e) {
-			if (listener != null)
-				listener.onBuildError(String.format("Something went wrong loading the file %s.", project.getProjectFile()), e);
-			IILogger.error(String.format("Something went wrong loading the file %s.", project.getProjectFile()), e);
-		} catch (ProjectBuildException e) {
-			if (listener != null)
-				listener.onBuildError(e.getMessage(), e);
-			IILogger.error(e);
+            throw new ProjectBuildException(String.format("Something went wrong loading the file %s.\nPlease check that the source files of your project are in the correct directory.", project.getProjectFile()), e);
 		}
 
 		if (mDeleteAfterBuild) {
@@ -159,6 +120,7 @@ public final class ProjectService {
 				}
 			}
 		}
+		return project;
 	}
 
 	private void afterBuild(JavaProject project) {
@@ -173,11 +135,9 @@ public final class ProjectService {
 	 *            The absolute path of the project.
 	 * @param files
 	 *            The list of {@link SourcedFile}s.
-	 * @param listener
-	 *            The ProjectBuildListener
 	 * @throws TaskBuildException
 	 */
-	private void createASTs(String projectPath, List<SourcedFile> files) throws ProjectBuildException {
+	private void createASTs(String projectPath, List<SourcedFile> files, SolutionBuildListener listener) throws ProjectBuildException {
 		@SuppressWarnings("unchecked")
 		Hashtable<String, String> options = JavaCore.getOptions();
 		options.put(JavaCore.COMPILER_SOURCE, JavaCore.VERSION_1_8);
@@ -200,8 +160,7 @@ public final class ProjectService {
 			filePaths.add(file.getFile().getAbsolutePath());
 		}
 		String[] sourceFiles = filePaths.toArray(new String[filePaths.size()]);
-		parser.createASTs(sourceFiles, null, new String[0], mRequestor, getProgressMonitor());
-		parser = null;
+		parser.createASTs(sourceFiles, null, new String[0], mRequester, getProgressMonitor(listener, sourceFiles.length));
 	}
 
 	/**
@@ -212,15 +171,11 @@ public final class ProjectService {
 	 * @param files
 	 *            The list of {@link SourcedFile}s.
 	 * @param listener
-	 *            The {@link ProjectBuildListener}.
+	 *            The {@link SolutionBuildListener}.
 	 */
-	private void visitCompilationUnits(JavaProject project, List<SourcedFile> files, ProjectBuildListener listener) {
+	private void visitCompilationUnits(JavaProject project, List<SourcedFile> files, SolutionBuildListener listener) {
 		for (int i = 0; i < mHolders.size(); i++) {
 			CompilationUnitHolder holder = mHolders.get(i);
-
-			int progress = (int) (((double) i / mHolders.size()) * 100);
-			if (listener != null)
-				listener.onProgressChange("Analyzing...", progress);
 
 			String fileName = holder.sourceFilePath;
 			for (SourcedFile f : files) {
@@ -231,7 +186,12 @@ public final class ProjectService {
 			}
 			CompilationUnit cu = holder.cu;
 
-			List<String> missingImports = new ArrayList<>();
+            int progress = (int) (((double) i / mHolders.size()) * 100);
+            if (listener != null)
+                listener.onProgressChange(String.format("Visiting compilation units [%s / %s]...", i, mHolders.size()), progress);
+            IILogger.info(String.valueOf(progress));
+
+            List<String> missingImports = new ArrayList<>();
 			IProblem[] problems = cu.getProblems();
 			if (problems != null && problems.length > 0) {
 				IILogger.debug(String.format("Got %s problems compiling the source file: %s", problems.length, fileName));
@@ -248,12 +208,16 @@ public final class ProjectService {
 		}
 	}
 
-	private static final IProgressMonitor getProgressMonitor() {
+	private static final IProgressMonitor getProgressMonitor(SolutionBuildListener listener, int projectFileCount) {
 		return new IProgressMonitor() {
-			private boolean cancelled;
+            private boolean mCancelled;
+            private int mWorkedProgress;
 
 			@Override
 			public void worked(int arg0) {
+                mWorkedProgress += arg0;
+                    int progress = (int) (((double) mWorkedProgress / projectFileCount) * 100);
+                    listener.onProgressChange("Creating ASTs...", progress);
 			}
 
 			@Override
@@ -266,12 +230,12 @@ public final class ProjectService {
 
 			@Override
 			public void setCanceled(boolean arg0) {
-				cancelled = arg0;
+				mCancelled = arg0;
 			}
 
 			@Override
 			public boolean isCanceled() {
-				return cancelled;
+				return mCancelled;
 			}
 
 			@Override
@@ -305,7 +269,7 @@ public final class ProjectService {
 		public String sourceFilePath;
 	}
 
-	private class IIFileASTRequestor extends FileASTRequestor {
+	private class IIFileASTRequester extends FileASTRequestor {
 
 		@Override
 		public void acceptAST(String sourceFilePath, CompilationUnit compilationUnit) {

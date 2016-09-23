@@ -28,7 +28,7 @@ public final class ASTUtils {
 		File srcMain = new File(projectPath + "/src/main/java");
 		File srcTest = new File(projectPath + "/src/test/java");
 		if (!src.exists() && !srcMain.exists() && !srcTest.exists())
-			throw new ProjectBuildException("The project needs to contain a valid source directory. This should in \"src\", \"src/main/java\", or \"src/test/java\".");
+			throw new ProjectBuildException("The project needs to contain a valid source directory. This should be in \"src\", \"src/main/java\", or \"src/test/java\".");
 		return new String[] {
 				projectPath,
 				projectPath + "/src", 

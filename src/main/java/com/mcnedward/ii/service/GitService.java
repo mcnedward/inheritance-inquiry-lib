@@ -32,7 +32,7 @@ public final class GitService {
 	 * @param password
 	 *            The password for authentication.
 	 * @param listener
-	 *            The ProjectBuildListener to notify of the progress of the cloning.
+	 *            The SolutionBuildListener to notify of the progress of the cloning.
 	 * @return A File that holds the contents of the remote repository. This File is a git directory (has a .git
 	 *         folder). This needs to be deleted once the project has been built.
 	 * @throws InvalidRemoteException
@@ -72,7 +72,7 @@ public final class GitService {
 }
 
 /**
- * Class for monitoring the progress of a git clone, and updating the ProjectBuildListener.
+ * Class for monitoring the progress of a git clone, and updating the SolutionBuildListener.
  * 
  * @author Edward - Jun 25, 2016
  *

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import com.mcnedward.ii.listener.SolutionBuildListener;
 import org.eclipse.jdt.core.dom.IMethodBinding;
 
 import com.mcnedward.ii.element.JavaElement;
@@ -32,13 +33,15 @@ import com.mcnedward.ii.utils.IILogger;
  */
 public final class AnalyzerService {
 	
-	public JavaSolution analyze(JavaProject project) {
+	public JavaSolution analyze(JavaProject project, SolutionBuildListener listener) {
 		JavaSolution solution = initSolution(project);
 
+        IILogger.notify(listener, "Analyzing methods...", 10);
 		calculateMethods(project, solution);
+        IILogger.notify(listener, "Analyzing metrics and building hierarchies...", 60);
 		calculateMetricsAndTrees(project, solution, false);
+        IILogger.notify(listener, "Analyzing metric usages...", 100);
 		calculateMetricUsages(solution);
-		calculateFinalAnalysis(solution);
 
 		return solution;
 	}
@@ -88,7 +91,7 @@ public final class AnalyzerService {
 				if (!elementToFind.equals(element.getName()))
 					continue;
 			}
-			calculateFullHierarcyTrees(element, project, solution);
+            calculateFullHierarchyTrees(element, project, solution);
 		}
 		calculateFinalAnalysis(solution);
 		return solution;
@@ -112,7 +115,7 @@ public final class AnalyzerService {
 			calculateDepthOfInheritanceTree(project, element, solution, ignoreZero);
 			calculateNumberOfChildren(project, element, solution, ignoreZero);
 			calculateWeightedMethodsPerClass(project, element, solution, ignoreZero);
-			calculateFullHierarcyTrees(element, project, solution);
+            calculateFullHierarchyTrees(element, project, solution);
 		}
 	}
 
@@ -255,7 +258,7 @@ public final class AnalyzerService {
 	 * @param project
 	 * @param solution
 	 */
-	private void calculateFullHierarcyTrees(JavaElement element, JavaProject project, JavaSolution solution) {
+	private void calculateFullHierarchyTrees(JavaElement element, JavaProject project, JavaSolution solution) {
 		FullHierarchy tree = new FullHierarchy(project, element);
 		solution.addFullHierarchy(tree);
 	}
@@ -302,7 +305,6 @@ public final class AnalyzerService {
 			}
 		}
 		calculateAverageMethodUsage(solution);
-		calculateMetricUsages(solution);
 	}
 	
 	private void calculateAverageMethodUsage(JavaSolution solution) {		

@@ -1,5 +1,6 @@
 package com.mcnedward.ii;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,12 +15,16 @@ public class TestBuilder extends Builder {
 	List<Integer> solutions = new ArrayList<>();
 	
 	@Override
-	protected void buildProcess() throws TaskBuildException {
+	protected void buildProcess(File project) {
 		List<TestBuildTask> tasks = new ArrayList<>();
 		for (int i = 0; i < 100; i++) {
 			tasks.add(new TestBuildTask());
 		}
-		solutions = invokeAll(tasks);
-	}
+        try {
+            solutions = invokeAll(tasks);
+        } catch (TaskBuildException e) {
+            e.printStackTrace();
+        }
+    }
 
 }

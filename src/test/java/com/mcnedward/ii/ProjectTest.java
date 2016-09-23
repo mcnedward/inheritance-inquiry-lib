@@ -35,7 +35,7 @@ public abstract class ProjectTest {
 		javaPackage.addElement(parent2);
 		javaPackage.addElement(base);
 		
-		JavaProject project = new JavaProject("", "Test");
+		JavaProject project = new JavaProject("");
 		project.addPackage(javaPackage);
 		return project;
 	}

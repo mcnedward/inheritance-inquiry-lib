@@ -24,18 +24,13 @@ public class JavaProject {
 	private int mClassCount;
 	private int mInheritanceCount; // How many times extends is used
 
-	public JavaProject(String projectPath, String projectName) {
-		mPath = projectPath;
-		mProjectFile = new File(mPath);
-		mName = projectName != null ? projectName : mProjectFile.getName();
-		mPackages = new ArrayList<>();
-		buildFile();
-		mVersion = VersionUtils.findVersion(mPath);
+	public JavaProject(String projectPath) {
+		this(new File(projectPath));
 	}
 
-	public JavaProject(File projectFile, String systemName) {
+	public JavaProject(File projectFile) {
 		mPath = projectFile.getAbsolutePath();
-		mSystemName = systemName != null ? systemName : projectFile.getName();
+		mSystemName = projectFile.getName();
 		mName = projectFile.getName();
 		mProjectFile = projectFile;
 		mPackages = new ArrayList<>();
