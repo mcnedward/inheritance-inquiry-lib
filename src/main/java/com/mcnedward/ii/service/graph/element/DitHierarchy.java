@@ -10,45 +10,36 @@ import com.mcnedward.ii.element.JavaElement;
  * @author Edward - Jul 18, 2016
  *
  */
-public class DitHierarchy {
+public class DitHierarchy extends Hierarchy {
 
-	public int dit;
-	public String elementName;
-    public String fullyQualifiedElementName;
-	public String path;
-	public boolean isInterface;
-	public Stack<List<DitHierarchy>> tree;
-	public List<DitHierarchy> ancestors;
-	public int inheritedMethodCount;
-	public int elementMethodCount;
-	
+	private int mDit;
+    private Stack<List<DitHierarchy>> mTree;
+    private List<DitHierarchy> mAncestors;
+    private int mInheritedMethodCount;
+    private int mElementMethodCount;
+
 	public DitHierarchy(JavaElement element) {
-		init(element);
+        super(element);
+        mTree = new Stack<>();
+        mAncestors = new ArrayList<>();
 		// Get all the methods for the element that this metric is for
-		elementMethodCount = element.getWeightedMethodCount();
+		mElementMethodCount = element.getWeightedMethodCount();
 		buildTree(element);
 	}
 
 	private DitHierarchy(JavaElement element, boolean isParent) {
-		init(element);
-		elementMethodCount = element.getInheritableMethodCount();
+        super(element);
+        mTree = new Stack<>();
+        mAncestors = new ArrayList<>();
+		mElementMethodCount = element.getInheritableMethodCount();
 		buildTree(element);
-	}
-	
-	private void init(JavaElement element) {
-		this.elementName = element.getName();
-        fullyQualifiedElementName = element.getFullyQualifiedName();
-		path = element.getPackageName().replace(".", "/");
-		isInterface = element.isInterface();
-		tree = new Stack<>();
-		ancestors = new ArrayList<>();
 	}
 	
 	private void buildTree(JavaElement element) {
 		List<DitHierarchy> holder = travelHierarchies(element);
-		ancestors = holder;
+		mAncestors = holder;
 		// +1 for classes since they inherit from java.lang.Object 
-		dit = tree.size() + (isInterface ? 0 : 1);
+		mDit = mTree.size() + (isInterface ? 0 : 1);
 	}
 
 	private List<DitHierarchy> travelHierarchies(JavaElement element) {
@@ -62,19 +53,39 @@ public class DitHierarchy {
 				hierarchies.add(parentHierarchy);
 				
 				List<DitHierarchy> parentHierarchies = travelHierarchies(parent);
-				parentHierarchy.tree.add(parentHierarchies);
+				parentHierarchy.mTree.add(parentHierarchies);
 				
 				// Add to the inherited method count
-				inheritedMethodCount += parentHierarchy.elementMethodCount;
+				mInheritedMethodCount += parentHierarchy.mElementMethodCount;
 			}
-			tree.add(hierarchies);
+			mTree.add(hierarchies);
 		}
 		return hierarchies;
 	}
 
+    public int getDit() {
+        return mDit;
+    }
+
+    public List<DitHierarchy> getAncestors() {
+        return mAncestors;
+    }
+
+    public int getInheritedMethodCount() {
+        return mInheritedMethodCount;
+    }
+
+    public int getElementMethodCount() {
+        return mElementMethodCount;
+    }
+
+    public Stack<List<DitHierarchy>> getTree() {
+        return mTree;
+    }
+
 	@Override
 	public String toString() {
-		return elementName + " DIT[" + dit + "]";
+		return elementName + " DIT[" + mDit + "]";
 	}
-	
+
 }

@@ -3,7 +3,9 @@ package com.mcnedward.ii;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
+import com.mcnedward.ii.service.graph.IGraphService;
 import com.mcnedward.ii.service.graph.JungGraph;
+import com.mcnedward.ii.utils.ServiceFactory;
 import org.junit.Test;
 
 import com.mcnedward.ii.element.ClassOrInterfaceElement;
@@ -40,10 +42,10 @@ public class GraphServiceTest extends ProjectTest {
 		JavaSolution solution = new JavaSolution("Test Inheritance", "Test System", "1");
 		solution.addDitHierarchy(hierarchy);
 
-		GraphService service = new GraphService();
+		IGraphService service = ServiceFactory.ditGraphService();
 
 		// Act
-		List<JungGraph> graphs = service.buildDitHierarchyTreeGraphs(solution);
+		List<JungGraph> graphs = service.buildHierarchyGraphs(solution);
 
 		// Assert
 		assertThat(graphs.isEmpty(), is(false));
@@ -73,10 +75,10 @@ public class GraphServiceTest extends ProjectTest {
 		JavaSolution solution = new JavaSolution("Test Interface", "Test System", "1");
 		solution.addDitHierarchy(hierarchy);
 		
-		GraphService service = new GraphService();
+		IGraphService service = ServiceFactory.ditGraphService();
 
 		// Act
-        List<JungGraph> graphs = service.buildDitHierarchyTreeGraphs(solution);
+        List<JungGraph> graphs = service.buildHierarchyGraphs(solution);
 
 		// Assert
         assertThat(graphs.isEmpty(), is(false));

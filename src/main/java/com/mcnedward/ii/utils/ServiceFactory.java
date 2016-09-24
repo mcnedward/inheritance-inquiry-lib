@@ -2,7 +2,7 @@ package com.mcnedward.ii.utils;
 
 import com.mcnedward.ii.service.AnalyzerService;
 import com.mcnedward.ii.service.ProjectService;
-import com.mcnedward.ii.service.graph.GraphService;
+import com.mcnedward.ii.service.graph.*;
 import com.mcnedward.ii.service.metric.MetricService;
 
 /**
@@ -13,7 +13,9 @@ public class ServiceFactory {
 
 	private static AnalyzerService mAnalyzerService;
 	private static MetricService mMetricService;
-	private static GraphService mGraphService;
+	private static IGraphService mDitGraphService;
+    private static IGraphService mNocGraphService;
+    private static IGraphService mFullGraphService;
 
 	public static ProjectService projectService() {
 		return new ProjectService();	// Always create this new
@@ -31,10 +33,22 @@ public class ServiceFactory {
 		return mMetricService;
 	}
 
-	public static GraphService graphService() {
-		if (mGraphService == null)
-			mGraphService = new GraphService();
-		return mGraphService;
+	public static IGraphService ditGraphService() {
+		if (mDitGraphService == null)
+            mDitGraphService = new DitGraphService();
+		return mDitGraphService;
 	}
+
+    public static IGraphService nocGraphService() {
+        if (mNocGraphService == null)
+            mNocGraphService = new NocGraphService();
+        return mNocGraphService;
+    }
+
+    public static <T> IGraphService fullGraphService() {
+        if (mFullGraphService == null)
+            mFullGraphService = new FullGraphService();
+        return mFullGraphService;
+    }
 
 }

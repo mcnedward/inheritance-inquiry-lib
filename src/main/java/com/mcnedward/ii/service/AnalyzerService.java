@@ -67,7 +67,7 @@ public final class AnalyzerService {
 		}
 		for (DitHierarchy tree : solution.getDitHierarchies()) {
 			if (ditLimit != null)
-				if (tree.dit == ditLimit) {
+				if (tree.getDit() == ditLimit) {
 					solution.addDitHierarchy(tree);
 				}
 		}
@@ -136,8 +136,8 @@ public final class AnalyzerService {
 		DitHierarchy hierarchy = new DitHierarchy(element);
 		solution.addDitHierarchy(hierarchy);
 
-		int dit = hierarchy.dit;
-		int numberOfInheritedMethods = hierarchy.inheritedMethodCount;
+		int dit = hierarchy.getDit();
+		int numberOfInheritedMethods = hierarchy.getInheritedMethodCount();
 		if (ignoreZero) {
 			if (dit > 0) {
 				solution.addDitMetric(new DitMetric(element, dit, numberOfInheritedMethods));
@@ -166,14 +166,14 @@ public final class AnalyzerService {
 		int noc = classChildren.size();
 
 		NocHierarchy tree = new NocHierarchy(project, element);
-		if (tree.hasChildren)
+		if (tree.hasChildren())
 			solution.addNocHeirarchy(tree);
 		if (ignoreZero) {
 			if (noc > 0) {
-				solution.addNocMetric(new NocMetric(element, tree.noc, classChildren));
+				solution.addNocMetric(new NocMetric(element, tree.getNoc(), classChildren));
 			}
 		} else {
-			solution.addNocMetric(new NocMetric(element, tree.noc, classChildren));
+			solution.addNocMetric(new NocMetric(element, tree.getNoc(), classChildren));
 		}
 		return noc;
 	}
@@ -274,18 +274,18 @@ public final class AnalyzerService {
 			String maxWidthClass = null;
 
 			for (FullHierarchy h : fullHierarchies) {
-				if (h.maxWidth > solutionMaxWidth) {
-					solutionMaxWidth = h.maxWidth;
-					maxWidthClass = h.fullElementName;
+				if (h.getMaxWidth() > solutionMaxWidth) {
+					solutionMaxWidth = h.getMaxWidth();
+					maxWidthClass = h.getFullElementName();
 				}
-				if (h.hasChildren)
+				if (h.hasChildren())
 					hierarchiesOver0++;
-				averageWidth += h.maxWidth;
+				averageWidth += h.getMaxWidth();
 				
-				if (h.ndc > ndcMax) {
-					ndcMax = h.ndc;
+				if (h.getNdc() > ndcMax) {
+					ndcMax = h.getNdc();
 				}
-				ndcAverage += h.ndc;
+				ndcAverage += h.getNdc();
 			}
 			averageWidth = hierarchiesOver0 == 0 ? 0 : averageWidth / hierarchiesOver0;
 			ndcAverage = fullHierarchies.size() == 0 ? 0 : ndcAverage / fullHierarchies.size();
@@ -299,8 +299,8 @@ public final class AnalyzerService {
 		List<NocHierarchy> nocHierarchies = solution.getNocHierarchies();
 		if (!nocHierarchies.isEmpty()) {
 			for (NocHierarchy h : nocHierarchies) {
-				if (h.isOverNocAndWmcLimit) {
-					solution.addInheritedMethodRisk(h.fullyQualifiedElementName);
+				if (h.isOverNocAndWmcLimit()) {
+					solution.addInheritedMethodRisk(h.getFullElementName());
 				}
 			}
 		}

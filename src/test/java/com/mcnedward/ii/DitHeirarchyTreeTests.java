@@ -35,14 +35,14 @@ public class DitHeirarchyTreeTests {
 
 		// Act
 		DitHierarchy hierarchy = new DitHierarchy(element);
-		Stack<List<DitHierarchy>> tree = hierarchy.tree;
+		Stack<List<DitHierarchy>> tree = hierarchy.getTree();
 
 		String expectedTree = "base parent1 parent2 elementName";
 		String actualTree = "";
 		for (List<DitHierarchy> h : tree) {
-			actualTree += h.get(0).elementName + " ";
+			actualTree += h.get(0).getElementName() + " ";
 		}
-		actualTree += hierarchy.elementName;
+		actualTree += hierarchy.getElementName();
 
 		// Assert
 		assertThat(actualTree, is(expectedTree));
@@ -69,7 +69,7 @@ public class DitHeirarchyTreeTests {
 
 		// Act
 		DitHierarchy hierarchy = new DitHierarchy(element);
-		Stack<List<DitHierarchy>> tree = hierarchy.tree;
+		Stack<List<DitHierarchy>> tree = hierarchy.getTree();
 
 		String expectedTree = "0 base 1 parent2 1 parent1 2 elementName";
 		String actualTree = "";
@@ -77,7 +77,7 @@ public class DitHeirarchyTreeTests {
 			List<DitHierarchy> list = tree.get(i);
 			for (int j = 0; j < list.size(); j++) {
 				DitHierarchy d = list.get(j);
-				actualTree += i + " " + d.elementName + " ";
+				actualTree += i + " " + d.getElementName() + " ";
 			}
 		}
 		actualTree += "2 elementName";
@@ -107,7 +107,7 @@ public class DitHeirarchyTreeTests {
 
 		// Act
 		DitHierarchy tree = new DitHierarchy(element);
-		int dit = tree.dit;
+		int dit = tree.getDit();
 
 		// Assert
 		assertThat(dit, is(2));

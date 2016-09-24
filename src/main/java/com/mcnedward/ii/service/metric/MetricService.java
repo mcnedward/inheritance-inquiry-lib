@@ -215,8 +215,8 @@ public final class MetricService {
 		StringBuilder builder = new StringBuilder(docTitle + NEWLINE);
 		builder.append(rowTitles + NEWLINE);
 		for (DitHierarchy hierarchy : ditHierarchies) {
-			builder.append(buildRow(hierarchy.elementName, hierarchy.dit, String.valueOf(hierarchy.inheritedMethodCount)) + DELIMITER
-					+ String.valueOf(hierarchy.elementMethodCount) + NEWLINE);
+			builder.append(buildRow(hierarchy.getElementName(), hierarchy.getDit(), String.valueOf(hierarchy.getInheritedMethodCount())) + DELIMITER
+					+ String.valueOf(hierarchy.getElementMethodCount()) + NEWLINE);
 		}
 
 		writeToFile(solution, metricType, builder.toString());
@@ -237,10 +237,10 @@ public final class MetricService {
 		builder.append(rowTitles + NEWLINE);
 		for (NocHierarchy metric : nocMetrics) {
 			if (elements != null) {
-				if (!elements.contains(metric.elementName))
+				if (!elements.contains(metric.getElementName()))
 					continue;
 			}
-			builder.append(buildRow(metric.fullyQualifiedElementName, metric.noc, metric.tree.toString()) + NEWLINE);
+			builder.append(buildRow(metric.getFullElementName(), metric.getNoc(), metric.getTree().toString()) + NEWLINE);
 		}
 
 		writeToFile(solution, metricType, builder.toString());
@@ -251,17 +251,17 @@ public final class MetricService {
 
 		for (NocHierarchy metric : nocMetrics) {
 			if (elements != null) {
-				if (!elements.contains(metric.elementName))
+				if (!elements.contains(metric.getElementName()))
 					continue;
 			}
 
-			StringBuilder builder = new StringBuilder(metric.elementName + NEWLINE);
+			StringBuilder builder = new StringBuilder(metric.getElementName() + NEWLINE);
 			builder.append("Children" + DELIMITER + "WMC" + DELIMITER + "Inherited Method Count" + NEWLINE);
-			while (!metric.tree.isEmpty()) {
-				NocHierarchy child = metric.tree.pop();
-				builder.append(child.elementName + DELIMITER + child.wmc + DELIMITER + child.inheritedMethodCount + NEWLINE);
+			while (!metric.getTree().isEmpty()) {
+				NocHierarchy child = metric.getTree().pop();
+				builder.append(child.getElementName() + DELIMITER + child.getWmc() + DELIMITER + child.getInheritedMethodCount() + NEWLINE);
 			}
-			writeToFile(solution, metric.elementName, builder.toString());
+			writeToFile(solution, metric.getElementName(), builder.toString());
 		}
 
 	}

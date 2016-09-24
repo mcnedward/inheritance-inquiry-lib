@@ -1,6 +1,9 @@
 package com.mcnedward.ii.service.graph;
 
 import com.mcnedward.ii.exception.GraphBuildException;
+import com.mcnedward.ii.service.graph.element.Edge;
+import com.mcnedward.ii.service.graph.element.GType;
+import com.mcnedward.ii.service.graph.element.Node;
 import edu.uci.ics.jung.algorithms.layout.Layout;
 import edu.uci.ics.jung.algorithms.layout.TreeLayout;
 import edu.uci.ics.jung.graph.DelegateForest;
@@ -15,7 +18,6 @@ import org.apache.commons.collections15.Transformer;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.List;
 import java.util.Map;
@@ -38,6 +40,7 @@ public class JungGraph {
     private Map<String, Edge> mEdgeMap;
 
     private String mElementName;
+    private GType mType;
     // Distance between graphs
     private static final int DEFAULT_WIDTH = 500;
     private static final int DEFAULT_HEIGHT = 400;
@@ -46,15 +49,20 @@ public class JungGraph {
     private int mWidth, mHeight, mXDist, mYDist;
 
     public JungGraph(String element) {
-        this(element, null, null, DEFAULT_X_DIST, DEFAULT_Y_DIST);
+        this(element, GType.H_TREE, null, null, DEFAULT_X_DIST, DEFAULT_Y_DIST);
+    }
+
+    public JungGraph(String element, GType type) {
+        this(element, type, null, null, DEFAULT_X_DIST, DEFAULT_Y_DIST);
     }
 
     public JungGraph(String element, Integer width, Integer height) {
-        this(element, width, height, DEFAULT_X_DIST, DEFAULT_Y_DIST);
+        this(element, GType.H_TREE, width, height, DEFAULT_X_DIST, DEFAULT_Y_DIST);
     }
 
-    public JungGraph(String element, Integer width, Integer height, Integer xDist, Integer yDist) {
+    public JungGraph(String element, GType type, Integer width, Integer height, Integer xDist, Integer yDist) {
         mElementName = element;
+        mType = type;
         mWidth = width == null ? DEFAULT_WIDTH : width;
         mHeight = height == null ? DEFAULT_HEIGHT : height;
         mXDist = xDist == null ? DEFAULT_X_DIST : xDist;
@@ -259,6 +267,10 @@ public class JungGraph {
 
     public String getElementName() {
         return mElementName;
+    }
+
+    public GType getType() {
+        return mType;
     }
 
     public GraphZoomScrollPane getGraphPane() {

@@ -13,20 +13,17 @@ import com.mcnedward.ii.element.JavaProject;
  * @author Edward - Jul 18, 2016
  *
  */
-public class FullHierarchy {
+public class FullHierarchy extends Hierarchy {
 
 	private static final Integer NDC_KEY = -1;
-	public String elementName;
-	public String fullElementName;
-	public boolean isInterface;
-	public boolean hasChildren;
-	public List<FullHierarchy> exts;
-	public Collection<FullHierarchy> impls;
-	public int maxWidth;
-	public int maxDepth;
-	public int ndc;
-	private Map<Integer, Integer> childWidthMap;
-	private int stackLevel;
+    private  boolean mHasChildren;
+    private Collection<FullHierarchy> mExts;
+    private Collection<FullHierarchy> mImpls;
+    private int mMaxWidth;
+    private int mMaxDepth;
+    private int mNdc;
+	private Map<Integer, Integer> mChildWidthMap;
+	private int mStackLevel;
 	
 	/**
 	 * This is the standard constructor used to create a hierarchy.
@@ -34,71 +31,62 @@ public class FullHierarchy {
 	 * @param element
 	 */
 	public FullHierarchy(JavaProject project, JavaElement element) {
-		init(element);
+		super(element);
+        mExts = new ArrayList<>();
+        mImpls = new ArrayList<>();
 		// Setup the stack for subclasses
-		childWidthMap = new ConcurrentHashMap<>();
-		stackLevel = 1;
-		childWidthMap.put(NDC_KEY, 0);	// TODO: Move Number of Descendants somewhere better
+		mChildWidthMap = new ConcurrentHashMap<>();
+		mStackLevel = 1;
+		mChildWidthMap.put(NDC_KEY, 0);	// TODO: Move Number of Descendants somewhere better
 		
 		List<JavaElement> projectElements = project.getAllElements();
 		buildTree(element, projectElements);
 		
-		Integer ndc = exts.size();
-		childWidthMap.put(stackLevel, ndc);	// Add the root's children
-		hasChildren = ndc > 0;	// Has children if other classes extended it
+		Integer ndc = mExts.size();
+		mChildWidthMap.put(mStackLevel, ndc);	// Add the root's children
+		mHasChildren = ndc > 0;	// Has children if other classes extended it
 		
-		ndc = childWidthMap.get(NDC_KEY);
-		maxWidth = 0;
-		maxDepth = 0;
-		for (Map.Entry<Integer, Integer> childCount : childWidthMap.entrySet()) {
+		ndc = mChildWidthMap.get(NDC_KEY);
+		mMaxWidth = 0;
+		mMaxDepth = 0;
+		for (Map.Entry<Integer, Integer> childCount : mChildWidthMap.entrySet()) {
 			// NDC_KEY is for total amount of children, so skip that
 			int depth = childCount.getKey();
 			if (depth == NDC_KEY) continue;
 			Integer width = childCount.getValue();
-			if (width > maxWidth)
-				maxWidth = width;
-			if (depth > maxDepth)
-				maxDepth = depth;
+			if (width > mMaxWidth)
+				mMaxWidth = width;
+			if (depth > mMaxDepth)
+				mMaxDepth = depth;
 		}
-		
-		// TODO Can probably remove this, just used for research
-//		if (fullElementName.contains("TestCase")) {
-//			fullElementName += " ---- " + exts.get(0).fullElementName;
-//		}
 	}
 	
 	private FullHierarchy(Collection<JavaElement> projectElements, JavaElement element, Map<Integer, Integer> childCountMap, int parentStackLevel) {
-		init(element);
+		super(element);
+        mExts = new ArrayList<>();
+        mImpls = new ArrayList<>();
 		// Setup the stack stuff from the parent
-		this.childWidthMap = childCountMap;
-		stackLevel = parentStackLevel + 1;
+		this.mChildWidthMap = childCountMap;
+		mStackLevel = parentStackLevel + 1;
 		
 		buildTree(element, projectElements);
 		
 		// Add the width of this subclass to the stack
-		int width = exts.size();
+		int width = mExts.size();
 		Integer ndc = childCountMap.get(NDC_KEY);
 		ndc += width;
 		childCountMap.put(NDC_KEY, ndc);
 		
-		Integer childCount = childCountMap.get(stackLevel);
+		Integer childCount = childCountMap.get(mStackLevel);
 		if (childCount == null) {
 			childCount = width;
 		}
 		else {
 			childCount += width;
 		}
-		childCountMap.put(stackLevel, childCount);
+		childCountMap.put(mStackLevel, childCount);
 	}
 
-	private void init(JavaElement element) {
-		elementName = element.getName();
-		fullElementName = element.getFullyQualifiedName();
-		isInterface = element.isInterface();
-		exts = new ArrayList<>();
-		impls = new ArrayList<>();
-	}
-	
 	private void buildTree(JavaElement element, Collection<JavaElement> projectElements) {
 		findSubClasses(element, projectElements);
 		findInterfaceChildren(element, projectElements);
@@ -107,7 +95,7 @@ public class FullHierarchy {
 	private void findSubClasses(JavaElement element, Collection<JavaElement> projectElements) {
 		for (JavaElement projectElement : projectElements) {
 			if (projectElement.getSuperClasses().contains(element)) {
-				exts.add(new FullHierarchy(projectElements, projectElement, childWidthMap, stackLevel));
+                mExts.add(new FullHierarchy(projectElements, projectElement, mChildWidthMap, mStackLevel));
 			}
 		}
 	}
@@ -115,24 +103,44 @@ public class FullHierarchy {
 	private void findInterfaceChildren(JavaElement element, Collection<JavaElement> projectElements) {
 		for (JavaElement projectElement : projectElements) {
 			if (projectElement.getInterfaces().contains(element)) {
-				FullHierarchy full = new FullHierarchy(projectElements, projectElement, childWidthMap, stackLevel);	
+				FullHierarchy full = new FullHierarchy(projectElements, projectElement, mChildWidthMap, mStackLevel);
 				if (isInterface) {
 					if (projectElement.isInterface()) {
-						exts.add(full);
+                        mExts.add(full);
 					} else {
-						impls.add(full);
+						mImpls.add(full);
 					}
 				} else {
 					// Otherwise, this element is a class and is implementing the projectElement
-					impls.add(new FullHierarchy(projectElements, projectElement, childWidthMap, stackLevel));
+					mImpls.add(new FullHierarchy(projectElements, projectElement, mChildWidthMap, mStackLevel));
 				}
 			}
 		}
 	}
 
+	public Collection<FullHierarchy> getExts() {
+        return mExts;
+    }
+
+    public Collection<FullHierarchy> getImpls() {
+        return mImpls;
+    }
+
+    public int getNdc() {
+        return mNdc;
+    }
+
+    public int getMaxWidth() {
+        return mMaxWidth;
+    }
+
+    public boolean hasChildren() {
+        return mHasChildren;
+    }
+
 	@Override
 	public String toString() {
-		return elementName + " - sub[" + exts.size() + "] - impl[" + impls.size() + "]";
+		return elementName + " - sub[" + mExts.size() + "] - impl[" + mImpls.size() + "]";
 	}
-	
+
 }
