@@ -13,7 +13,8 @@ import com.mcnedward.ii.element.JavaElement;
 public class DitHierarchy {
 
 	public int dit;
-	public String element;
+	public String elementName;
+    public String fullyQualifiedElementName;
 	public String path;
 	public boolean isInterface;
 	public Stack<List<DitHierarchy>> tree;
@@ -35,7 +36,8 @@ public class DitHierarchy {
 	}
 	
 	private void init(JavaElement element) {
-		this.element = element.getFullyQualifiedName();
+		this.elementName = element.getName();
+        fullyQualifiedElementName = element.getFullyQualifiedName();
 		path = element.getPackageName().replace(".", "/");
 		isInterface = element.isInterface();
 		tree = new Stack<>();
@@ -72,7 +74,7 @@ public class DitHierarchy {
 
 	@Override
 	public String toString() {
-		return element + " DIT[" + dit + "]";
+		return elementName + " DIT[" + dit + "]";
 	}
 	
 }

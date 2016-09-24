@@ -36,7 +36,7 @@ public final class MetricLevelSection extends MetricSection {
 				continue;
 			}
 			// Find the correct column, or create if it doesn't exist
-			String columnName = String.valueOf(metric.value);
+			String columnName = String.valueOf(metric.metric);
 			ExcelColumn column = row.columnMap.get(columnName);
 			if (column == null) {
 				column = new ExcelColumn(columnName);

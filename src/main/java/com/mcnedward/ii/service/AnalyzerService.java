@@ -361,7 +361,7 @@ public final class AnalyzerService {
 		List<String> maxClasses = new ArrayList<>();
 		
 		for (int i = 0; i < metrics.size(); i++) {
-			int value = metrics.get(i).value;
+			int value = metrics.get(i).metric;
 			if (i == 0) {
 				min = value;
 				max = value;

@@ -82,7 +82,7 @@ public final class GraphService {
 			edges.add(edge2);
 		}
 
-		JungGraph graph = new JungGraph();
+		JungGraph graph = new JungGraph("Methods");
 		graph.plotGraph(nodes, edges);
 		BufferedImage image = graph.createImage();
 		writeToFile(solution, graphType, image);
@@ -92,7 +92,7 @@ public final class GraphService {
 		if (ancestors.isEmpty())
 			return;
 		for (DitHierarchy ditH : ancestors) {
-			Node hierarchyNode = new Node(ditH.element);
+			Node hierarchyNode = new Node(ditH.elementName);
 			nodes.add(hierarchyNode);
 
 			Edge edge = new Edge(String.valueOf(ditH.inheritedMethodCount), hierarchyNode, parentNode);
@@ -102,42 +102,78 @@ public final class GraphService {
 		}
 	}
 
-	public boolean buildDitHierarchyTreeGraphs(JavaSolution solution) throws GraphBuildException {
-		return buildDitHierarchyTreeGraphs(solution, null);
+	public List<JungGraph> buildDitHierarchyTreeGraphs(JavaSolution solution) throws GraphBuildException {
+		return buildDitHierarchyTreeGraphs(solution, null, null, null, null);
 	}
 
-	public boolean buildDitHierarchyTreeGraphs(JavaSolution solution, Integer ditLimit) throws GraphBuildException {
+    public List<JungGraph> buildDitHierarchyTreeGraphsWithLimit(JavaSolution solution, Integer ditLimit) throws GraphBuildException {
+        return buildDitHierarchyTreeGraphs(solution, null, ditLimit, null, null);
+    }
+
+    public List<JungGraph> buildDitHierarchyTreeGraphs(JavaSolution solution, List<String> fullyQualifiedNames) throws GraphBuildException {
+        return buildDitHierarchyTreeGraphs(solution, fullyQualifiedNames, null, null, null);
+    }
+
+    public List<JungGraph> buildDitHierarchyTreeGraphs(JavaSolution solution, List<String> fullyQualifiedNames, Integer width, Integer height) throws GraphBuildException {
+        return buildDitHierarchyTreeGraphs(solution, fullyQualifiedNames, null, width, height);
+    }
+
+    public List<JungGraph> buildDitHierarchyTreeGraphs(JavaSolution solution, List<String> fullyQualifiedNames, Integer ditLimit, Integer width, Integer height) throws GraphBuildException {
 		IILogger.info("Building graph for DIT hierarchy tree in solution %s...", solution.getSystemName());
-		List<DitHierarchy> trees = solution.getDitHierarchies();
-		List<Node> nodes = new ArrayList<>();
-		List<Edge> edges = new ArrayList<>();
+		List<JungGraph> graphs = new ArrayList<>();
+        List<Node> nodes = new ArrayList<>();
+        List<Edge> edges = new ArrayList<>();
+
+        // The expectedGraphs is used to make sure all the expected graphs were created when passing in fullyQualifiedNames
+        List<DitHierarchy> trees;
+        if (fullyQualifiedNames == null) {
+            trees = solution.getDitHierarchies();
+        } else {
+            trees = new ArrayList<>();
+            boolean found = false;
+            StringBuilder notFoundMetrics = new StringBuilder();
+            for (String name : fullyQualifiedNames) {
+                for (DitHierarchy h : solution.getDitHierarchies()) {
+                    if (name.toLowerCase().equals(h.fullyQualifiedElementName.toLowerCase())) {
+                        trees.add(h);
+                        found = true;
+                    }
+                }
+                if (!found) {
+                    notFoundMetrics.append(name + "\n");
+                }
+            }
+            if (!notFoundMetrics.toString().equals("")) {
+                throw new GraphBuildException("Could not find the following metrics:\n" + notFoundMetrics.toString());
+            }
+        }
 
 		for (DitHierarchy hierarchy : trees) {
 			if (hierarchy.dit == 0 || hierarchy.isInterface || (ditLimit != null && hierarchy.dit < ditLimit))
 				continue;
 			// Skip elements that have generic parameters
 			// TODO This is messy, and should be fixed in the Visitors, but I don't have time for that now...
-			if (hierarchy.element.contains("<") && hierarchy.element.contains(">"))
+			if (hierarchy.elementName.contains("<") && hierarchy.elementName.contains(">"))
 				continue;
 			
-			Node parent = new Node(hierarchy.element);
+			Node parent = new Node(hierarchy.elementName);
 			nodes.add(parent);
 			recurseDit(hierarchy.ancestors, nodes, edges, parent);
 
-			JungGraph graph = new JungGraph(500, 200);
+			JungGraph graph = new JungGraph(hierarchy.fullyQualifiedElementName, width, height);
 			graph.plotGraph(nodes, edges);
 			try {
 				BufferedImage image = graph.createImage();
-				writeToFile(solution, GType.I_TREE, image, hierarchy.path, hierarchy.element);
+				writeToFile(solution, GType.I_TREE, image, hierarchy.path, hierarchy.elementName);
 			} catch (OutOfMemoryError e) {
 				IILogger.error(String.format("Could not create an inheritance tree graph for %s...", solution.getSystemName()), e);
-				return false;
 			}
 
-			nodes.clear();
-			edges.clear();
-		}
-		return true;
+            nodes.clear();
+            edges.clear();
+            graphs.add(graph);
+        }
+        return graphs;
 	}
 
 	public void buildNocHierarchyTreeGraphs(JavaSolution solution) throws GraphBuildException {
@@ -179,7 +215,7 @@ public final class GraphService {
 			// Create an individual graph for each hierarchy tree
 			recurseHierarchyTrees(tree, parentNode, nodes, edges);
 
-			JungGraph graph = new JungGraph();
+			JungGraph graph = new JungGraph(tree.fullyQualifiedElementName);
 			graph.plotGraph(nodes, edges);
 			BufferedImage image = graph.createImage();
 			writeToFile(solution, GType.H_TREE, image, HIERARCHY_TREE_DIRECTORY, tree.fullyQualifiedElementName);
@@ -224,7 +260,7 @@ public final class GraphService {
 				// Create an individual graph for each hierarchy tree
 				recurseFullHierarchyTrees(tree, parentNode, nodes, edges);
 
-				JungGraph graph = new JungGraph();
+				JungGraph graph = new JungGraph(tree.fullElementName);
 				graph.plotGraph(nodes, edges);
 				BufferedImage image = graph.createImage();
 				writeToFile(solution, GType.H_TREE, image, HIERARCHY_TREE_DIRECTORY, tree.fullElementName);

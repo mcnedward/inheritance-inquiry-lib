@@ -189,7 +189,6 @@ public final class ProjectService {
             int progress = (int) (((double) i / mHolders.size()) * 100);
             if (listener != null)
                 listener.onProgressChange(String.format("Visiting compilation units [%s / %s]...", i, mHolders.size()), progress);
-            IILogger.info(String.valueOf(progress));
 
             List<String> missingImports = new ArrayList<>();
 			IProblem[] problems = cu.getProblems();

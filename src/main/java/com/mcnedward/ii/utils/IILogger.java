@@ -8,7 +8,7 @@ import com.mcnedward.ii.listener.SolutionBuildListener;
  */
 public final class IILogger {
 
-	public static boolean DEBUG = false;
+	public static boolean DEBUG = true;
 	public static boolean ANALYSIS = false;
 	
 	public static void info(String out) {

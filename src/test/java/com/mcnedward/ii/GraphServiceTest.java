@@ -3,6 +3,7 @@ package com.mcnedward.ii;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
+import com.mcnedward.ii.service.graph.JungGraph;
 import org.junit.Test;
 
 import com.mcnedward.ii.element.ClassOrInterfaceElement;
@@ -11,6 +12,8 @@ import com.mcnedward.ii.element.JavaSolution;
 import com.mcnedward.ii.exception.GraphBuildException;
 import com.mcnedward.ii.service.graph.GraphService;
 import com.mcnedward.ii.service.graph.element.DitHierarchy;
+
+import java.util.List;
 
 /**
  * @author Edward - Jul 28, 2016
@@ -40,10 +43,10 @@ public class GraphServiceTest extends ProjectTest {
 		GraphService service = new GraphService();
 
 		// Act
-		boolean built = service.buildDitHierarchyTreeGraphs(solution);
+		List<JungGraph> graphs = service.buildDitHierarchyTreeGraphs(solution);
 
 		// Assert
-		assertThat(built, is(true));
+		assertThat(graphs.isEmpty(), is(false));
 	}
 	
 	@Test
@@ -73,10 +76,10 @@ public class GraphServiceTest extends ProjectTest {
 		GraphService service = new GraphService();
 
 		// Act
-		boolean built = service.buildDitHierarchyTreeGraphs(solution);
+        List<JungGraph> graphs = service.buildDitHierarchyTreeGraphs(solution);
 
 		// Assert
-		assertThat(built, is(true));
+        assertThat(graphs.isEmpty(), is(false));
 	}
 
 }

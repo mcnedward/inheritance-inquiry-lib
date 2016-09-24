@@ -215,7 +215,7 @@ public final class MetricService {
 		StringBuilder builder = new StringBuilder(docTitle + NEWLINE);
 		builder.append(rowTitles + NEWLINE);
 		for (DitHierarchy hierarchy : ditHierarchies) {
-			builder.append(buildRow(hierarchy.element, hierarchy.dit, String.valueOf(hierarchy.inheritedMethodCount)) + DELIMITER
+			builder.append(buildRow(hierarchy.elementName, hierarchy.dit, String.valueOf(hierarchy.inheritedMethodCount)) + DELIMITER
 					+ String.valueOf(hierarchy.elementMethodCount) + NEWLINE);
 		}
 
@@ -276,7 +276,7 @@ public final class MetricService {
 		StringBuilder builder = new StringBuilder(docTitle + NEWLINE);
 		builder.append(rowTitles + NEWLINE);
 		for (WmcMetric metric : wmcMetrics) {
-			builder.append(buildRow(metric.fullyQualifiedName, metric.value) + NEWLINE);
+			builder.append(buildRow(metric.fullyQualifiedName, metric.metric) + NEWLINE);
 		}
 
 		writeToFile(solution, metricType, builder.toString());

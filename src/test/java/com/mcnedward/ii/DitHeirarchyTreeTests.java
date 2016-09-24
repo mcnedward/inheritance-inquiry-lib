@@ -27,7 +27,7 @@ public class DitHeirarchyTreeTests {
 		ClassOrInterfaceElement parent1Coi = new ClassOrInterfaceElement(parent1);
 		JavaElement parent2 = new JavaElement("parent2");
 		ClassOrInterfaceElement parent2Coi = new ClassOrInterfaceElement(parent2);
-		JavaElement element = new JavaElement("element");
+		JavaElement element = new JavaElement("elementName");
 
 		element.addClassOrInterface(parent2Coi);
 		parent2.addClassOrInterface(parent1Coi);
@@ -37,12 +37,12 @@ public class DitHeirarchyTreeTests {
 		DitHierarchy hierarchy = new DitHierarchy(element);
 		Stack<List<DitHierarchy>> tree = hierarchy.tree;
 
-		String expectedTree = "base parent1 parent2 element";
+		String expectedTree = "base parent1 parent2 elementName";
 		String actualTree = "";
 		for (List<DitHierarchy> h : tree) {
-			actualTree += h.get(0).element + " ";
+			actualTree += h.get(0).elementName + " ";
 		}
-		actualTree += hierarchy.element;
+		actualTree += hierarchy.elementName;
 
 		// Assert
 		assertThat(actualTree, is(expectedTree));
@@ -60,7 +60,7 @@ public class DitHeirarchyTreeTests {
 		JavaElement parent2 = new JavaElement("parent2");
 		parent2.setIsInterface(true);
 		ClassOrInterfaceElement parent2Coi = new ClassOrInterfaceElement(parent2);
-		JavaElement element = new JavaElement("element");
+		JavaElement element = new JavaElement("elementName");
 		element.setIsInterface(true);
 
 		element.addClassOrInterface(parent2Coi);
@@ -71,16 +71,16 @@ public class DitHeirarchyTreeTests {
 		DitHierarchy hierarchy = new DitHierarchy(element);
 		Stack<List<DitHierarchy>> tree = hierarchy.tree;
 
-		String expectedTree = "0 base 1 parent2 1 parent1 2 element";
+		String expectedTree = "0 base 1 parent2 1 parent1 2 elementName";
 		String actualTree = "";
 		for (int i = 0; i < tree.size(); i++) {
 			List<DitHierarchy> list = tree.get(i);
 			for (int j = 0; j < list.size(); j++) {
 				DitHierarchy d = list.get(j);
-				actualTree += i + " " + d.element + " ";
+				actualTree += i + " " + d.elementName + " ";
 			}
 		}
-		actualTree += "2 element";
+		actualTree += "2 elementName";
 
 		// Assert
 		assertThat(actualTree, is(expectedTree));
@@ -98,7 +98,7 @@ public class DitHeirarchyTreeTests {
 		JavaElement parent2 = new JavaElement("parent2");
 		parent2.setIsInterface(true);
 		ClassOrInterfaceElement parent2Coi = new ClassOrInterfaceElement(parent2);
-		JavaElement element = new JavaElement("element");
+		JavaElement element = new JavaElement("elementName");
 		element.setIsInterface(true);
 
 		element.addClassOrInterface(parent2Coi);
