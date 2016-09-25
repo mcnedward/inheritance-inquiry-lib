@@ -10,28 +10,31 @@ public class Node implements IGraphItem {
 	
 	private int mId;
 	private String mName;
-	private boolean mIsInterface;
-	
-	public Node(String name) {
+    private String mFullyQualifiedName;
+	private boolean mUseFullName, mIsInterface;
+
+	public Node(Hierarchy hierarchy, boolean useFullName) {
 		mId = NODE_ID++;
-		mName = name;
+		mName = hierarchy.getElementName();
+        mFullyQualifiedName = hierarchy.getFullElementName();
+        mIsInterface = hierarchy.isInterface();
+        mUseFullName = useFullName;
 	}
-	
-	public Node(String name, boolean isInterface) {
-		this(name);
-		mIsInterface = isInterface;
-	}
-	
+
 	@Override
 	public String id() {
-		return mName + "-" + mId;
+		return mFullyQualifiedName + "-" + mId;
 	}
 	
 	@Override
 	public String name() {
-		return mName;
+		return mUseFullName ? mFullyQualifiedName : mName;
 	}
-	
+
+	public String fullName() {
+        return mFullyQualifiedName;
+    }
+
 	public boolean isInterface() {
 		return mIsInterface;
 	}

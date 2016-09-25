@@ -20,7 +20,7 @@ public interface IGraphService {
 
     List<JungGraph> buildHierarchyGraphs(JavaSolution solution, Collection<String> fullyQualifiedNames, Integer width, Integer height, boolean ignoreZero) throws GraphBuildException;
 
-    List<JungGraph> buildHierarchyGraphs(JavaSolution solution, Collection<String> fullyQualifiedNames, Integer width, Integer height, Integer limit, boolean ignoreZero) throws GraphBuildException;
+    List<JungGraph> buildHierarchyGraphs(JavaSolution solution, Collection<String> fullyQualifiedNames, Integer width, Integer height, Integer limit, boolean useFullName) throws GraphBuildException;
 
     void writeGraphToFile(JavaSolution solution, JungGraph graph, String directoryPath) throws GraphBuildException;
 }

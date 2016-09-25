@@ -6,6 +6,7 @@ import com.mcnedward.ii.service.graph.element.Edge;
 import com.mcnedward.ii.service.graph.element.NocHierarchy;
 import com.mcnedward.ii.service.graph.element.Node;
 import com.mcnedward.ii.service.graph.jung.JungGraph;
+import com.mcnedward.ii.service.graph.jung.NocJungGraph;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,7 +24,7 @@ public class NocGraphService extends GraphService<NocHierarchy> {
      * @throws GraphBuildException
      */
     @Override
-    protected List<JungGraph> buildGraphs(List<NocHierarchy> trees, Integer width, Integer height, Integer limit, boolean ignoreZero) throws GraphBuildException {
+    protected List<JungGraph> buildGraphs(List<NocHierarchy> trees, Integer width, Integer height, Integer limit, boolean useFullName) throws GraphBuildException {
         List<JungGraph> graphs = new ArrayList<>();
         Stack<Node> nodes = new Stack<>();
         Stack<Edge> edges = new Stack<>();
@@ -32,14 +33,13 @@ public class NocGraphService extends GraphService<NocHierarchy> {
             if (limit != null) {
                 if (tree.getNoc() < limit) continue;
             }
-            if (ignoreZero && tree.getNoc() == 0) continue;
-            String parentElement = tree.getFullElementName();
-            Node parentNode = new Node(parentElement);
+            String nodeName = useFullName ? tree.getFullElementName() : tree.getElementName();
+            Node parentNode = new Node(tree, useFullName);
             nodes.add(parentNode);
             // Create an individual graph for each hierarchy tree
-            recurseHierarchyTrees(tree, parentNode, nodes, edges);
+            recurseHierarchyTrees(tree, parentNode, nodes, edges, useFullName);
 
-            JungGraph graph = new JungGraph(tree.getFullElementName(), width, height);
+            JungGraph graph = new NocJungGraph(nodeName, useFullName, width, height);
             graph.plotGraph(nodes, edges);
             graphs.add(graph);
 
@@ -54,17 +54,15 @@ public class NocGraphService extends GraphService<NocHierarchy> {
         return solution.getNocHierarchies();
     }
 
-    private void recurseHierarchyTrees(NocHierarchy tree, Node parentNode, Stack<Node> nodes, Stack<Edge> edges) {
-        Stack<NocHierarchy> hierarchyTree = tree.getTree();
+    private void recurseHierarchyTrees(NocHierarchy tree, Node parentNode, Stack<Node> nodes, Stack<Edge> edges, boolean useFullName) {
+        Stack<NocHierarchy> hierarchyTree = (Stack<NocHierarchy>) tree.getTree().clone();
         while (!hierarchyTree.isEmpty()) {
             NocHierarchy childTree = hierarchyTree.pop();
-            String element = childTree.getFullElementName();
-
-            Node childNode = new Node(element);
+            Node childNode = new Node(childTree, useFullName);
             nodes.add(childNode);
             edges.add(new Edge(String.valueOf(childTree.getInheritedMethodCount()), parentNode, childNode));
 
-            recurseHierarchyTrees(childTree, childNode, nodes, edges);
+            recurseHierarchyTrees(childTree, childNode, nodes, edges, useFullName);
         }
     }
 }
