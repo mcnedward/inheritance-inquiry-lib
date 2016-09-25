@@ -1,6 +1,7 @@
 package com.mcnedward.ii.service.graph.jung;
 
 import com.mcnedward.ii.service.graph.element.Node;
+import com.mcnedward.ii.utils.IILogger;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.util.VertexShapeFactory;
 import org.apache.commons.collections15.Transformer;
@@ -14,11 +15,12 @@ import java.util.Map;
  */
 public class NocJungGraph extends JungGraph {
 
-    private static final int X_DIST = 200;
+    private static final int X_DIST = 175;
     private static final int X_DIST_FULL = 400;
 
     public NocJungGraph(String element, boolean useFullName, Integer width, Integer height) {
         super(element, width, height, useFullName ? X_DIST_FULL : X_DIST, null);
+        IILogger.info("Building NOC JungGraph. Using full name? %s", useFullName);
     }
 
     @Override

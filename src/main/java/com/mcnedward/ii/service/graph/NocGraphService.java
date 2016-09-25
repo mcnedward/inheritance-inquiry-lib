@@ -60,7 +60,9 @@ public class NocGraphService extends GraphService<NocHierarchy> {
             NocHierarchy childTree = hierarchyTree.pop();
             Node childNode = new Node(childTree, useFullName);
             nodes.add(childNode);
-            edges.add(new Edge(String.valueOf(childTree.getInheritedMethodCount()), parentNode, childNode));
+            Edge edge = new Edge(String.valueOf(childTree.getInheritedMethodCount()), parentNode, childNode);
+            edge.setTitle(String.format("Inherited method count: %s", childTree.getInheritedMethodCount()));
+            edges.add(edge);
 
             recurseHierarchyTrees(childTree, childNode, nodes, edges, useFullName);
         }

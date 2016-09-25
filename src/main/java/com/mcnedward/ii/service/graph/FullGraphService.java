@@ -50,7 +50,9 @@ public class FullGraphService extends GraphService<FullHierarchy> {
 
             Node childNode = new Node(subclass, useFullName);
             nodes.add(childNode);
-            edges.add(new Edge("extends", parentNode, childNode));
+            Edge edge = new Edge("extends", parentNode, childNode);
+            edge.setTitle(String.format("%s extends %s", tree.getElementName(), subclass.getElementName()));
+            edges.add(edge);
 
             recurseFullHierarchyTrees(subclass, childNode, nodes, edges, useFullName);
         }

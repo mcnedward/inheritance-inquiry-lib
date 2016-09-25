@@ -57,6 +57,7 @@ public class DitGraphService extends GraphService<DitHierarchy> {
             nodes.add(hierarchyNode);
 
             Edge edge = new Edge(String.valueOf(ditH.getInheritedMethodCount()), hierarchyNode, parentNode);
+            edge.setTitle(String.format("Inherited method count: %s", ditH.getInheritedMethodCount()));
             edges.add(edge);
 
             recurseDit(ditH.getAncestors(), nodes, edges, hierarchyNode, useFullName);

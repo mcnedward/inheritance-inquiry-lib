@@ -12,6 +12,7 @@ public class Edge implements IGraphItem {
 	private Node mTo;
 	private int mId;
 	private String mName;
+    private String mTitle;
 	private boolean mIsImplements;
 	
 	public Edge(String name, Node to, Node from) {
@@ -37,6 +38,14 @@ public class Edge implements IGraphItem {
 	public boolean isImplements() {
 		return mIsImplements;
 	}
+
+	public void setTitle(String title) {
+        mTitle = title;
+    }
+
+    public String getTitle() {
+        return mTitle;
+    }
 
 	@Override
 	public String id() {

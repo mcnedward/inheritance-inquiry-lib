@@ -4,11 +4,16 @@ import com.mcnedward.ii.exception.GraphBuildException;
 import com.mcnedward.ii.service.graph.element.Edge;
 import com.mcnedward.ii.service.graph.element.GType;
 import com.mcnedward.ii.service.graph.element.Node;
+import com.mcnedward.ii.utils.IILogger;
 import edu.uci.ics.jung.algorithms.layout.TreeLayout;
 import edu.uci.ics.jung.graph.DelegateForest;
 import edu.uci.ics.jung.graph.DirectedGraph;
 import edu.uci.ics.jung.graph.DirectedSparseMultigraph;
 import edu.uci.ics.jung.visualization.*;
+import edu.uci.ics.jung.visualization.control.CrossoverScalingControl;
+import edu.uci.ics.jung.visualization.control.DefaultModalGraphMouse;
+import edu.uci.ics.jung.visualization.control.ModalGraphMouse;
+import edu.uci.ics.jung.visualization.control.ScalingControl;
 import edu.uci.ics.jung.visualization.renderers.DefaultVertexLabelRenderer;
 import edu.uci.ics.jung.visualization.renderers.Renderer;
 import edu.uci.ics.jung.visualization.util.VertexShapeFactory;
@@ -34,6 +39,7 @@ public class JungGraph {
     private TreeLayout mLayout;
     private VisualizationImageServer<String, String> mImageServer;
     private VisualizationViewer<String, String> mViewer;
+    private ScalingControl mScaler;
     private GraphZoomScrollPane mGraphPane;
     private Map<String, Node> mNodeMap;
     private Map<String, Edge> mEdgeMap;
@@ -70,6 +76,7 @@ public class JungGraph {
         mGraph = new DirectedSparseMultigraph<>();
         mNodeMap = new TreeMap<>();
         mEdgeMap = new TreeMap<>();
+        IILogger.info("XDist: %s", mXDist);
     }
 
     public void plotGraph(List<Node> nodes, List<Edge> edges) throws GraphBuildException {
@@ -93,13 +100,28 @@ public class JungGraph {
         return image;
     }
 
+    public void setZoom(int zoom) {
+        mScaler.scale(mViewer, zoom > 0 ? 1.1f : 1 / 1.1f, mViewer.getCenter());
+    }
+
     private void initializeComponents() {
         mForest = new DelegateForest<>(mGraph);
         mLayout = new TreeLayout<>(mForest, mXDist, mYDist);
         initializeLayout(mLayout);
+
         mViewer = new VisualizationViewer<>(mLayout);
         mViewer.setAlignmentX(Component.CENTER_ALIGNMENT);
         mViewer.setAlignmentY(Component.CENTER_ALIGNMENT);
+        mViewer.setVertexToolTipTransformer(vertexToolTipTransformer(mNodeMap));
+        mViewer.setEdgeToolTipTransformer(edgeToolTipTransformer(mEdgeMap));
+
+        DefaultModalGraphMouse gm = new DefaultModalGraphMouse();
+        gm.setMode(ModalGraphMouse.Mode.TRANSFORMING);
+        mViewer.setGraphMouse(gm);
+
+        mScaler = new CrossoverScalingControl();
+        mViewer.scaleToLayout(mScaler);
+
         mImageServer = new VisualizationImageServer<>(mViewer.getGraphLayout(), mViewer.getGraphLayout().getSize());
         mGraphPane = new GraphZoomScrollPane(mViewer);
     }
@@ -174,10 +196,6 @@ public class JungGraph {
             new VertexShapeFactory<String>().getRectangle(vertexName);
             Rectangle2D rect = new Rectangle2D.Double(x, y, width, height);
             return rect;
-//                 Rectangle frame = new VertexShapeFactory<String>().getRectangle(vertexName).getBounds();
-//                 frame.grow(20, 20);
-//                 Rectangle rect = new Rectangle(frame);
-//                 return rect;
         };
     }
 
@@ -221,6 +239,20 @@ public class JungGraph {
                 setValue(nodeName);
                 return this;
             }
+        };
+    }
+
+    protected Transformer<String, String> vertexToolTipTransformer(Map<String, Node> nodeMap) {
+        return nodeName -> {
+            Node node = nodeMap.get(nodeName);
+            return node.name();
+        };
+    }
+
+    protected Transformer<String, String> edgeToolTipTransformer(Map<String, Edge> edgeMap) {
+        return edgeName -> {
+            Edge edge = edgeMap.get(edgeName);
+            return edge.getTitle();
         };
     }
 
