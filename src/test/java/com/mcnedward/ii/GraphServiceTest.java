@@ -4,7 +4,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
 import com.mcnedward.ii.service.graph.IGraphService;
-import com.mcnedward.ii.service.graph.JungGraph;
+import com.mcnedward.ii.service.graph.jung.JungGraph;
 import com.mcnedward.ii.utils.ServiceFactory;
 import org.junit.Test;
 
@@ -12,7 +12,6 @@ import com.mcnedward.ii.element.ClassOrInterfaceElement;
 import com.mcnedward.ii.element.JavaElement;
 import com.mcnedward.ii.element.JavaSolution;
 import com.mcnedward.ii.exception.GraphBuildException;
-import com.mcnedward.ii.service.graph.GraphService;
 import com.mcnedward.ii.service.graph.element.DitHierarchy;
 
 import java.util.List;

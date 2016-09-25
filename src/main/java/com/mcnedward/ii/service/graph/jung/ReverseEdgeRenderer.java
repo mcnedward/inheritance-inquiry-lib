@@ -1,4 +1,4 @@
-package com.mcnedward.ii.service.graph;
+package com.mcnedward.ii.service.graph.jung;
 
 import java.awt.Dimension;
 import java.awt.Paint;

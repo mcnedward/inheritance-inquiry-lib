@@ -4,8 +4,8 @@ import com.mcnedward.ii.element.JavaSolution;
 import com.mcnedward.ii.exception.GraphBuildException;
 import com.mcnedward.ii.service.graph.element.DitHierarchy;
 import com.mcnedward.ii.service.graph.element.Edge;
-import com.mcnedward.ii.service.graph.element.GType;
 import com.mcnedward.ii.service.graph.element.Node;
+import com.mcnedward.ii.service.graph.jung.JungGraph;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,13 +16,13 @@ import java.util.List;
 public class DitGraphService extends GraphService<DitHierarchy> {
 
     @Override
-    protected List<JungGraph> buildGraphs(List<DitHierarchy> trees, Integer width, Integer height, Integer limit) throws GraphBuildException {
+    protected List<JungGraph> buildGraphs(List<DitHierarchy> trees, Integer width, Integer height, Integer limit, boolean ignoreZero) throws GraphBuildException {
         List<JungGraph> graphs = new ArrayList<>();
         List<Node> nodes = new ArrayList<>();
         List<Edge> edges = new ArrayList<>();
 
         for (DitHierarchy hierarchy : trees) {
-            if (hierarchy.getDit() == 0 || hierarchy.isInterface() || (limit != null && hierarchy.getDit() < limit))
+            if ((ignoreZero && hierarchy.getDit() == 0) || hierarchy.isInterface() || (limit != null && hierarchy.getDit() < limit))
                 continue;
             // Skip elements that have generic parameters
             // TODO This is messy, and should be fixed in the Visitors, but I don't have time for that now...

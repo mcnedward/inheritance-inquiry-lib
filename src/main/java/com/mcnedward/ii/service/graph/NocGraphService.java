@@ -5,6 +5,7 @@ import com.mcnedward.ii.exception.GraphBuildException;
 import com.mcnedward.ii.service.graph.element.Edge;
 import com.mcnedward.ii.service.graph.element.NocHierarchy;
 import com.mcnedward.ii.service.graph.element.Node;
+import com.mcnedward.ii.service.graph.jung.JungGraph;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,7 +23,7 @@ public class NocGraphService extends GraphService<NocHierarchy> {
      * @throws GraphBuildException
      */
     @Override
-    protected List<JungGraph> buildGraphs(List<NocHierarchy> trees, Integer width, Integer height, Integer limit) throws GraphBuildException {
+    protected List<JungGraph> buildGraphs(List<NocHierarchy> trees, Integer width, Integer height, Integer limit, boolean ignoreZero) throws GraphBuildException {
         List<JungGraph> graphs = new ArrayList<>();
         Stack<Node> nodes = new Stack<>();
         Stack<Edge> edges = new Stack<>();
@@ -31,6 +32,7 @@ public class NocGraphService extends GraphService<NocHierarchy> {
             if (limit != null) {
                 if (tree.getNoc() < limit) continue;
             }
+            if (ignoreZero && tree.getNoc() == 0) continue;
             String parentElement = tree.getFullElementName();
             Node parentNode = new Node(parentElement);
             nodes.add(parentNode);

@@ -4,6 +4,7 @@ import com.mcnedward.ii.element.JavaSolution;
 import com.mcnedward.ii.exception.GraphBuildException;
 import com.mcnedward.ii.service.graph.element.GType;
 import com.mcnedward.ii.service.graph.element.Hierarchy;
+import com.mcnedward.ii.service.graph.jung.JungGraph;
 import com.mcnedward.ii.utils.IILogger;
 
 import javax.imageio.ImageIO;
@@ -21,21 +22,26 @@ public abstract class GraphService<T extends Hierarchy> implements IGraphService
 
 	@Override
 	public List<JungGraph> buildHierarchyGraphs(JavaSolution solution) throws GraphBuildException {
-		return buildHierarchyGraphs(solution, null, null, null, null);
+		return buildHierarchyGraphs(solution, null, null, null, null, false);
 	}
 
     @Override
     public List<JungGraph> buildHierarchyGraphs(JavaSolution solution, Collection<String> fullyQualifiedNames) throws GraphBuildException {
-        return buildHierarchyGraphs(solution, fullyQualifiedNames, null, null, null);
+        return buildHierarchyGraphs(solution, fullyQualifiedNames, null, null, null, false);
     }
 
     @Override
     public List<JungGraph> buildHierarchyGraphs(JavaSolution solution, Collection<String> fullyQualifiedNames, Integer width, Integer height) throws GraphBuildException {
-        return buildHierarchyGraphs(solution, fullyQualifiedNames, width, height, null);
+        return buildHierarchyGraphs(solution, fullyQualifiedNames, width, height, null, false);
     }
 
     @Override
-    public List<JungGraph> buildHierarchyGraphs(JavaSolution solution, Collection<String> fullyQualifiedNames, Integer width, Integer height, Integer limit) throws GraphBuildException {
+    public List<JungGraph> buildHierarchyGraphs(JavaSolution solution, Collection<String> fullyQualifiedNames, Integer width, Integer height, boolean ignoreZero) throws GraphBuildException {
+        return buildHierarchyGraphs(solution, fullyQualifiedNames, width, height, null, ignoreZero);
+    }
+
+    @Override
+    public List<JungGraph> buildHierarchyGraphs(JavaSolution solution, Collection<String> fullyQualifiedNames, Integer width, Integer height, Integer limit, boolean ignoreZero) throws GraphBuildException {
         IILogger.info("Building graph for full hierarchy trees in solution %s...", solution.getSystemName());
 
         List<T> trees;
@@ -55,12 +61,12 @@ public abstract class GraphService<T extends Hierarchy> implements IGraphService
                 throw new GraphBuildException("Could not find the all of the specified metrics...");
             }
         }
-        return buildGraphs(trees, width, height, limit);
+        return buildGraphs(trees, width, height, limit, ignoreZero);
     }
 
     protected abstract List<T> getHierarchies(JavaSolution solution);
 
-    protected abstract List<JungGraph> buildGraphs(List<T> trees, Integer width, Integer height, Integer limit) throws GraphBuildException;
+    protected abstract List<JungGraph> buildGraphs(List<T> trees, Integer width, Integer height, Integer limit, boolean ignoreZero) throws GraphBuildException;
 
     @Override
     public void writeGraphToFile(JavaSolution solution, JungGraph graph, String directoryPath) throws GraphBuildException {

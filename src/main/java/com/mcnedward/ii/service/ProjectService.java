@@ -152,7 +152,7 @@ public final class ProjectService {
 
 		String[] classPaths = ASTUtils.classPathEntries();
 		String[] sources = ASTUtils.sourceEntries(projectPath);
-		String[] encodings = ASTUtils.encodings();
+		String[] encodings = ASTUtils.encodings(sources.length);
 		parser.setEnvironment(classPaths, sources, encodings, true);
 
 		List<String> filePaths = new ArrayList<>();

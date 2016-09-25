@@ -29,16 +29,23 @@ public final class ASTUtils {
 		File srcTest = new File(projectPath + "/src/test/java");
 		if (!src.exists() && !srcMain.exists() && !srcTest.exists())
 			throw new ProjectBuildException("The project needs to contain a valid source directory. This should be in \"src\", \"src/main/java\", or \"src/test/java\".");
-		return new String[] {
-				projectPath,
-				projectPath + "/src", 
-				projectPath + "/src/main/java",
-				projectPath + "/src/test/java"
-		};
+        List<String> paths = new ArrayList<>();
+        paths.add(projectPath);
+        if (src.exists())
+            paths.add(src.getAbsolutePath());
+        if (srcMain.exists())
+            paths.add(src.getAbsolutePath());
+        if (srcTest.exists())
+            paths.add(srcTest.getAbsolutePath());
+        return paths.toArray(new String[paths.size()]);
 	}
 	
-	public static String[] encodings() {
-		return new String[] { StandardCharsets.UTF_8.toString(), StandardCharsets.UTF_8.toString(), StandardCharsets.UTF_8.toString(), StandardCharsets.UTF_8.toString() };
+	public static String[] encodings(int size) {
+        String[] encodings = new String[size];
+        for (int i = 0; i < size; i++) {
+            encodings[i] = StandardCharsets.UTF_8.toString();
+        }
+        return encodings;
 	}
 	
 	public static String[] getClassPathEntries(String projectPath) {

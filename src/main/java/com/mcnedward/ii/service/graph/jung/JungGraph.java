@@ -1,11 +1,11 @@
-package com.mcnedward.ii.service.graph;
+package com.mcnedward.ii.service.graph.jung;
 
 import com.mcnedward.ii.exception.GraphBuildException;
 import com.mcnedward.ii.service.graph.element.Edge;
 import com.mcnedward.ii.service.graph.element.GType;
 import com.mcnedward.ii.service.graph.element.Node;
-import edu.uci.ics.jung.algorithms.layout.Layout;
-import edu.uci.ics.jung.algorithms.layout.TreeLayout;
+import edu.uci.ics.jung.algorithms.layout.*;
+import edu.uci.ics.jung.algorithms.layout.SpringLayout;
 import edu.uci.ics.jung.graph.DelegateForest;
 import edu.uci.ics.jung.graph.DirectedGraph;
 import edu.uci.ics.jung.graph.DirectedSparseMultigraph;
@@ -18,6 +18,7 @@ import org.apache.commons.collections15.Transformer;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.List;
 import java.util.Map;
@@ -44,8 +45,8 @@ public class JungGraph {
     // Distance between graphs
     private static final int DEFAULT_WIDTH = 500;
     private static final int DEFAULT_HEIGHT = 400;
-    private static final int DEFAULT_X_DIST = 50;
-    private static final int DEFAULT_Y_DIST = 50;
+    private static final int DEFAULT_X_DIST = 100;
+    private static final int DEFAULT_Y_DIST = 100;
     private int mWidth, mHeight, mXDist, mYDist;
 
     public JungGraph(String element) {
@@ -166,17 +167,18 @@ public class JungGraph {
         return new Transformer<String, Shape>() {
             @Override
             public Shape transform(String vertexName) {
-//                int width = (int) (fm.stringWidth(vertexName) * 1.25);
-//                int height = 50;
-//                int x = (int) -(width / 1.25);
-//                int y = -15;
-//                Rectangle2D rect = new java.awt.geom.Rectangle2D.Double(x, y, width, height);
-//                return rect;
+                float width = fm.stringWidth(vertexName) * 1.25f;
+                float height = fm.getHeight() * 1.25f;
+                float x = -(width / 2.0f);
+                float y = -(height / 2.0f);
+                new VertexShapeFactory<String>().getRectangle(vertexName);
+                Rectangle2D rect = new java.awt.geom.Rectangle2D.Double(x, y, width, height);
+                return rect;
 
-                 Rectangle frame = new VertexShapeFactory<String>().getRectangle(vertexName).getBounds();
-                 frame.grow(20, 20);
-                 Rectangle rect = new Rectangle(frame);
-                 return rect;
+//                 Rectangle frame = new VertexShapeFactory<String>().getRectangle(vertexName).getBounds();
+//                 frame.grow(20, 20);
+//                 Rectangle rect = new Rectangle(frame);
+//                 return rect;
             }
         };
     }
@@ -217,7 +219,7 @@ public class JungGraph {
                 } else {
                     currentFont = vv.getFont();
                 }
-                Font theFont = new Font(currentFont.getName(), fontStyle, 14);
+                Font theFont = new Font(currentFont.getName(), fontStyle, 10);
                 setFont(theFont);
                 setIcon(null);
                 setBorder(noFocusBorder);

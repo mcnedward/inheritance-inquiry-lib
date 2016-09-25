@@ -5,6 +5,7 @@ import com.mcnedward.ii.exception.GraphBuildException;
 import com.mcnedward.ii.service.graph.element.Edge;
 import com.mcnedward.ii.service.graph.element.FullHierarchy;
 import com.mcnedward.ii.service.graph.element.Node;
+import com.mcnedward.ii.service.graph.jung.JungGraph;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -17,7 +18,7 @@ import java.util.Stack;
 public class FullGraphService extends GraphService<FullHierarchy> {
 
     @Override
-    protected List<JungGraph> buildGraphs(List<FullHierarchy> trees, Integer width, Integer height, Integer limit) throws GraphBuildException {
+    protected List<JungGraph> buildGraphs(List<FullHierarchy> trees, Integer width, Integer height, Integer limit, boolean ignoreZero) throws GraphBuildException {
         List<JungGraph> graphs = new ArrayList<>();
         Stack<Node> nodes = new Stack<>();
         Stack<Edge> edges = new Stack<>();

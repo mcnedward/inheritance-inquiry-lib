@@ -39,7 +39,7 @@ public final class AnalyzerService {
         IILogger.notify(listener, "Analyzing methods...", 10);
 		calculateMethods(project, solution);
         IILogger.notify(listener, "Analyzing metrics and building hierarchies...", 60);
-		calculateMetricsAndTrees(project, solution, false);
+		calculateMetricsAndTrees(project, solution, true);
         IILogger.notify(listener, "Analyzing metric usages...", 100);
 		calculateMetricUsages(solution);
 
