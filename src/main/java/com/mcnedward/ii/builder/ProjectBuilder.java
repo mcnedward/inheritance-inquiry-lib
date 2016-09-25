@@ -4,6 +4,7 @@ import com.mcnedward.ii.element.JavaProject;
 import com.mcnedward.ii.element.JavaSolution;
 import com.mcnedward.ii.exception.ProjectBuildException;
 import com.mcnedward.ii.exception.TaskBuildException;
+import com.mcnedward.ii.listener.BuildListener;
 import com.mcnedward.ii.listener.SolutionBuildListener;
 import com.mcnedward.ii.service.AnalyzerService;
 import com.mcnedward.ii.service.ProjectService;
@@ -22,90 +23,64 @@ import java.util.concurrent.TimeUnit;
 /**
  * Created by Edward on 9/21/2016.
  */
-public class ProjectBuilder {
+public class ProjectBuilder extends Builder {
 
-    // Tasks
-    private static final int CORE_POOL_SIZE = 4;
-    private static final int MAX_POOL_SIZE = 8;
-    private static final int TIMEOUT = 10;
-    private static final TimeUnit TIMEUNIT = TimeUnit.MINUTES;
-    private static final int INVOKE_TIMEOUT = 5;
-    private static final TimeUnit INVOKE_TIME_UNIT = TimeUnit.MINUTES;
-    public static Integer COMPLETE_JOBS = 0; // Keep track of how many jobs are finished
-    private BlockingQueue<Runnable> mQueue;
-    private MonitoringExecutorService mExecutorService;
-    private static Map<Integer, String> mTaskMap; // For keeping track of all tasks
-    // Listener
+    private File mProjectFile;
     private SolutionBuildListener mListener;
     // Services
     private ProjectService mProjectService;
     private AnalyzerService mAnalyzerService;
 
     public ProjectBuilder(SolutionBuildListener listener) {
-        this();
+        super();
         mListener = listener;
-    }
-
-    public ProjectBuilder() {
         // Setup services
         mProjectService = ServiceFactory.projectService();
         mAnalyzerService = ServiceFactory.analyzerService();
     }
 
-    public void build(String projectPath) {
-        build(new File(projectPath));
+    /**
+     * Call this to setup the ProjectBuilder BEFORE calling the build() method!
+     *
+     * @param projectFile The File that will be used in the build process.
+     * @return This ProjectBuilder
+     */
+    public ProjectBuilder setup(File projectFile) {
+        mProjectFile = projectFile;
+        return this;
     }
 
-    public void build(File projectFile) {
-        COMPLETE_JOBS = 0; // Reset job count
-        setupExecutorService();
-        if (!projectFile.exists()) {
-            String message = String.format("You need to provide an existing file! [Path: %s]", projectFile.getAbsolutePath());
+    @Override
+    protected Runnable buildTask() {
+        if (mProjectFile == null) {
+            throw new IllegalStateException("You need to call setup method first!");
+        }
+        if (!mProjectFile.exists()) {
+            String message = String.format("You need to provide an existing file! [Path: %s]", mProjectFile.getAbsolutePath());
             TaskBuildException exception = new TaskBuildException(message);
             mListener.onBuildError(message, exception);
-            return;
+            return null;
         }
 
-        Runnable task = () -> {
+        return () -> {
             try {
-                JavaProject project = mProjectService.build(projectFile, mListener);
+                JavaProject project = mProjectService.build(mProjectFile, mListener);
                 JavaSolution solution = mAnalyzerService.analyze(project, mListener);
                 mListener.finished(solution);
             } catch (ProjectBuildException e) {
                 mListener.onBuildError(e.getMessage(), e);
             } catch (Exception e) {
-                mListener.onBuildError(String.format("Something went wrong when building the project %s.", projectFile
+                mListener.onBuildError(String.format("Something went wrong when building the project %s.", mProjectFile
                         .getName()), e);
+            } finally {
+                reset();
             }
         };
-        mExecutorService.submit(task);
     }
 
-    private void forceShutdownExecutor() {
-        // Shutdown the ExecutorService now that all projects are built
-        try {
-            IILogger.info("Attempting to shutdown executor...");
-            mExecutorService.shutdown();
-            mExecutorService.awaitTermination(500, TimeUnit.MILLISECONDS);
-        } catch (InterruptedException e) {
-            IILogger.error("Build tasks were interrupted...", e);
-        } finally {
-            if (!mExecutorService.isTerminated()) {
-                IILogger.info("Canceling non-finished build tasks...");
-            }
-            mExecutorService.shutdownNow();
-            IILogger.info("Shutdown complete.");
-        }
-    }
+    @Override
 
-    /**
-     * Creates the ExecutorService to use in the build task. This is called at the beginning of the build process, but
-     * this should probably be adjusted to only be created once in the constructor, and then cancel the tasks instead of
-     * calling shutdown() on the ExecutorService.
-     */
-    private void setupExecutorService() {
-        mQueue = new ArrayBlockingQueue<>(100);
-        mExecutorService = new MonitoringExecutorService(CORE_POOL_SIZE, MAX_POOL_SIZE, 0L, TimeUnit.MILLISECONDS, mQueue);
-        mTaskMap = new HashMap<>();
+    protected void reset() {
+        mProjectFile = null;
     }
 }

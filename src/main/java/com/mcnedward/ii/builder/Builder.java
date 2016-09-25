@@ -2,13 +2,11 @@ package com.mcnedward.ii.builder;
 
 import com.mcnedward.ii.element.JavaSolution;
 import com.mcnedward.ii.exception.TaskBuildException;
-import com.mcnedward.ii.listener.BuildListener;
 import com.mcnedward.ii.tasks.IIJob;
 import com.mcnedward.ii.tasks.Job;
 import com.mcnedward.ii.tasks.MonitoringExecutorService;
 import com.mcnedward.ii.utils.IILogger;
 
-import java.io.File;
 import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -18,7 +16,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * @author Edward - Jul 22, 2016
  */
-public abstract class Builder<T> {
+public abstract class Builder {
 
     // Tasks
     private static final int CORE_POOL_SIZE = 4;
@@ -27,17 +25,10 @@ public abstract class Builder<T> {
     private static final TimeUnit TIMEUNIT = TimeUnit.MINUTES;
     private static final int INVOKE_TIMEOUT = 5;
     private static final TimeUnit INVOKE_TIME_UNIT = TimeUnit.MINUTES;
-    public static Integer COMPLETE_JOBS = 0; // Keep track of how many jobs are finished
+    private static Integer COMPLETE_JOBS = 0; // Keep track of how many jobs are finished
     private BlockingQueue<Runnable> mQueue;
     private MonitoringExecutorService mExecutorService;
     private static Map<Integer, String> mTaskMap; // For keeping track of all tasks
-    // Listener
-    private BuildListener mListener;
-
-    public Builder(BuildListener listener) {
-        this();
-        mListener = listener;
-    }
 
     public Builder() {
         // Setup Threads
@@ -46,29 +37,29 @@ public abstract class Builder<T> {
         mTaskMap = new HashMap<>();
     }
 
-    public void build(String projectPath) {
-        build(new File(projectPath));
-    }
-
-    public void build(File project) {
+    public void build() {
         COMPLETE_JOBS = 0; // Reset job count
-        if (!project.exists()) {
-            String message = String.format("You need to provide an existing file! [Path: %s]", project.getAbsolutePath());
-            TaskBuildException exception = new TaskBuildException(message);
-            mListener.onBuildError(message, exception);
-            return;
-        }
-        try {
-            buildProcess(project);
-        } catch (TaskBuildException e) {
-            e.printStackTrace();
-            forceShutdownExecutor();
-            mListener.onBuildError(e.getMessage(), e);
-        }
-        IILogger.info("Finished build!");
+        setupExecutorService();
+
+        Runnable task = buildTask();
+        if (task != null)
+            mExecutorService.submit(task);
+        else
+            IILogger.error(new IllegalStateException("Task was null, so it was not run."));
     }
 
-    protected abstract void buildProcess(File project) throws TaskBuildException;
+    protected abstract Runnable buildTask();
+
+    /**
+     * Creates the ExecutorService to use in the build task. This is called at the beginning of the build process, but
+     * this should probably be adjusted to only be created once in the constructor, and then cancel the tasks instead of
+     * calling shutdown() on the ExecutorService. TODO
+     */
+    private void setupExecutorService() {
+        mQueue = new ArrayBlockingQueue<>(100);
+        mExecutorService = new MonitoringExecutorService(CORE_POOL_SIZE, MAX_POOL_SIZE, 0L, TimeUnit.MILLISECONDS, mQueue);
+        mTaskMap = new HashMap<>();
+    }
 
     /**
      * Used to mark an IIJob as complete, in the case of running multiple jobs at a time. This is not used for now,
@@ -123,12 +114,12 @@ public abstract class Builder<T> {
         mTaskMap.clear();
     }
 
-    protected void forceShutdownExecutor() {
+    private void forceShutdownExecutor() {
         // Shutdown the ExecutorService now that all projects are built
         try {
             IILogger.info("Attempting to shutdown executor...");
             mExecutorService.shutdown();
-            mExecutorService.awaitTermination(5, TimeUnit.SECONDS);
+            mExecutorService.awaitTermination(500, TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
             IILogger.error("Build tasks were interrupted...", e);
         } finally {
@@ -140,8 +131,6 @@ public abstract class Builder<T> {
         }
     }
 
-    public BuildListener getListener() {
-        return mListener;
-    }
+    protected abstract void reset();
 
 }

@@ -2,6 +2,7 @@ package com.mcnedward.ii.service.graph;
 
 import com.mcnedward.ii.element.JavaSolution;
 import com.mcnedward.ii.exception.GraphBuildException;
+import com.mcnedward.ii.listener.GraphLoadListener;
 import com.mcnedward.ii.service.graph.element.Edge;
 import com.mcnedward.ii.service.graph.element.FullHierarchy;
 import com.mcnedward.ii.service.graph.element.Node;
@@ -18,12 +19,14 @@ import java.util.Stack;
 public class FullGraphService extends GraphService<FullHierarchy> {
 
     @Override
-    protected List<JungGraph> buildGraphs(List<FullHierarchy> trees, Integer width, Integer height, Integer limit, boolean useFullName) throws GraphBuildException {
+    protected List<JungGraph> buildGraphs(List<FullHierarchy> trees, Integer width, Integer height, Integer limit, boolean useFullName, GraphLoadListener listener) throws GraphBuildException {
         List<JungGraph> graphs = new ArrayList<>();
         Stack<Node> nodes = new Stack<>();
         Stack<Edge> edges = new Stack<>();
 
-        for (FullHierarchy tree : trees) {
+        for (int i = 0; i < trees.size(); i++) {
+            FullHierarchy tree = trees.get(i);
+            updateProgress(i, trees.size(), listener);
             Node parentNode = new Node(tree, useFullName);
             nodes.add(parentNode);
             // Create an individual graph for each hierarchy tree

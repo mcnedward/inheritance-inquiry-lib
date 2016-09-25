@@ -2,6 +2,7 @@ package com.mcnedward.ii.service.graph;
 
 import com.mcnedward.ii.element.JavaSolution;
 import com.mcnedward.ii.exception.GraphBuildException;
+import com.mcnedward.ii.listener.GraphLoadListener;
 import com.mcnedward.ii.service.graph.element.DitHierarchy;
 import com.mcnedward.ii.service.graph.element.Edge;
 import com.mcnedward.ii.service.graph.element.Node;
@@ -17,18 +18,20 @@ import java.util.List;
 public class DitGraphService extends GraphService<DitHierarchy> {
 
     @Override
-    protected List<JungGraph> buildGraphs(List<DitHierarchy> trees, Integer width, Integer height, Integer limit, boolean useFullName) throws GraphBuildException {
+    protected List<JungGraph> buildGraphs(List<DitHierarchy> trees, Integer width, Integer height, Integer limit, boolean useFullName, GraphLoadListener listener) throws GraphBuildException {
         List<JungGraph> graphs = new ArrayList<>();
         List<Node> nodes = new ArrayList<>();
         List<Edge> edges = new ArrayList<>();
 
-        for (DitHierarchy tree : trees) {
-            if (tree.getDit() == 0 || tree.isInterface() || (limit != null && tree.getDit() < limit))
+        for (int i = 0; i < trees.size(); i++) {
+            DitHierarchy tree = trees.get(i);
+            updateProgress(i, trees.size(), listener);
+            if (tree.getDit() == 1 || tree.isInterface() || (limit != null && tree.getDit() < limit))
                 continue;
             // Skip elements that have generic parameters
             // TODO This is messy, and should be fixed in the Visitors, but I don't have time for that now...
-            if (tree.getElementName().contains("<") && tree.getElementName().contains(">"))
-                continue;
+//            if (tree.getElementName().contains("<") && tree.getElementName().contains(">"))
+//                continue;
 
             Node parent = new Node(tree, useFullName);
             nodes.add(parent);

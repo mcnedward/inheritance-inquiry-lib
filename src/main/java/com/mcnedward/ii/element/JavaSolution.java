@@ -1,10 +1,5 @@
 package com.mcnedward.ii.element;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import com.mcnedward.ii.exception.TaskBuildException;
 import com.mcnedward.ii.service.graph.element.DitHierarchy;
 import com.mcnedward.ii.service.graph.element.FullHierarchy;
@@ -15,6 +10,11 @@ import com.mcnedward.ii.service.metric.element.DitMetric;
 import com.mcnedward.ii.service.metric.element.MetricInfo;
 import com.mcnedward.ii.service.metric.element.NocMetric;
 import com.mcnedward.ii.service.metric.element.WmcMetric;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author Edward - Jul 16, 2016
@@ -277,7 +277,7 @@ public class JavaSolution {
 	public String getMaxWidthClass() {
 		return mMaxWidthClass;
 	}
-	
+
 	@Override
 	public String toString() {
 		return String.format("Solution for %s", mProjectName);

@@ -17,16 +17,6 @@ import static org.junit.Assert.assertThat;
 public class TaskTests {
 
 	@Test
-	public void invokeAll_Works() throws TaskBuildException {
-		TestBuilder builder = new TestBuilder();
-		builder.build(new File(""));
-		
-		List<Integer> solutions = builder.solutions;
-		
-		assertThat(solutions.isEmpty(), is(false));
-	}
-	
-	@Test
 	public void testRef() {
 		JavaElement element1 = new JavaElement("1");
 		String name = element1.getName();

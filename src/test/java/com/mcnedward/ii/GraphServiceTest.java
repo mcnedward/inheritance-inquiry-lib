@@ -3,6 +3,7 @@ package com.mcnedward.ii;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
+import com.mcnedward.ii.listener.GraphLoadListener;
 import com.mcnedward.ii.service.graph.IGraphService;
 import com.mcnedward.ii.service.graph.jung.JungGraph;
 import com.mcnedward.ii.utils.ServiceFactory;
@@ -44,10 +45,23 @@ public class GraphServiceTest extends ProjectTest {
 		IGraphService service = ServiceFactory.ditGraphService();
 
 		// Act
-		List<JungGraph> graphs = service.buildHierarchyGraphs(solution);
+		service.buildHierarchyGraphs(solution, new GraphLoadListener() {
+            @Override
+            public void onGraphsLoaded(List<JungGraph> graphs) {
+                // Assert
+                assertThat(graphs.isEmpty(), is(false));
+            }
 
-		// Assert
-		assertThat(graphs.isEmpty(), is(false));
+            @Override
+            public void onProgressChange(String message, int progress) {
+
+            }
+
+            @Override
+            public void onBuildError(String message, Exception exception) {
+
+            }
+        });
 	}
 	
 	@Test
@@ -77,10 +91,23 @@ public class GraphServiceTest extends ProjectTest {
 		IGraphService service = ServiceFactory.ditGraphService();
 
 		// Act
-        List<JungGraph> graphs = service.buildHierarchyGraphs(solution);
+        service.buildHierarchyGraphs(solution, new GraphLoadListener() {
+            @Override
+            public void onGraphsLoaded(List<JungGraph> graphs) {
+                // Assert
+                assertThat(graphs.isEmpty(), is(false));
+            }
 
-		// Assert
-        assertThat(graphs.isEmpty(), is(false));
+            @Override
+            public void onProgressChange(String message, int progress) {
+
+            }
+
+            @Override
+            public void onBuildError(String message, Exception exception) {
+
+            }
+        });
 	}
 
 }

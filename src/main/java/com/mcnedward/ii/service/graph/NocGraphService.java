@@ -2,11 +2,13 @@ package com.mcnedward.ii.service.graph;
 
 import com.mcnedward.ii.element.JavaSolution;
 import com.mcnedward.ii.exception.GraphBuildException;
+import com.mcnedward.ii.listener.GraphLoadListener;
 import com.mcnedward.ii.service.graph.element.Edge;
 import com.mcnedward.ii.service.graph.element.NocHierarchy;
 import com.mcnedward.ii.service.graph.element.Node;
 import com.mcnedward.ii.service.graph.jung.JungGraph;
 import com.mcnedward.ii.service.graph.jung.NocJungGraph;
+import com.mcnedward.ii.utils.IILogger;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,12 +26,15 @@ public class NocGraphService extends GraphService<NocHierarchy> {
      * @throws GraphBuildException
      */
     @Override
-    protected List<JungGraph> buildGraphs(List<NocHierarchy> trees, Integer width, Integer height, Integer limit, boolean useFullName) throws GraphBuildException {
+    protected List<JungGraph> buildGraphs(List<NocHierarchy> trees, Integer width, Integer height, Integer limit, boolean useFullName, GraphLoadListener listener) throws GraphBuildException {
         List<JungGraph> graphs = new ArrayList<>();
         Stack<Node> nodes = new Stack<>();
         Stack<Edge> edges = new Stack<>();
 
-        for (NocHierarchy tree : trees) {
+        for (int i = 0; i < trees.size(); i++) {
+            NocHierarchy tree = trees.get(i);
+            updateProgress(i, trees.size(), listener);
+
             if (limit != null) {
                 if (tree.getNoc() < limit) continue;
             }

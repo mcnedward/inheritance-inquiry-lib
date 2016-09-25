@@ -106,15 +106,15 @@ public final class AnalyzerService {
 	 * 
 	 * @param project
 	 *            The JavaProject
-	 * @param ignoreZero
-	 *            If this is true, then the Analyzer will ignore metrics whose value is zero.
+	 * @param ignoreEmpty
+	 *            If this is true, then the Analyzer will ignore metrics whose value should not be included (1 for DIT, 0 for NOC).
 	 * @return
 	 */
-	private void calculateMetricsAndTrees(JavaProject project, JavaSolution solution, boolean ignoreZero) {
+	private void calculateMetricsAndTrees(JavaProject project, JavaSolution solution, boolean ignoreEmpty) {
 		for (JavaElement element : project.getAllElements()) {
-			calculateDepthOfInheritanceTree(project, element, solution, ignoreZero);
-			calculateNumberOfChildren(project, element, solution, ignoreZero);
-			calculateWeightedMethodsPerClass(project, element, solution, ignoreZero);
+			calculateDepthOfInheritanceTree(project, element, solution, ignoreEmpty);
+			calculateNumberOfChildren(project, element, solution, ignoreEmpty);
+			calculateWeightedMethodsPerClass(project, element, solution, ignoreEmpty);
             calculateFullHierarchyTrees(element, project, solution);
 		}
 	}
@@ -128,18 +128,18 @@ public final class AnalyzerService {
 	 *            The JavaProject
 	 * @param solution
 	 *            The {@JavaSolution} to place the metric into
-	 * @param ignoreZero
-	 *            If this is true, then the Analyzer will ignore metrics whose value is zero.
+	 * @param ignoreEmpty
+	 *            If this is true, then the Analyzer will ignore metrics whose value is 1.
 	 * @return int The Depth of Inheritance Tree
 	 */
-	private int calculateDepthOfInheritanceTree(JavaProject project, JavaElement element, JavaSolution solution, boolean ignoreZero) {
+	private int calculateDepthOfInheritanceTree(JavaProject project, JavaElement element, JavaSolution solution, boolean ignoreEmpty) {
 		DitHierarchy hierarchy = new DitHierarchy(element);
 		solution.addDitHierarchy(hierarchy);
 
 		int dit = hierarchy.getDit();
 		int numberOfInheritedMethods = hierarchy.getInheritedMethodCount();
-		if (ignoreZero) {
-			if (dit > 0) {
+		if (ignoreEmpty) {
+			if (dit > 1) {
 				solution.addDitMetric(new DitMetric(element, dit, numberOfInheritedMethods));
 			}
 		} else {
@@ -157,18 +157,18 @@ public final class AnalyzerService {
 	 *            The JavaProject
 	 * @param solution
 	 *            The {@JavaSolution} to place the metric into
-	 * @param ignoreZero
+	 * @param ignoreEmpty
 	 *            If this is true, then the Analyzer will ignore metrics whose value is zero.
 	 * @return int The Number of Children
 	 */
-	private int calculateNumberOfChildren(JavaProject project, JavaElement element, JavaSolution solution, boolean ignoreZero) {
+	private int calculateNumberOfChildren(JavaProject project, JavaElement element, JavaSolution solution, boolean ignoreEmpty) {
 		List<JavaElement> classChildren = project.findNumberOfChildrenFor(element);
 		int noc = classChildren.size();
 
 		NocHierarchy tree = new NocHierarchy(project, element);
 		if (tree.hasChildren())
 			solution.addNocHeirarchy(tree);
-		if (ignoreZero) {
+		if (ignoreEmpty) {
 			if (noc > 0) {
 				solution.addNocMetric(new NocMetric(element, tree.getNoc(), classChildren));
 			}

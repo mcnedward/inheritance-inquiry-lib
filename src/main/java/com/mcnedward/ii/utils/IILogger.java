@@ -1,6 +1,6 @@
 package com.mcnedward.ii.utils;
 
-import com.mcnedward.ii.listener.SolutionBuildListener;
+import com.mcnedward.ii.listener.BuildListener;
 
 /**
  * @author Edward - Jul 12, 2016
@@ -44,7 +44,7 @@ public final class IILogger {
 		error(e.getMessage(), e);
 	}
 
-    public static void notify(SolutionBuildListener listener, String message, int progress) {
+    public static void notify(BuildListener listener, String message, int progress) {
         if (listener != null)
             listener.onProgressChange(message, progress);
         else

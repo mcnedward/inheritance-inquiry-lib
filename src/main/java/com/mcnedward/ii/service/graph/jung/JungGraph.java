@@ -76,7 +76,6 @@ public class JungGraph {
         mGraph = new DirectedSparseMultigraph<>();
         mNodeMap = new TreeMap<>();
         mEdgeMap = new TreeMap<>();
-        IILogger.info("XDist: %s", mXDist);
     }
 
     public void plotGraph(List<Node> nodes, List<Edge> edges) throws GraphBuildException {
