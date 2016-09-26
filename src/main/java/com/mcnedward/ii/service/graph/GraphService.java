@@ -74,7 +74,7 @@ public abstract class GraphService<T extends Hierarchy> implements IGraphService
 
     protected abstract List<JungGraph> buildGraphs(List<T> trees, Integer width, Integer height, Integer limit, boolean useFullName, GraphLoadListener listener) throws GraphBuildException;
 
-    protected void updateProgress(int currentIndex, int graphCount, GraphLoadListener listener) {
+    void updateProgress(int currentIndex, int graphCount, GraphLoadListener listener) {
         int progress = (int) (((double) currentIndex / graphCount) * 100);
         IILogger.notify(listener, String.format("Generating graphs [%s / %s]...", currentIndex, graphCount), progress);
     }

@@ -33,7 +33,7 @@ public class NocGraphService extends GraphService<NocHierarchy> {
 
         for (int i = 0; i < trees.size(); i++) {
             NocHierarchy tree = trees.get(i);
-            updateProgress(i, trees.size(), listener);
+            updateProgress(i + 1, trees.size(), listener);
 
             if (limit != null) {
                 if (tree.getNoc() < limit) continue;

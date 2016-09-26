@@ -46,22 +46,24 @@ public class JavaSolution {
 	private List<DitHierarchy> mDitHierarchyTrees;
 	private List<NocHierarchy> mNocHierarchyTrees;
 	private List<FullHierarchy> mFullHierarchyTrees;
+    private List<String> mFullyQualifiedElementNames;
 
 	public JavaSolution(String projectName, String systemName, String version) {
-		mProjectName = projectName;
-		mSystemName = systemName;
-		mVersion = version;
-		init();
+        init();
+        mProjectName = projectName;
+        mSystemName = systemName;
+        mVersion = version;
 	}
 
 	public JavaSolution(JavaProject project) {
-		mProjectName = project.getName();
-		mSystemName = project.getSystemName();
-		mVersion = project.getVersion();
-		mClassCount = project.getClassCount();
-		mInheritanceCount = project.getInheritanceCount();
-		init();
-	}
+        init();
+        mProjectName = project.getName();
+        mSystemName = project.getSystemName();
+        mVersion = project.getVersion();
+        mClassCount = project.getClassCount();
+        mInheritanceCount = project.getInheritanceCount();
+        mFullyQualifiedElementNames = project.getProjectFullyQualifiedElementNames();
+    }
 
 	private void init() {
 		mInheritedMethodRisk = new ArrayList<>();
@@ -73,6 +75,7 @@ public class JavaSolution {
 		mDitHierarchyTrees = new ArrayList<>();
 		mNocHierarchyTrees = new ArrayList<>();
 		mFullHierarchyTrees = new ArrayList<>();
+        mFullyQualifiedElementNames = new ArrayList<>();
 	}
 
 	public void addDitMetric(DitMetric metric) {
@@ -277,6 +280,14 @@ public class JavaSolution {
 	public String getMaxWidthClass() {
 		return mMaxWidthClass;
 	}
+
+	public void setFullyQualifiedElementNames(List<String> fullyQualifiedElementNames) {
+        mFullyQualifiedElementNames = fullyQualifiedElementNames;
+    }
+
+    public List<String> getFullyQualifiedElementNames() {
+        return mFullyQualifiedElementNames;
+    }
 
 	@Override
 	public String toString() {

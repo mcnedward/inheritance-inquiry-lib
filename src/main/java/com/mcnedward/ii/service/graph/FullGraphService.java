@@ -26,7 +26,7 @@ public class FullGraphService extends GraphService<FullHierarchy> {
 
         for (int i = 0; i < trees.size(); i++) {
             FullHierarchy tree = trees.get(i);
-            updateProgress(i, trees.size(), listener);
+            updateProgress(i + 1, trees.size(), listener);
             Node parentNode = new Node(tree, useFullName);
             nodes.add(parentNode);
             // Create an individual graph for each hierarchy tree

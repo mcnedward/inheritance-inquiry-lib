@@ -14,7 +14,7 @@ import com.mcnedward.ii.utils.VersionUtils;
  */
 public class JavaProject {
 
-	private String mPath;
+	private String mProjectPath;
 	private String mName;
 	private String mSystemName;
 	private String mVersion;
@@ -29,13 +29,13 @@ public class JavaProject {
 	}
 
 	public JavaProject(File projectFile) {
-		mPath = projectFile.getAbsolutePath();
+		mProjectPath = projectFile.getAbsolutePath();
 		mSystemName = projectFile.getName();
 		mName = projectFile.getName();
 		mProjectFile = projectFile;
 		mPackages = new ArrayList<>();
 		buildFile();
-		mVersion = VersionUtils.findVersion(mPath);
+		mVersion = VersionUtils.findVersion(mProjectPath);
 	}
 
 	public JavaElement find(String elementName) {
@@ -223,7 +223,6 @@ public class JavaProject {
 
 	// Cache the search for classes
 	private List<JavaElement> mClasses;
-
 	/**
 	 * Gets all of the JavaElements that are classes.
 	 * 
@@ -243,6 +242,19 @@ public class JavaProject {
 		}
 		return mClasses;
 	}
+
+	// Cache the project fully qualified names
+    private List<String> mFullyQualifiedElementNames;
+	public List<String> getProjectFullyQualifiedElementNames() {
+        if (mFullyQualifiedElementNames != null && !mFullyQualifiedElementNames.isEmpty())
+            return mFullyQualifiedElementNames;
+        mFullyQualifiedElementNames = new ArrayList<>();
+        for (JavaElement element : getAllElements()) {
+            if (element.hasDiamonds()) continue;
+            mFullyQualifiedElementNames.add(element.getFullyQualifiedName());
+        }
+        return mFullyQualifiedElementNames;
+    }
 
 	// Cache the search for interfaces
 	private List<JavaElement> mInterfaces;
@@ -285,7 +297,7 @@ public class JavaProject {
 	 * @return the path
 	 */
 	public String getPath() {
-		return mPath;
+		return mProjectPath;
 	}
 
 	/**

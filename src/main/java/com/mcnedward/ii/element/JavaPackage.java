@@ -10,7 +10,7 @@ import com.mcnedward.ii.utils.IILogger;
  *
  */
 public class JavaPackage {
-	
+
 	private String mName;
 	private Set<JavaElement> mElements;
 
@@ -18,7 +18,7 @@ public class JavaPackage {
 		mName = name;
 		mElements = new HashSet<>();
 	}
-	
+
 	public JavaElement find(String elementName) {
 		try {
 			for (JavaElement element : mElements) {
@@ -32,7 +32,7 @@ public class JavaPackage {
 			throw e;
 		}
 	}
-	
+
 	public void addElement(JavaElement element) {
 		mElements.add(element);
 	}
@@ -58,7 +58,7 @@ public class JavaPackage {
 	public void setElements(Set<JavaElement> elements) {
 		mElements = elements;
 	}
-	
+
 	@Override
 	public String toString() {
 		return String.format("%s [%s elements]", mName, mElements.size());

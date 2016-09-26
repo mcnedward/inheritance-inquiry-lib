@@ -4,7 +4,7 @@ import com.mcnedward.ii.exception.GraphBuildException;
 import com.mcnedward.ii.service.graph.element.Edge;
 import com.mcnedward.ii.service.graph.element.GType;
 import com.mcnedward.ii.service.graph.element.Node;
-import com.mcnedward.ii.utils.IILogger;
+import com.mcnedward.ii.utils.IIUtils;
 import edu.uci.ics.jung.algorithms.layout.TreeLayout;
 import edu.uci.ics.jung.graph.DelegateForest;
 import edu.uci.ics.jung.graph.DirectedGraph;
@@ -45,6 +45,7 @@ public class JungGraph {
     private Map<String, Edge> mEdgeMap;
 
     private String mFullyQualifiedName;
+    private String mElementName;
     private GType mType;
     // Distance between graphs
     private static final int DEFAULT_WIDTH = 500;
@@ -68,6 +69,7 @@ public class JungGraph {
 
     public JungGraph(String fullyQualifiedName, Integer width, Integer height, Integer xDist, Integer yDist) {
         mFullyQualifiedName = fullyQualifiedName;
+        mElementName = IIUtils.getElementNameFromPackage(fullyQualifiedName);
         mWidth = width == null ? DEFAULT_WIDTH : width;
         mHeight = height == null ? DEFAULT_HEIGHT : height;
         mXDist = xDist == null ? DEFAULT_X_DIST : xDist;
@@ -285,6 +287,10 @@ public class JungGraph {
             else
                 return Color.BLACK;
         };
+    }
+
+    public String getElementName() {
+        return mElementName;
     }
 
     public String getFullyQualifiedElementName() {

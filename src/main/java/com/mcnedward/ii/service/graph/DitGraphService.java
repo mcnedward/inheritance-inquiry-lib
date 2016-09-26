@@ -25,7 +25,7 @@ public class DitGraphService extends GraphService<DitHierarchy> {
 
         for (int i = 0; i < trees.size(); i++) {
             DitHierarchy tree = trees.get(i);
-            updateProgress(i, trees.size(), listener);
+            updateProgress(i + 1, trees.size(), listener);
             if (tree.getDit() == 1 || tree.isInterface() || (limit != null && tree.getDit() < limit))
                 continue;
             // Skip elements that have generic parameters

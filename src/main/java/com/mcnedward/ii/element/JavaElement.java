@@ -247,7 +247,11 @@ public class JavaElement {
 	public void setIsInterface(boolean isInterface) {
 		mIsInterface = isInterface;
 	}
-	
+
+	public boolean hasDiamonds() {
+        return mName.contains("<") && mName.contains(">");
+    }
+
 	@Override
 	public String toString() {
 		return getFullyQualifiedName();
