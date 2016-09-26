@@ -1,29 +1,24 @@
 package com.mcnedward.ii.service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-import com.mcnedward.ii.listener.SolutionBuildListener;
-import org.eclipse.jdt.core.dom.IMethodBinding;
-
 import com.mcnedward.ii.element.JavaElement;
 import com.mcnedward.ii.element.JavaProject;
 import com.mcnedward.ii.element.JavaSolution;
 import com.mcnedward.ii.element.method.JavaMethod;
 import com.mcnedward.ii.element.method.JavaMethodInvocation;
 import com.mcnedward.ii.exception.TaskBuildException;
+import com.mcnedward.ii.listener.SolutionBuildListener;
 import com.mcnedward.ii.service.graph.element.DitHierarchy;
 import com.mcnedward.ii.service.graph.element.FullHierarchy;
 import com.mcnedward.ii.service.graph.element.NocHierarchy;
 import com.mcnedward.ii.service.graph.element.SolutionMethod;
 import com.mcnedward.ii.service.metric.MType;
-import com.mcnedward.ii.service.metric.element.DitMetric;
-import com.mcnedward.ii.service.metric.element.Metric;
-import com.mcnedward.ii.service.metric.element.MetricInfo;
-import com.mcnedward.ii.service.metric.element.NocMetric;
-import com.mcnedward.ii.service.metric.element.WmcMetric;
+import com.mcnedward.ii.service.metric.element.*;
 import com.mcnedward.ii.utils.IILogger;
+import org.eclipse.jdt.core.dom.IMethodBinding;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * A service tool for analyzing the Chidamber & Kemerer metrics for a {@link JavaProject}.
@@ -361,7 +356,7 @@ public final class AnalyzerService {
 		List<String> maxClasses = new ArrayList<>();
 		
 		for (int i = 0; i < metrics.size(); i++) {
-			int value = metrics.get(i).metric;
+			int value = metrics.get(i).getMetric();
 			if (i == 0) {
 				min = value;
 				max = value;
@@ -369,7 +364,7 @@ public final class AnalyzerService {
 			if (value > max) {
 				max = value;
 				// TODO This is wrong... this adds max classes that are not the max anymore, I need to filter this at the end of the loop maybe?
-				maxClasses.add(metrics.get(i).fullyQualifiedName);
+				maxClasses.add(metrics.get(i).getFullyQualifiedName());
 			}
 			if (value < min)
 				min = value;

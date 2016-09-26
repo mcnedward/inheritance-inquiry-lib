@@ -276,7 +276,7 @@ public final class MetricService {
 		StringBuilder builder = new StringBuilder(docTitle + NEWLINE);
 		builder.append(rowTitles + NEWLINE);
 		for (WmcMetric metric : wmcMetrics) {
-			builder.append(buildRow(metric.fullyQualifiedName, metric.metric) + NEWLINE);
+			builder.append(buildRow(metric.getFullyQualifiedName(), metric.getMetric()) + NEWLINE);
 		}
 
 		writeToFile(solution, metricType, builder.toString());

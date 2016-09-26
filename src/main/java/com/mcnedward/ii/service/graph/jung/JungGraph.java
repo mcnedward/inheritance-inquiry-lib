@@ -231,7 +231,7 @@ public class JungGraph {
                 } else {
                     currentFont = vv.getFont();
                 }
-                Font theFont = new Font(currentFont.getName(), fontStyle, 10);
+                Font theFont = new Font(currentFont.getName(), fontStyle, 14);
                 setFont(theFont);
                 setIcon(null);
                 setBorder(noFocusBorder);
@@ -287,7 +287,7 @@ public class JungGraph {
         };
     }
 
-    public String getElementName() {
+    public String getFullyQualifiedElementName() {
         return mFullyQualifiedName;
     }
 

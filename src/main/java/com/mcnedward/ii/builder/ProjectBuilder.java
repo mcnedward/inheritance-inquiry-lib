@@ -53,7 +53,7 @@ public class ProjectBuilder extends Builder {
     @Override
     protected Runnable buildTask() {
         if (mProjectFile == null) {
-            throw new IllegalStateException("You need to call setup method first!");
+            mListener.onBuildError("Something went wrong during the build process.", new IllegalStateException("Project file not set. You need to call setup method first!"));
         }
         if (!mProjectFile.exists()) {
             String message = String.format("You need to provide an existing file! [Path: %s]", mProjectFile.getAbsolutePath());

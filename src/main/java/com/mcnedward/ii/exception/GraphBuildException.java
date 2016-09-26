@@ -7,10 +7,8 @@ package com.mcnedward.ii.exception;
 public class GraphBuildException extends Exception {
 	private static final long serialVersionUID = 1L;
 
-	private static final String DEFAULT_MESSAGE = "There was a problem building the graphs.";
-	
 	public GraphBuildException(String message) {
-		super(DEFAULT_MESSAGE + ": " + message);
+		super(message);
 	}
 
 	public GraphBuildException(Exception e) {
@@ -18,7 +16,7 @@ public class GraphBuildException extends Exception {
 	}
 	
 	public GraphBuildException(String message, Exception e) {
-		super(DEFAULT_MESSAGE + ": " + message, e);
+		super(message, e);
 	}
 	
 }

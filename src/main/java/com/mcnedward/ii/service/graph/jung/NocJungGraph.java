@@ -28,7 +28,7 @@ public class NocJungGraph extends JungGraph {
         final FontMetrics fm = vv.getFontMetrics(vv.getFont());
         return vertexName -> {
             Node node = nodeMap.get(vertexName);
-            float width = fm.stringWidth(node.name()) * 1.1f;
+            float width = fm.stringWidth(node.name()) * 1.4f;
             float height = fm.getHeight() * 1.25f;
             float x = -(width / 2.0f);
             float y = -(height / 2.0f);

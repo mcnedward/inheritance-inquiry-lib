@@ -9,11 +9,11 @@ import com.mcnedward.ii.service.metric.MType;
  */
 public abstract class Metric {
 
-	public MType type;
-	public String elementName;
-	public String fullyQualifiedName;
-	public int metric;
-	public boolean isInterface;
+	protected MType type;
+    protected String elementName;
+    protected String fullyQualifiedName;
+    protected int metric;
+    protected boolean isInterface;
 
 	public Metric(MType type, JavaElement element, int metric) {
 		this.type = type;
@@ -22,4 +22,24 @@ public abstract class Metric {
 		this.metric = metric;
 		isInterface = element.isInterface();
 	}
+
+    public MType getType() {
+        return type;
+    }
+
+    public String getElementName() {
+        return elementName;
+    }
+
+    public String getFullyQualifiedName() {
+        return fullyQualifiedName;
+    }
+
+    public int getMetric() {
+        return metric;
+    }
+
+    public boolean isInterface() {
+        return isInterface;
+    }
 }
