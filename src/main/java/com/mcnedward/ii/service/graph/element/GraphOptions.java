@@ -14,6 +14,13 @@ public class GraphOptions {
     public static final int DEFAULT_X_DIST = 250;
     public static final int DEFAULT_Y_DIST = 100;
     public static final int DEFAULT_FONT_SIZE = 18;
+    public static final Color DEFAULT_LABEL_COLOR = new Color(80, 95, 110);
+    public static final Color DEFAULT_FONT_COLOR = Color.BLACK;
+    public static final Color DEFAULT_ARROW_COLOR = Color.BLACK;
+    public static final Color DEFAULT_EDGE_COLOR = Color.BLACK;
+    public static final Color DEFAULT_INTERFACE_LABEL_COLOR = Color.BLACK;
+    public static final Color DEFAULT_INTERFACE_ARROW_COLOR = Color.WHITE;
+    public static final Color DEFAULT_INTERFACE_EDGE_COLOR = Color.WHITE;
 
     private JavaSolution mSolution;
     private Collection<String> mFullyQualifiedNames;
@@ -23,21 +30,32 @@ public class GraphOptions {
     private Integer mXDist;
     private Integer mYDist;
     private Font mFont;
+    private Color mLabelColor, mFontColor, mArrowColor, mEdgeColor, mInterfaceLabelColor, mInterfaceArrowColor, mInterfaceEdgeColor;
     private boolean mUseFullName;
-    private Color mVertexFillPaint;
 
     public GraphOptions() {
-        this(DEFAULT_X_DIST, DEFAULT_Y_DIST, DEFAULT_FONT_SIZE);
+        this(DEFAULT_X_DIST, DEFAULT_Y_DIST, DEFAULT_FONT_SIZE, DEFAULT_FONT_COLOR, DEFAULT_LABEL_COLOR, DEFAULT_ARROW_COLOR, DEFAULT_EDGE_COLOR, DEFAULT_INTERFACE_LABEL_COLOR, DEFAULT_INTERFACE_ARROW_COLOR, DEFAULT_INTERFACE_EDGE_COLOR);
     }
 
-    public GraphOptions(Integer xDist, Integer yDist, Integer fontSize) {
+    public GraphOptions(Integer xDist, Integer yDist, Integer fontSize, Color fontColor, Color labelColor, Color arrowColor, Color edgeColor) {
+        this(xDist, yDist, fontSize, fontColor, labelColor, arrowColor, edgeColor, DEFAULT_INTERFACE_LABEL_COLOR, DEFAULT_INTERFACE_ARROW_COLOR, DEFAULT_INTERFACE_EDGE_COLOR);
+    }
+
+    public GraphOptions(Integer xDist, Integer yDist, Integer fontSize, Color fontColor, Color labelColor, Color arrowColor, Color edgeColor, Color interfaceLabelColor, Color interfaceArrowColor, Color interfaceEdgeColor) {
         mXDist = xDist;
         mYDist = yDist;
         mFont = new Font("Segoe UI", Font.PLAIN, fontSize);
+        mLabelColor = labelColor;
+        mFontColor = fontColor;
+        mArrowColor = arrowColor;
+        mEdgeColor = edgeColor;
+        mInterfaceLabelColor = interfaceLabelColor;
+        mInterfaceArrowColor = interfaceArrowColor;
+        mInterfaceEdgeColor = interfaceEdgeColor;
     }
 
     public GraphOptions(JavaSolution solution, Collection<String> fullyQualifiedNames, Integer xDist, Integer yDist, Integer fontSize, boolean useFullName) {
-        this(xDist, yDist, DEFAULT_FONT_SIZE);
+        this(xDist, yDist, fontSize, DEFAULT_FONT_COLOR, DEFAULT_LABEL_COLOR, DEFAULT_ARROW_COLOR, DEFAULT_EDGE_COLOR, DEFAULT_INTERFACE_LABEL_COLOR, DEFAULT_INTERFACE_ARROW_COLOR, DEFAULT_INTERFACE_EDGE_COLOR);
         mSolution = solution;
         mFullyQualifiedNames = fullyQualifiedNames;
         mXDist = xDist;
@@ -113,20 +131,68 @@ public class GraphOptions {
         mFont = font;
     }
 
+    public Color getLabelColor() {
+        return mLabelColor;
+    }
+
+    public void setLabelColor(Color color) {
+        mLabelColor = color;
+    }
+
+    public Color getFontColor() {
+        return mFontColor;
+    }
+
+    public void setFontColor(Color mFontColor) {
+        this.mFontColor = mFontColor;
+    }
+
+    public Color getArrowColor() {
+        return mArrowColor;
+    }
+
+    public void setArrowColor(Color mArrowColor) {
+        this.mArrowColor = mArrowColor;
+    }
+
+    public Color getEdgeColor() {
+        return mEdgeColor;
+    }
+
+    public void setEdgeColor(Color mEdgeColor) {
+        this.mEdgeColor = mEdgeColor;
+    }
+
+    public Color getInterfaceLabelColor() {
+        return mInterfaceLabelColor;
+    }
+
+    public void setInterfaceLabelColor(Color interfaceArrowColor) {
+        mInterfaceLabelColor= interfaceArrowColor;
+    }
+
+    public Color getInterfaceArrowColor() {
+        return mInterfaceArrowColor;
+    }
+
+    public void setInterfaceArrowColor(Color interfaceArrowColor) {
+        mInterfaceArrowColor = interfaceArrowColor;
+    }
+
+    public Color getInterfaceEdgeColor() {
+        return mInterfaceEdgeColor;
+    }
+
+    public void setInterfaceEdgeColor(Color interfaceEdgeColor) {
+        mInterfaceEdgeColor = interfaceEdgeColor;
+    }
+
     public boolean useFullName() {
         return mUseFullName;
     }
 
     public void setUseFullName(boolean useFullName) {
         mUseFullName = useFullName;
-    }
-
-    public Color getVertexFillPaint() {
-        return mVertexFillPaint;
-    }
-
-    public void setVertexFillPaint(Color color) {
-        mVertexFillPaint = color;
     }
 
 }

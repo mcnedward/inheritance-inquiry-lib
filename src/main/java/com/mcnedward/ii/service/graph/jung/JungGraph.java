@@ -18,7 +18,6 @@ import edu.uci.ics.jung.visualization.control.ScalingControl;
 import edu.uci.ics.jung.visualization.renderers.DefaultEdgeLabelRenderer;
 import edu.uci.ics.jung.visualization.renderers.DefaultVertexLabelRenderer;
 import edu.uci.ics.jung.visualization.renderers.Renderer;
-import edu.uci.ics.jung.visualization.util.VertexShapeFactory;
 import org.apache.commons.collections15.Transformer;
 
 import javax.swing.*;
@@ -173,9 +172,9 @@ public class JungGraph {
         return nodeName -> {
             Node node = mNodeMap.get(nodeName);
             if (node.isInterface())
-                return Color.LIGHT_GRAY;
+                return options.getInterfaceLabelColor();
             else {
-                return options.getVertexFillPaint() == null ? new Color(80, 95, 110) : options.getVertexFillPaint();
+                return options.getLabelColor();
             }
         };
     }
@@ -202,11 +201,11 @@ public class JungGraph {
     }
 
     protected DefaultVertexLabelRenderer vertexLabelRenderer(Map<String, Node> nodeMap, GraphOptions options) {
-        return new DefaultVertexLabelRenderer(Color.BLACK) {
+        return new DefaultVertexLabelRenderer(options.getFontColor()) {
             private static final long serialVersionUID = 1909972527171078432L;
 
             public <V> Component getVertexLabelRendererComponent(JComponent vv, Object nodeName, Font font, boolean isSelected, V vertex) {
-                super.setForeground(Color.BLACK);
+                super.setForeground(options.getFontColor());
 
                 Node node = null;
                 for (Map.Entry<String, Node> entry : nodeMap.entrySet()) {
@@ -267,10 +266,10 @@ public class JungGraph {
     }
 
     protected DefaultEdgeLabelRenderer edgeLabelRenderer(GraphOptions options) {
-        return new DefaultEdgeLabelRenderer(Color.BLACK) {
+        return new DefaultEdgeLabelRenderer(options.getEdgeColor()) {
             @Override
             public <E> Component getEdgeLabelRendererComponent(JComponent vv, Object nodeName, Font font, boolean isSelected, E edge) {
-                super.setForeground(Color.BLACK);
+                super.setForeground(options.getEdgeColor());
                 setFont(options.getFont());
                 setIcon(null);
                 setBorder(noFocusBorder);
@@ -284,9 +283,9 @@ public class JungGraph {
         return edgeName -> {
             Edge edge = mEdgeMap.get(edgeName);
             if (edge.isImplements())
-                return Color.WHITE;
+                return options.getInterfaceArrowColor();
             else
-                return Color.BLACK;
+                return options.getArrowColor();
         };
     }
 
