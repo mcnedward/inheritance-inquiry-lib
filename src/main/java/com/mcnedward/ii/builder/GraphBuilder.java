@@ -5,6 +5,7 @@ import com.mcnedward.ii.exception.GraphBuildException;
 import com.mcnedward.ii.listener.GraphExportListener;
 import com.mcnedward.ii.listener.GraphLoadListener;
 import com.mcnedward.ii.service.graph.IGraphService;
+import com.mcnedward.ii.service.graph.element.GraphOptions;
 import com.mcnedward.ii.service.graph.jung.JungGraph;
 
 import java.io.File;
@@ -18,14 +19,11 @@ public class GraphBuilder extends Builder {
     private GraphLoadListener mLoadListener;
     private GraphExportListener mExportListener;
     private IGraphService mGraphService;
-    private JavaSolution mSolution;
-    private Collection<String> mFullyQualifiedNames;
-    private Integer mWidth, mHeight;
-    private boolean mUseFullName;
     private Collection<JungGraph> mGraphs;
     private File mDirectory;
     private boolean mUsePackages;
     private String mProjectName;
+    private GraphOptions mOptions;
     private boolean mIsBuild, mIsExport;
 
     public GraphBuilder(GraphLoadListener listener) {
@@ -44,13 +42,9 @@ public class GraphBuilder extends Builder {
         mExportListener = graphExportListener;
     }
 
-    public GraphBuilder setupForBuild(IGraphService service, JavaSolution solution, Collection<String> fullyQualifiedNames, Integer width, Integer height, boolean useFullName) {
+    public GraphBuilder setupForBuild(IGraphService service, GraphOptions options) {
         mGraphService = service;
-        mSolution = solution;
-        mFullyQualifiedNames = fullyQualifiedNames;
-        mWidth = width;
-        mHeight = height;
-        mUseFullName = useFullName;
+        mOptions = options;
         mIsBuild = true;
         return this;
     }
@@ -71,12 +65,12 @@ public class GraphBuilder extends Builder {
             throw new IllegalStateException("You can only call the setup for one process.");
         }
         if (mIsBuild) {
-            if (mGraphService == null || mSolution == null) {
+            if (mGraphService == null || mOptions == null) {
                 throw new IllegalStateException("You need to call setup method first!");
             }
             return () -> {
                 try {
-                    mGraphService.buildHierarchyGraphs(mSolution, mFullyQualifiedNames, mWidth, mHeight, mUseFullName, mLoadListener);
+                    mGraphService.buildHierarchyGraphs(mOptions, mLoadListener);
                 } catch (Exception e) {
                     mLoadListener.onBuildError(String.format("Something went wrong when building the graphs."), e);
                 } finally {
@@ -104,11 +98,6 @@ public class GraphBuilder extends Builder {
     @Override
     protected void reset() {
         mGraphService = null;
-        mSolution = null;
-        mFullyQualifiedNames = null;
-        mWidth = null;
-        mHeight = null;
-        mUseFullName = false;
         mGraphs = null;
         mDirectory = null;
         mUsePackages = false;

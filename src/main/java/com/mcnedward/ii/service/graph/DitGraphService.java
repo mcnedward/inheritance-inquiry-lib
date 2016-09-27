@@ -5,8 +5,8 @@ import com.mcnedward.ii.exception.GraphBuildException;
 import com.mcnedward.ii.listener.GraphLoadListener;
 import com.mcnedward.ii.service.graph.element.DitHierarchy;
 import com.mcnedward.ii.service.graph.element.Edge;
+import com.mcnedward.ii.service.graph.element.GraphOptions;
 import com.mcnedward.ii.service.graph.element.Node;
-import com.mcnedward.ii.service.graph.jung.DitJungGraph;
 import com.mcnedward.ii.service.graph.jung.JungGraph;
 
 import java.util.ArrayList;
@@ -18,14 +18,17 @@ import java.util.List;
 public class DitGraphService extends GraphService<DitHierarchy> {
 
     @Override
-    protected List<JungGraph> buildGraphs(List<DitHierarchy> trees, Integer width, Integer height, Integer limit, boolean useFullName, GraphLoadListener listener) throws GraphBuildException {
+    protected List<JungGraph> buildGraphs(List<DitHierarchy> trees, GraphOptions options, GraphLoadListener listener) throws GraphBuildException {
         List<JungGraph> graphs = new ArrayList<>();
         List<Node> nodes = new ArrayList<>();
         List<Edge> edges = new ArrayList<>();
 
+        Integer limit = options.getLimit();
+        boolean useFullName = options.useFullName();
         for (int i = 0; i < trees.size(); i++) {
             DitHierarchy tree = trees.get(i);
             updateProgress(i + 1, trees.size(), listener);
+
             if (tree.getDit() == 1 || tree.isInterface() || (limit != null && tree.getDit() < limit))
                 continue;
             // Skip elements that have generic parameters
@@ -37,7 +40,7 @@ public class DitGraphService extends GraphService<DitHierarchy> {
             nodes.add(parent);
             recurseDit(tree.getAncestors(), nodes, edges, parent, useFullName);
 
-            JungGraph graph = new DitJungGraph(tree.getFullElementName(), width, height);
+            JungGraph graph = new JungGraph(tree.getFullElementName(), options);
             graph.plotGraph(nodes, edges);
             graphs.add(graph);
 

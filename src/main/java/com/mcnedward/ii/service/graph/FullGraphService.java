@@ -5,6 +5,7 @@ import com.mcnedward.ii.exception.GraphBuildException;
 import com.mcnedward.ii.listener.GraphLoadListener;
 import com.mcnedward.ii.service.graph.element.Edge;
 import com.mcnedward.ii.service.graph.element.FullHierarchy;
+import com.mcnedward.ii.service.graph.element.GraphOptions;
 import com.mcnedward.ii.service.graph.element.Node;
 import com.mcnedward.ii.service.graph.jung.JungGraph;
 
@@ -19,11 +20,12 @@ import java.util.Stack;
 public class FullGraphService extends GraphService<FullHierarchy> {
 
     @Override
-    protected List<JungGraph> buildGraphs(List<FullHierarchy> trees, Integer width, Integer height, Integer limit, boolean useFullName, GraphLoadListener listener) throws GraphBuildException {
+    protected List<JungGraph> buildGraphs(List<FullHierarchy> trees, GraphOptions options, GraphLoadListener listener) throws GraphBuildException {
         List<JungGraph> graphs = new ArrayList<>();
         Stack<Node> nodes = new Stack<>();
         Stack<Edge> edges = new Stack<>();
 
+        boolean useFullName = options.useFullName();
         for (int i = 0; i < trees.size(); i++) {
             FullHierarchy tree = trees.get(i);
             updateProgress(i + 1, trees.size(), listener);
@@ -32,7 +34,7 @@ public class FullGraphService extends GraphService<FullHierarchy> {
             // Create an individual graph for each hierarchy tree
             recurseFullHierarchyTrees(tree, parentNode, nodes, edges, useFullName);
 
-            JungGraph graph = new JungGraph(tree.getFullElementName(), width, height);
+            JungGraph graph = new JungGraph(tree.getFullElementName(), options);
             graph.plotGraph(nodes, edges);
             graphs.add(graph);
 

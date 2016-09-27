@@ -4,6 +4,7 @@ import com.mcnedward.ii.element.JavaSolution;
 import com.mcnedward.ii.exception.GraphBuildException;
 import com.mcnedward.ii.listener.GraphExportListener;
 import com.mcnedward.ii.listener.GraphLoadListener;
+import com.mcnedward.ii.service.graph.element.GraphOptions;
 import com.mcnedward.ii.service.graph.element.Hierarchy;
 import com.mcnedward.ii.service.graph.jung.JungGraph;
 import com.mcnedward.ii.utils.IILogger;
@@ -21,32 +22,9 @@ public abstract class GraphService<T extends Hierarchy> implements IGraphService
     private static final String IMAGE_TYPE = "png";
 
     @Override
-    public void buildHierarchyGraphs(JavaSolution solution) throws GraphBuildException {
-        buildHierarchyGraphs(solution, null, null, null, null, false, null);
-    }
-
-    @Override
-    public void buildHierarchyGraphs(JavaSolution solution, GraphLoadListener listener) throws GraphBuildException {
-        buildHierarchyGraphs(solution, null, null, null, null, false, listener);
-    }
-
-    @Override
-    public void buildHierarchyGraphs(JavaSolution solution, Collection<String> fullyQualifiedNames) throws GraphBuildException {
-        buildHierarchyGraphs(solution, fullyQualifiedNames, null, null, null, false, null);
-    }
-
-    @Override
-    public void buildHierarchyGraphs(JavaSolution solution, Collection<String> fullyQualifiedNames, Integer width, Integer height) throws GraphBuildException {
-        buildHierarchyGraphs(solution, fullyQualifiedNames, width, height, null, false, null);
-    }
-
-    @Override
-    public void buildHierarchyGraphs(JavaSolution solution, Collection<String> fullyQualifiedNames, Integer width, Integer height, boolean useFullName, GraphLoadListener listener) throws GraphBuildException {
-        buildHierarchyGraphs(solution, fullyQualifiedNames, width, height, null, useFullName, listener);
-    }
-
-    @Override
-    public void buildHierarchyGraphs(JavaSolution solution, Collection<String> fullyQualifiedNames, Integer width, Integer height, Integer limit, boolean useFullName, GraphLoadListener listener) throws GraphBuildException {
+    public void buildHierarchyGraphs(GraphOptions options, GraphLoadListener listener) throws GraphBuildException {
+        Collection<String> fullyQualifiedNames = options.getFullyQualifiedNames();
+        JavaSolution solution = options.getSolution();
         IILogger.notify(listener, "Building graphs...", 0);
 
         List<T> trees;
@@ -59,20 +37,19 @@ public abstract class GraphService<T extends Hierarchy> implements IGraphService
                     break;
                 if (fullyQualifiedNames.contains(hierachy.getFullElementName())) {
                     trees.add(hierachy);
-                    continue;
                 }
             }
             if (trees.size() != fullyQualifiedNames.size()) {
                 throw new GraphBuildException("Could not find the all of the specified metrics...");
             }
         }
-        List<JungGraph> graphs = buildGraphs(trees, width, height, limit, useFullName, listener);
+        List<JungGraph> graphs = buildGraphs(trees, options, listener);
         listener.onGraphsLoaded(graphs);
     }
 
     protected abstract List<T> getHierarchies(JavaSolution solution);
 
-    protected abstract List<JungGraph> buildGraphs(List<T> trees, Integer width, Integer height, Integer limit, boolean useFullName, GraphLoadListener listener) throws GraphBuildException;
+    abstract List<JungGraph> buildGraphs(List<T> trees, GraphOptions options, GraphLoadListener listener) throws GraphBuildException;
 
     void updateProgress(int currentIndex, int graphCount, GraphLoadListener listener) {
         int progress = (int) (((double) currentIndex / graphCount) * 100);

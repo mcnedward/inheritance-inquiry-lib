@@ -5,6 +5,7 @@ import static org.junit.Assert.assertThat;
 
 import com.mcnedward.ii.listener.GraphLoadListener;
 import com.mcnedward.ii.service.graph.IGraphService;
+import com.mcnedward.ii.service.graph.element.GraphOptions;
 import com.mcnedward.ii.service.graph.jung.JungGraph;
 import com.mcnedward.ii.utils.ServiceFactory;
 import org.junit.Test;
@@ -43,9 +44,11 @@ public class GraphServiceTest extends ProjectTest {
 		solution.addDitHierarchy(hierarchy);
 
 		IGraphService service = ServiceFactory.ditGraphService();
+        GraphOptions options = new GraphOptions();
+        options.setSolution(solution);
 
 		// Act
-		service.buildHierarchyGraphs(solution, new GraphLoadListener() {
+		service.buildHierarchyGraphs(options, new GraphLoadListener() {
             @Override
             public void onGraphsLoaded(List<JungGraph> graphs) {
                 // Assert
@@ -89,9 +92,11 @@ public class GraphServiceTest extends ProjectTest {
 		solution.addDitHierarchy(hierarchy);
 		
 		IGraphService service = ServiceFactory.ditGraphService();
+        GraphOptions options = new GraphOptions();
+        options.setSolution(solution);
 
 		// Act
-        service.buildHierarchyGraphs(solution, new GraphLoadListener() {
+        service.buildHierarchyGraphs(options, new GraphLoadListener() {
             @Override
             public void onGraphsLoaded(List<JungGraph> graphs) {
                 // Assert

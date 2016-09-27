@@ -2,8 +2,9 @@ package com.mcnedward.ii.service.graph.jung;
 
 import com.mcnedward.ii.exception.GraphBuildException;
 import com.mcnedward.ii.service.graph.element.Edge;
-import com.mcnedward.ii.service.graph.element.GType;
+import com.mcnedward.ii.service.graph.element.GraphOptions;
 import com.mcnedward.ii.service.graph.element.Node;
+import com.mcnedward.ii.utils.IILogger;
 import com.mcnedward.ii.utils.IIUtils;
 import edu.uci.ics.jung.algorithms.layout.TreeLayout;
 import edu.uci.ics.jung.graph.DelegateForest;
@@ -14,6 +15,7 @@ import edu.uci.ics.jung.visualization.control.CrossoverScalingControl;
 import edu.uci.ics.jung.visualization.control.DefaultModalGraphMouse;
 import edu.uci.ics.jung.visualization.control.ModalGraphMouse;
 import edu.uci.ics.jung.visualization.control.ScalingControl;
+import edu.uci.ics.jung.visualization.renderers.DefaultEdgeLabelRenderer;
 import edu.uci.ics.jung.visualization.renderers.DefaultVertexLabelRenderer;
 import edu.uci.ics.jung.visualization.renderers.Renderer;
 import edu.uci.ics.jung.visualization.util.VertexShapeFactory;
@@ -46,52 +48,36 @@ public class JungGraph {
 
     private String mFullyQualifiedName;
     private String mElementName;
-    private GType mType;
-    // Distance between graphs
-    private static final int DEFAULT_WIDTH = 500;
-    private static final int DEFAULT_HEIGHT = 400;
-    private static final int DEFAULT_X_DIST = 200;
-    private static final int DEFAULT_Y_DIST = 100;
-    private int mWidth, mHeight, mXDist, mYDist;
+    private int mXDist, mYDist;
 
     public JungGraph(String fullyQualifiedName) {
-        this(fullyQualifiedName, null, null, DEFAULT_X_DIST, DEFAULT_Y_DIST);
+        this(fullyQualifiedName, new GraphOptions());
     }
 
-    public JungGraph(String fullyQualifiedName, GType type) {
-        this(fullyQualifiedName, null, null, DEFAULT_X_DIST, DEFAULT_Y_DIST);
-        mType = type;
-    }
-
-    public JungGraph(String fullyQualifiedName, Integer width, Integer height) {
-        this(fullyQualifiedName, width, height, DEFAULT_X_DIST, DEFAULT_Y_DIST);
-    }
-
-    public JungGraph(String fullyQualifiedName, Integer width, Integer height, Integer xDist, Integer yDist) {
+    public JungGraph(String fullyQualifiedName, GraphOptions options) {
         mFullyQualifiedName = fullyQualifiedName;
         mElementName = IIUtils.getElementNameFromPackage(fullyQualifiedName);
-        mWidth = width == null ? DEFAULT_WIDTH : width;
-        mHeight = height == null ? DEFAULT_HEIGHT : height;
-        mXDist = xDist == null ? DEFAULT_X_DIST : xDist;
-        mYDist = yDist == null ? DEFAULT_Y_DIST : yDist;
-        mType = GType.H_TREE;
+        mXDist = options.getXDist();
+        mYDist = options.getYDist();
         mGraph = new DirectedSparseMultigraph<>();
         mNodeMap = new TreeMap<>();
         mEdgeMap = new TreeMap<>();
     }
 
+    public void update(GraphOptions options) throws GraphBuildException {
+        initializeComponents(options);
+        configure(mViewer, options);
+        configure(mImageServer, options);
+    }
+
     public void plotGraph(List<Node> nodes, List<Edge> edges) throws GraphBuildException {
         buildGraph(nodes, edges);
-        initializeComponents();
-        configure(mViewer);
-        configure(mImageServer);
+        update(new GraphOptions());
     }
 
     public void plotGraph(Stack<Node> nodes, Stack<Edge> edges) throws GraphBuildException {
         buildGraph(nodes, edges);
-        initializeComponents();
-        configure(mViewer);
-        configure(mImageServer);
+        update(new GraphOptions());
     }
 
     public BufferedImage createImage() {
@@ -105,9 +91,9 @@ public class JungGraph {
         mScaler.scale(mViewer, zoom > 0 ? 1.1f : 1 / 1.1f, mViewer.getCenter());
     }
 
-    private void initializeComponents() {
+    private void initializeComponents(GraphOptions options) {
         mForest = new DelegateForest<>(mGraph);
-        mLayout = new TreeLayout<>(mForest, mXDist, mYDist);
+        mLayout = new TreeLayout<>(mForest, options.getXDist(), options.getYDist());
         initializeLayout(mLayout);
 
         mViewer = new VisualizationViewer<>(mLayout);
@@ -131,21 +117,24 @@ public class JungGraph {
         // Override this in subclasses, if needed
     }
 
-    private void configure(BasicVisualizationServer<String, String> server) throws GraphBuildException {
+    private void configure(BasicVisualizationServer<String, String> server, GraphOptions options) throws GraphBuildException {
         try {
             server.setBackground(Color.WHITE);
             RenderContext<String, String> context = server.getRenderContext();
 
+            context.setVertexFontTransformer(vertexFontTransformer(mViewer, options));
             context.setVertexLabelTransformer(vertexLabelTransformer(mNodeMap));
-            context.setVertexLabelRenderer(vertexLabelRenderer(mNodeMap));
-            context.setVertexShapeTransformer(vertexShapeTransformer(mViewer, mNodeMap));
-            context.setVertexFillPaintTransformer(vertexFillPaintTransformer());
+            context.setVertexLabelRenderer(vertexLabelRenderer(mNodeMap, options));
+            context.setVertexShapeTransformer(vertexShapeTransformer(mViewer, mNodeMap, options));
+            context.setVertexFillPaintTransformer(vertexFillPaintTransformer(options));
             server.getRenderer().getVertexLabelRenderer().setPosition(Renderer.VertexLabel.Position.CNTR);
 
             context.setEdgeStrokeTransformer(edgeStrokeTransformer());
             context.setEdgeLabelTransformer(edgeLabelTransformer());
-            context.setArrowDrawPaintTransformer(arrowFillPaintTransformer());
-            context.setArrowFillPaintTransformer(arrowFillPaintTransformer());
+            context.setEdgeLabelRenderer(edgeLabelRenderer(options));
+
+            context.setArrowDrawPaintTransformer(arrowFillPaintTransformer(options));
+            context.setArrowFillPaintTransformer(arrowFillPaintTransformer(options));
             server.getRenderer().setEdgeRenderer(new ReverseEdgeRenderer<>());
         } catch (Exception e) {
             throw new GraphBuildException("There was a problem configuring the graph...", e);
@@ -176,26 +165,31 @@ public class JungGraph {
         }
     }
 
-    protected Transformer<String, Paint> vertexFillPaintTransformer() {
+    protected Transformer<String,Font> vertexFontTransformer(VisualizationViewer<String, String> vv, GraphOptions options) {
+        return s -> vv.getFont().deriveFont(options.getFont().getSize());
+    }
+
+    protected Transformer<String, Paint> vertexFillPaintTransformer(GraphOptions options) {
         return nodeName -> {
             Node node = mNodeMap.get(nodeName);
             if (node.isInterface())
                 return Color.LIGHT_GRAY;
-            else
-                return new Color(80, 95, 110);
+            else {
+                return options.getVertexFillPaint() == null ? new Color(80, 95, 110) : options.getVertexFillPaint();
+            }
         };
     }
 
-    protected Transformer<String, Shape> vertexShapeTransformer(VisualizationViewer<String, String> vv, Map<String, Node> nodeMap) {
-        final FontMetrics fm = vv.getFontMetrics(vv.getFont());
+    protected Transformer<String, Shape> vertexShapeTransformer(VisualizationViewer<String, String> vv, Map<String, Node> nodeMap, GraphOptions options) {
+        final FontMetrics fm = vv.getFontMetrics(options.getFont());
         return vertexName -> {
             Node node = nodeMap.get(vertexName);
             float width = fm.stringWidth(node.name()) * 1.25f;
             float height = fm.getHeight() * 1.25f;
             float x = -(width / 2.0f);
             float y = -(height / 2.0f);
-            new VertexShapeFactory<String>().getRectangle(vertexName);
             Rectangle2D rect = new Rectangle2D.Double(x, y, width, height);
+            IILogger.info("Font size %s width %s", fm.getFont().getSize(), width);
             return rect;
         };
     }
@@ -207,7 +201,7 @@ public class JungGraph {
         };
     }
 
-    protected DefaultVertexLabelRenderer vertexLabelRenderer(Map<String, Node> nodeMap) {
+    protected DefaultVertexLabelRenderer vertexLabelRenderer(Map<String, Node> nodeMap, GraphOptions options) {
         return new DefaultVertexLabelRenderer(Color.BLACK) {
             private static final long serialVersionUID = 1909972527171078432L;
 
@@ -227,14 +221,7 @@ public class JungGraph {
                     fontStyle = Font.PLAIN;
                 }
 
-                Font currentFont;
-                if (font != null) {
-                    currentFont = font;
-                } else {
-                    currentFont = vv.getFont();
-                }
-                Font theFont = new Font(currentFont.getName(), fontStyle, 14);
-                setFont(theFont);
+                setFont(new Font(options.getFont().getName(), fontStyle, options.getFont().getSize()));
                 setIcon(null);
                 setBorder(noFocusBorder);
                 setValue(nodeName);
@@ -279,7 +266,21 @@ public class JungGraph {
         };
     }
 
-    protected final Transformer<String, Paint> arrowFillPaintTransformer() {
+    protected DefaultEdgeLabelRenderer edgeLabelRenderer(GraphOptions options) {
+        return new DefaultEdgeLabelRenderer(Color.BLACK) {
+            @Override
+            public <E> Component getEdgeLabelRendererComponent(JComponent vv, Object nodeName, Font font, boolean isSelected, E edge) {
+                super.setForeground(Color.BLACK);
+                setFont(options.getFont());
+                setIcon(null);
+                setBorder(noFocusBorder);
+                setValue(nodeName);
+                return this;
+            }
+        };
+    }
+
+    protected final Transformer<String, Paint> arrowFillPaintTransformer(GraphOptions options) {
         return edgeName -> {
             Edge edge = mEdgeMap.get(edgeName);
             if (edge.isImplements())
@@ -295,10 +296,6 @@ public class JungGraph {
 
     public String getFullyQualifiedElementName() {
         return mFullyQualifiedName;
-    }
-
-    public GType getType() {
-        return mType;
     }
 
     public GraphZoomScrollPane getGraphPane() {
