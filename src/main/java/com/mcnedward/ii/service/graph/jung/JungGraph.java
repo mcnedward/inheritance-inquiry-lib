@@ -4,7 +4,6 @@ import com.mcnedward.ii.exception.GraphBuildException;
 import com.mcnedward.ii.service.graph.element.Edge;
 import com.mcnedward.ii.service.graph.element.GraphOptions;
 import com.mcnedward.ii.service.graph.element.Node;
-import com.mcnedward.ii.utils.IILogger;
 import com.mcnedward.ii.utils.IIUtils;
 import edu.uci.ics.jung.algorithms.layout.TreeLayout;
 import edu.uci.ics.jung.graph.DelegateForest;
@@ -22,8 +21,10 @@ import org.apache.commons.collections15.Transformer;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.geom.Ellipse2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.List;
 import java.util.Map;
@@ -45,19 +46,15 @@ public class JungGraph {
     private Map<String, Node> mNodeMap;
     private Map<String, Edge> mEdgeMap;
 
+    private GraphOptions mGraphOptions;
     private String mFullyQualifiedName;
     private String mElementName;
-    private int mXDist, mYDist;
+    private boolean mInitialized;
 
-    public JungGraph(String fullyQualifiedName) {
-        this(fullyQualifiedName, new GraphOptions());
-    }
-
-    public JungGraph(String fullyQualifiedName, GraphOptions options) {
+    public JungGraph(String fullyQualifiedName, String name, GraphOptions options) {
         mFullyQualifiedName = fullyQualifiedName;
-        mElementName = IIUtils.getElementNameFromPackage(fullyQualifiedName);
-        mXDist = options.getXDist();
-        mYDist = options.getYDist();
+        mElementName = name;
+        mGraphOptions = options;
         mGraph = new DirectedSparseMultigraph<>();
         mNodeMap = new TreeMap<>();
         mEdgeMap = new TreeMap<>();
@@ -71,12 +68,12 @@ public class JungGraph {
 
     public void plotGraph(List<Node> nodes, List<Edge> edges) throws GraphBuildException {
         buildGraph(nodes, edges);
-        update(new GraphOptions());
+        update(mGraphOptions);
     }
 
     public void plotGraph(Stack<Node> nodes, Stack<Edge> edges) throws GraphBuildException {
         buildGraph(nodes, edges);
-        update(new GraphOptions());
+        update(mGraphOptions);
     }
 
     public BufferedImage createImage() {
@@ -106,13 +103,16 @@ public class JungGraph {
         mViewer.setGraphMouse(gm);
 
         mScaler = new CrossoverScalingControl();
-        mViewer.scaleToLayout(mScaler);
+        if (!mInitialized) {
+            mInitialized = true;
+            mViewer.scaleToLayout(mScaler);
+        }
 
         mImageServer = new VisualizationImageServer<>(mViewer.getGraphLayout(), mViewer.getGraphLayout().getSize());
         mGraphPane = new GraphZoomScrollPane(mViewer);
     }
 
-    protected void initializeLayout(TreeLayout layout) {
+    void initializeLayout(TreeLayout layout) {
         // Override this in subclasses, if needed
     }
 
@@ -122,14 +122,14 @@ public class JungGraph {
             RenderContext<String, String> context = server.getRenderContext();
 
             context.setVertexFontTransformer(vertexFontTransformer(mViewer, options));
-            context.setVertexLabelTransformer(vertexLabelTransformer(mNodeMap));
+            context.setVertexLabelTransformer(vertexLabelTransformer(mNodeMap, options));
             context.setVertexLabelRenderer(vertexLabelRenderer(mNodeMap, options));
             context.setVertexShapeTransformer(vertexShapeTransformer(mViewer, mNodeMap, options));
             context.setVertexFillPaintTransformer(vertexFillPaintTransformer(options));
             server.getRenderer().getVertexLabelRenderer().setPosition(Renderer.VertexLabel.Position.CNTR);
 
             context.setEdgeStrokeTransformer(edgeStrokeTransformer());
-            context.setEdgeLabelTransformer(edgeLabelTransformer());
+            context.setEdgeLabelTransformer(edgeLabelTransformer(options));
             context.setEdgeLabelRenderer(edgeLabelRenderer(options));
 
             context.setArrowDrawPaintTransformer(arrowFillPaintTransformer(options));
@@ -183,20 +183,39 @@ public class JungGraph {
         final FontMetrics fm = vv.getFontMetrics(options.getFont());
         return vertexName -> {
             Node node = nodeMap.get(vertexName);
-            float width = fm.stringWidth(node.name()) * 1.25f;
+            Shape shape;
+            String name = options.useFullName() ? node.fullName() : node.name();
+            float width = fm.stringWidth(name) * 1.25f;
             float height = fm.getHeight() * 1.25f;
             float x = -(width / 2.0f);
             float y = -(height / 2.0f);
-            Rectangle2D rect = new Rectangle2D.Double(x, y, width, height);
-            IILogger.info("Font size %s width %s", fm.getFont().getSize(), width);
-            return rect;
+            switch (options.getGraphShape()) {
+                case RECT: {
+                    shape = new Rectangle2D.Double(x, y, width, height);
+                    break;
+                }
+                case ROUNDED_RECT: {
+                    shape = new RoundRectangle2D.Double(x, y, width, height, width / 10, height / 10);
+                    break;
+                }
+                case CIRCLE: {
+                    height = fm.getHeight() * 2f;
+                    shape = new Ellipse2D.Double(x, y, width, height);
+                    break;
+                }
+                default: {
+                    shape = new Rectangle2D.Double(x, y, width, height);
+                    break;
+                }
+            }
+            return shape;
         };
     }
 
-    protected Transformer<String, String> vertexLabelTransformer(Map<String, Node> nodeMap) {
+    protected Transformer<String, String> vertexLabelTransformer(Map<String, Node> nodeMap, GraphOptions options) {
         return nodeName -> {
             Node node = nodeMap.get(nodeName);
-            return node.name();
+            return options.useFullName() ? node.fullName() : node.name();
         };
     }
 
@@ -258,11 +277,8 @@ public class JungGraph {
         };
     }
 
-    protected final Transformer<String, String> edgeLabelTransformer() {
-        return edgeName -> {
-            Edge edge = mEdgeMap.get(edgeName);
-            return edge.name();
-        };
+    protected final Transformer<String, String> edgeLabelTransformer(GraphOptions options) {
+        return edgeName -> options.showEdgeLabel() ? mEdgeMap.get(edgeName).name() : "";
     }
 
     protected DefaultEdgeLabelRenderer edgeLabelRenderer(GraphOptions options) {

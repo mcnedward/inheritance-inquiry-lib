@@ -98,6 +98,7 @@ public class GraphBuilder extends Builder {
     @Override
     protected void reset() {
         mGraphService = null;
+        mOptions = null;
         mGraphs = null;
         mDirectory = null;
         mUsePackages = false;

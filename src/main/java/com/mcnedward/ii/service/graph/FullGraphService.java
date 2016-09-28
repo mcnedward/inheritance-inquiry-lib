@@ -29,12 +29,12 @@ public class FullGraphService extends GraphService<FullHierarchy> {
         for (int i = 0; i < trees.size(); i++) {
             FullHierarchy tree = trees.get(i);
             updateProgress(i + 1, trees.size(), listener);
-            Node parentNode = new Node(tree, useFullName);
+            Node parentNode = new Node(tree);
             nodes.add(parentNode);
             // Create an individual graph for each hierarchy tree
-            recurseFullHierarchyTrees(tree, parentNode, nodes, edges, useFullName);
+            recurseFullHierarchyTrees(tree, parentNode, nodes, edges);
 
-            JungGraph graph = new JungGraph(tree.getFullElementName(), options);
+            JungGraph graph = new JungGraph(tree.getFullElementName(), tree.getElementName(), options);
             graph.plotGraph(nodes, edges);
             graphs.add(graph);
 
@@ -49,27 +49,27 @@ public class FullGraphService extends GraphService<FullHierarchy> {
         return solution.getFullHierarchies();
     }
 
-    private void recurseFullHierarchyTrees(FullHierarchy tree, Node parentNode, List<Node> nodes, List<Edge> edges, boolean useFullName) {
+    private void recurseFullHierarchyTrees(FullHierarchy tree, Node parentNode, List<Node> nodes, List<Edge> edges) {
         Collection<FullHierarchy> subTrees = tree.getExts();
         for (FullHierarchy subclass : subTrees) {
 
-            Node childNode = new Node(subclass, useFullName);
+            Node childNode = new Node(subclass);
             nodes.add(childNode);
             Edge edge = new Edge("extends", parentNode, childNode);
             edge.setTitle(String.format("%s extends %s", tree.getElementName(), subclass.getElementName()));
             edges.add(edge);
 
-            recurseFullHierarchyTrees(subclass, childNode, nodes, edges, useFullName);
+            recurseFullHierarchyTrees(subclass, childNode, nodes, edges);
         }
         Collection<FullHierarchy> implTrees = tree.getImpls();
         for (FullHierarchy impl : implTrees) {
             String element = impl.getElementName();
 
-            Node childNode = new Node(impl, useFullName);
+            Node childNode = new Node(impl);
             nodes.add(childNode);
             edges.add(new Edge("implements", parentNode, childNode, true));
 
-            recurseFullHierarchyTrees(impl, childNode, nodes, edges, useFullName);
+            recurseFullHierarchyTrees(impl, childNode, nodes, edges);
         }
     }
 }

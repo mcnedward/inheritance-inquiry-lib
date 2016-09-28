@@ -24,7 +24,6 @@ public class DitGraphService extends GraphService<DitHierarchy> {
         List<Edge> edges = new ArrayList<>();
 
         Integer limit = options.getLimit();
-        boolean useFullName = options.useFullName();
         for (int i = 0; i < trees.size(); i++) {
             DitHierarchy tree = trees.get(i);
             updateProgress(i + 1, trees.size(), listener);
@@ -36,11 +35,11 @@ public class DitGraphService extends GraphService<DitHierarchy> {
 //            if (tree.getElementName().contains("<") && tree.getElementName().contains(">"))
 //                continue;
 
-            Node parent = new Node(tree, useFullName);
+            Node parent = new Node(tree);
             nodes.add(parent);
-            recurseDit(tree.getAncestors(), nodes, edges, parent, useFullName);
+            recurseDit(tree.getAncestors(), nodes, edges, parent);
 
-            JungGraph graph = new JungGraph(tree.getFullElementName(), options);
+            JungGraph graph = new JungGraph(tree.getFullElementName(), tree.getElementName(), options);
             graph.plotGraph(nodes, edges);
             graphs.add(graph);
 
@@ -55,18 +54,18 @@ public class DitGraphService extends GraphService<DitHierarchy> {
         return solution.getDitHierarchies();
     }
 
-    private void recurseDit(List<DitHierarchy> ancestors, List<Node> nodes, List<Edge> edges, Node parentNode, boolean useFullName) {
+    private void recurseDit(List<DitHierarchy> ancestors, List<Node> nodes, List<Edge> edges, Node parentNode) {
         if (ancestors.isEmpty())
             return;
         for (DitHierarchy ditH : ancestors) {
-            Node hierarchyNode = new Node(ditH, useFullName);
+            Node hierarchyNode = new Node(ditH);
             nodes.add(hierarchyNode);
 
             Edge edge = new Edge(String.valueOf(ditH.getInheritedMethodCount()), hierarchyNode, parentNode);
             edge.setTitle(String.format("Inherited method count: %s", ditH.getInheritedMethodCount()));
             edges.add(edge);
 
-            recurseDit(ditH.getAncestors(), nodes, edges, hierarchyNode, useFullName);
+            recurseDit(ditH.getAncestors(), nodes, edges, hierarchyNode);
         }
     }
 

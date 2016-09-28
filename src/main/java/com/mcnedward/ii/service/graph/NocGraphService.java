@@ -31,7 +31,6 @@ public class NocGraphService extends GraphService<NocHierarchy> {
         Stack<Edge> edges = new Stack<>();
 
         Integer limit = options.getLimit();
-        boolean useFullName = options.useFullName();
         for (int i = 0; i < trees.size(); i++) {
             NocHierarchy tree = trees.get(i);
             updateProgress(i + 1, trees.size(), listener);
@@ -39,13 +38,12 @@ public class NocGraphService extends GraphService<NocHierarchy> {
             if (limit != null) {
                 if (tree.getNoc() < limit) continue;
             }
-            String nodeName = useFullName ? tree.getFullElementName() : tree.getElementName();
-            Node parentNode = new Node(tree, useFullName);
+            Node parentNode = new Node(tree);
             nodes.add(parentNode);
             // Create an individual graph for each hierarchy tree
-            recurseHierarchyTrees(tree, parentNode, nodes, edges, useFullName);
+            recurseHierarchyTrees(tree, parentNode, nodes, edges);
 
-            JungGraph graph = new JungGraph(nodeName, options);
+            JungGraph graph = new JungGraph(tree.getFullElementName(), tree.getElementName(), options);
             graph.plotGraph(nodes, edges);
             graphs.add(graph);
 
@@ -60,17 +58,17 @@ public class NocGraphService extends GraphService<NocHierarchy> {
         return solution.getNocHierarchies();
     }
 
-    private void recurseHierarchyTrees(NocHierarchy tree, Node parentNode, Stack<Node> nodes, Stack<Edge> edges, boolean useFullName) {
+    private void recurseHierarchyTrees(NocHierarchy tree, Node parentNode, Stack<Node> nodes, Stack<Edge> edges) {
         Stack<NocHierarchy> hierarchyTree = (Stack<NocHierarchy>) tree.getTree().clone();
         while (!hierarchyTree.isEmpty()) {
             NocHierarchy childTree = hierarchyTree.pop();
-            Node childNode = new Node(childTree, useFullName);
+            Node childNode = new Node(childTree);
             nodes.add(childNode);
             Edge edge = new Edge(String.valueOf(childTree.getInheritedMethodCount()), parentNode, childNode);
             edge.setTitle(String.format("Inherited method count: %s", childTree.getInheritedMethodCount()));
             edges.add(edge);
 
-            recurseHierarchyTrees(childTree, childNode, nodes, edges, useFullName);
+            recurseHierarchyTrees(childTree, childNode, nodes, edges);
         }
     }
 }

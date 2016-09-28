@@ -11,14 +11,13 @@ public class Node implements IGraphItem {
 	private int mId;
 	private String mName;
     private String mFullyQualifiedName;
-	private boolean mUseFullName, mIsInterface;
+	private boolean mIsInterface;
 
-	public Node(Hierarchy hierarchy, boolean useFullName) {
+	public Node(Hierarchy hierarchy) {
 		mId = NODE_ID++;
 		mName = hierarchy.getElementName();
         mFullyQualifiedName = hierarchy.getFullElementName();
         mIsInterface = hierarchy.isInterface();
-        mUseFullName = useFullName;
 	}
 
 	@Override
@@ -28,7 +27,7 @@ public class Node implements IGraphItem {
 	
 	@Override
 	public String name() {
-		return mUseFullName ? mFullyQualifiedName : mName;
+		return mName;
 	}
 
 	public String fullName() {

@@ -126,10 +126,10 @@ public abstract class GraphService<T extends Hierarchy> implements IGraphService
 //		for (Map.Entry<String, List<SolutionMethod>> entry : solution.getEMethods().entrySet()) {
 //			methods.addAll(entry.getValue());
 //		}
-//		buildMethodsGraph(solution, methods, GType.EMETHODS);
+//		buildMethodsGraph(solution, methods, GraphShape.EMETHODS);
 //	}
 //
-//	public void buildMethodsGraph(JavaSolution solution, Collection<SolutionMethod> methods, GType graphType) throws GraphBuildException {
+//	public void buildMethodsGraph(JavaSolution solution, Collection<SolutionMethod> methods, GraphShape graphShape) throws GraphBuildException {
 //		IILogger.info("Building graph for solution methods in solution %s...", solution.getSystemName());
 //		List<Node> nodes = new ArrayList<>();
 //		List<Edge> edges = new ArrayList<>();
@@ -153,6 +153,6 @@ public abstract class GraphService<T extends Hierarchy> implements IGraphService
 //		JungGraph graph = new JungGraph("Methods");
 //		graph.plotGraph(nodes, edges);
 //		BufferedImage image = graph.createImage();
-//		writeToFile(solution, graphType, image);
+//		writeToFile(solution, graphShape, image);
 //	}
 }

@@ -1,6 +1,7 @@
 package com.mcnedward.ii.service.graph.element;
 
 import com.mcnedward.ii.element.JavaSolution;
+import com.mcnedward.ii.service.graph.GraphService;
 
 import java.awt.*;
 import java.util.Collection;
@@ -21,6 +22,7 @@ public class GraphOptions {
     public static final Color DEFAULT_INTERFACE_LABEL_COLOR = Color.BLACK;
     public static final Color DEFAULT_INTERFACE_ARROW_COLOR = Color.WHITE;
     public static final Color DEFAULT_INTERFACE_EDGE_COLOR = Color.WHITE;
+    public static final GraphShape DEFAULT_GRAPH_SHAPE = GraphShape.RECT;
 
     private JavaSolution mSolution;
     private Collection<String> mFullyQualifiedNames;
@@ -31,35 +33,35 @@ public class GraphOptions {
     private Integer mYDist;
     private Font mFont;
     private Color mLabelColor, mFontColor, mArrowColor, mEdgeColor, mInterfaceLabelColor, mInterfaceArrowColor, mInterfaceEdgeColor;
-    private boolean mUseFullName;
+    private GraphShape mGraphShape;
+    private boolean mUseFullName, mShowEdgeLabel;
 
     public GraphOptions() {
-        this(DEFAULT_X_DIST, DEFAULT_Y_DIST, DEFAULT_FONT_SIZE, DEFAULT_FONT_COLOR, DEFAULT_LABEL_COLOR, DEFAULT_ARROW_COLOR, DEFAULT_EDGE_COLOR, DEFAULT_INTERFACE_LABEL_COLOR, DEFAULT_INTERFACE_ARROW_COLOR, DEFAULT_INTERFACE_EDGE_COLOR);
+        this(DEFAULT_X_DIST, DEFAULT_Y_DIST, DEFAULT_FONT_SIZE, DEFAULT_FONT_COLOR, DEFAULT_LABEL_COLOR, DEFAULT_ARROW_COLOR, DEFAULT_EDGE_COLOR, DEFAULT_INTERFACE_LABEL_COLOR, DEFAULT_INTERFACE_ARROW_COLOR, DEFAULT_INTERFACE_EDGE_COLOR, DEFAULT_GRAPH_SHAPE);
     }
 
-    public GraphOptions(Integer xDist, Integer yDist, Integer fontSize, Color fontColor, Color labelColor, Color arrowColor, Color edgeColor) {
-        this(xDist, yDist, fontSize, fontColor, labelColor, arrowColor, edgeColor, DEFAULT_INTERFACE_LABEL_COLOR, DEFAULT_INTERFACE_ARROW_COLOR, DEFAULT_INTERFACE_EDGE_COLOR);
+    public GraphOptions(Integer xDist, Integer yDist, Integer fontSize, Color fontColor, Color labelColor, Color arrowColor, Color edgeColor, GraphShape graphShape) {
+        this(xDist, yDist, fontSize, fontColor, labelColor, arrowColor, edgeColor, DEFAULT_INTERFACE_LABEL_COLOR, DEFAULT_INTERFACE_ARROW_COLOR, DEFAULT_INTERFACE_EDGE_COLOR, graphShape);
     }
 
-    public GraphOptions(Integer xDist, Integer yDist, Integer fontSize, Color fontColor, Color labelColor, Color arrowColor, Color edgeColor, Color interfaceLabelColor, Color interfaceArrowColor, Color interfaceEdgeColor) {
+    public GraphOptions(Integer xDist, Integer yDist, Integer fontSize, Color fontColor, Color labelColor, Color arrowColor, Color edgeColor, Color interfaceLabelColor, Color interfaceArrowColor, Color interfaceEdgeColor, GraphShape graphShape) {
         mXDist = xDist;
         mYDist = yDist;
         mFont = new Font("Segoe UI", Font.PLAIN, fontSize);
-        mLabelColor = labelColor;
-        mFontColor = fontColor;
-        mArrowColor = arrowColor;
-        mEdgeColor = edgeColor;
+        mFontColor = fontColor == null ? DEFAULT_FONT_COLOR : fontColor;
+        mLabelColor = labelColor == null ? DEFAULT_LABEL_COLOR : labelColor;
+        mArrowColor = arrowColor == null ? DEFAULT_ARROW_COLOR : arrowColor;
+        mEdgeColor = edgeColor == null ? DEFAULT_EDGE_COLOR : edgeColor;
         mInterfaceLabelColor = interfaceLabelColor;
         mInterfaceArrowColor = interfaceArrowColor;
         mInterfaceEdgeColor = interfaceEdgeColor;
+        mGraphShape = graphShape;
     }
 
     public GraphOptions(JavaSolution solution, Collection<String> fullyQualifiedNames, Integer xDist, Integer yDist, Integer fontSize, boolean useFullName) {
-        this(xDist, yDist, fontSize, DEFAULT_FONT_COLOR, DEFAULT_LABEL_COLOR, DEFAULT_ARROW_COLOR, DEFAULT_EDGE_COLOR, DEFAULT_INTERFACE_LABEL_COLOR, DEFAULT_INTERFACE_ARROW_COLOR, DEFAULT_INTERFACE_EDGE_COLOR);
+        this(xDist, yDist, fontSize, DEFAULT_FONT_COLOR, DEFAULT_LABEL_COLOR, DEFAULT_ARROW_COLOR, DEFAULT_EDGE_COLOR, DEFAULT_INTERFACE_LABEL_COLOR, DEFAULT_INTERFACE_ARROW_COLOR, DEFAULT_INTERFACE_EDGE_COLOR, DEFAULT_GRAPH_SHAPE);
         mSolution = solution;
         mFullyQualifiedNames = fullyQualifiedNames;
-        mXDist = xDist;
-        mYDist = yDist;
         mUseFullName = useFullName;
     }
 
@@ -187,12 +189,28 @@ public class GraphOptions {
         mInterfaceEdgeColor = interfaceEdgeColor;
     }
 
+    public GraphShape getGraphShape() {
+        return mGraphShape;
+    }
+
+    public void setGraphShape(GraphShape graphShape) {
+        mGraphShape = graphShape;
+    }
+
     public boolean useFullName() {
         return mUseFullName;
     }
 
     public void setUseFullName(boolean useFullName) {
         mUseFullName = useFullName;
+    }
+
+    public boolean showEdgeLabel() {
+        return mShowEdgeLabel;
+    }
+
+    public void setShowEdgeLabel(boolean showEdgeLabel) {
+        mShowEdgeLabel = showEdgeLabel;
     }
 
 }
