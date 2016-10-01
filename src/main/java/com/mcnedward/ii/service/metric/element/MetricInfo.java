@@ -1,8 +1,8 @@
 package com.mcnedward.ii.service.metric.element;
 
-import java.util.List;
+import com.mcnedward.ii.service.metric.MetricType;
 
-import com.mcnedward.ii.service.metric.MType;
+import java.util.List;
 
 /**
  * TODO: This is being used for metrics and methods, need to probably redo this later on
@@ -11,7 +11,7 @@ import com.mcnedward.ii.service.metric.MType;
  */
 public class MetricInfo {
 
-	private MType mMetricType;
+	private MetricType mMetricType;
 	private int mMin;
 	private double mAverage;
 	private int mMax;
@@ -24,7 +24,7 @@ public class MetricInfo {
 		mMaxClasses = maxClasses;
 	}
 	
-	public MetricInfo(MType metricType, int min, double average, int max, List<String> maxClasses) {
+	public MetricInfo(MetricType metricType, int min, double average, int max, List<String> maxClasses) {
 		mMetricType = metricType;
 		mMin = min;
 		mAverage = average;
@@ -32,7 +32,7 @@ public class MetricInfo {
 		mMaxClasses = maxClasses;
 	}
 
-	public MType getMetricType() {
+	public MetricType getMetricType() {
 		return mMetricType;
 	}
 

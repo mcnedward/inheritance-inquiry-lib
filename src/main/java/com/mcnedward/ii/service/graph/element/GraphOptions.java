@@ -19,7 +19,7 @@ public class GraphOptions {
     public static final Color DEFAULT_FONT_COLOR = Color.BLACK;
     public static final Color DEFAULT_ARROW_COLOR = Color.BLACK;
     public static final Color DEFAULT_EDGE_COLOR = Color.BLACK;
-    public static final Color DEFAULT_INTERFACE_LABEL_COLOR = Color.BLACK;
+    public static final Color DEFAULT_INTERFACE_LABEL_COLOR = new Color(140, 160, 200);
     public static final Color DEFAULT_INTERFACE_ARROW_COLOR = Color.WHITE;
     public static final Color DEFAULT_INTERFACE_EDGE_COLOR = Color.WHITE;
     public static final GraphShape DEFAULT_GRAPH_SHAPE = GraphShape.RECT;

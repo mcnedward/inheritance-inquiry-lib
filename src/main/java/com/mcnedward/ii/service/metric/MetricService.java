@@ -65,17 +65,17 @@ public final class MetricService implements IMetricService {
         JavaSolution solution = options.getSolution();
         String initialDetails = buildInitialDetails(solution);
 
-        String ditLevels = buildMetricLevels(solution, MType.DIT);
-        String ditInfo = buildMetricInfo(solution, MType.DIT);
+        String ditLevels = buildMetricLevels(solution, MetricType.DIT);
+        String ditInfo = buildMetricInfo(solution, MetricType.DIT);
 
-        String nocLevels = buildMetricLevels(solution, MType.NOC);
-        String nocInfo = buildMetricInfo(solution, MType.NOC);
+        String nocLevels = buildMetricLevels(solution, MetricType.NOC);
+        String nocInfo = buildMetricInfo(solution, MetricType.NOC);
 
-        String wmcLevels = buildMetricLevels(solution, MType.WMC);
-        String wmcInfo = buildMetricInfo(solution, MType.WMC);
+        String wmcLevels = buildMetricLevels(solution, MetricType.WMC);
+        String wmcInfo = buildMetricInfo(solution, MetricType.WMC);
 
-        String oMethodInfo = buildMetricInfo(solution, MType.OM);
-        String eMethodInfo = buildMetricInfo(solution, MType.EM);
+        String oMethodInfo = buildMetricInfo(solution, MetricType.OM);
+        String eMethodInfo = buildMetricInfo(solution, MetricType.EM);
 
         String fileName = String.format("%s_%s", solution.getProjectName(), "FullMetrics");
         writeExcel(options, fileName, initialDetails, ditLevels, ditInfo, nocLevels, nocInfo, wmcLevels, wmcInfo, oMethodInfo,
@@ -111,7 +111,7 @@ public final class MetricService implements IMetricService {
         return buildExcel(columns, rows, null);
     }
 
-    private String buildMetricLevels(List<JavaSolution> solutions, MType metricType) throws TaskBuildException {
+    private String buildMetricLevels(List<JavaSolution> solutions, MetricType metricType) throws TaskBuildException {
         List<ExcelRow> rows = new ArrayList<>();
         List<String> columnHeaders = new ArrayList<>();
         for (JavaSolution solution : solutions) {
@@ -122,7 +122,7 @@ public final class MetricService implements IMetricService {
         return buildExcelSections(rows, columnHeaders, metricType.name());
     }
 
-    private String buildMetricLevels(JavaSolution solution, MType metricType) throws TaskBuildException {
+    private String buildMetricLevels(JavaSolution solution, MetricType metricType) throws TaskBuildException {
         MetricLevelSection section = new MetricLevelSection(solution, metricType);
         return buildExcelSections(section.excelRows, section.columnHeaders, metricType.name());
     }
@@ -172,7 +172,7 @@ public final class MetricService implements IMetricService {
         return buildExcel(columnHeaders, rows, title);
     }
 
-    private String buildMetricInfo(JavaSolution solution, MType metricType) throws TaskBuildException {
+    private String buildMetricInfo(JavaSolution solution, MetricType metricType) throws TaskBuildException {
         MetricInfo metricInfo = solution.getMetricInfo(metricType);
         if (metricInfo == null)
             return "";
@@ -197,7 +197,7 @@ public final class MetricService implements IMetricService {
     public void buildDitMetricsDetails(MetricOptions options) throws MetricBuildException {
         JavaSolution solution = options.getSolution();
         List<DitHierarchy> ditHierarchies = solution.getDitHierarchies();
-        MType metricType = MType.DIT;
+        MetricType metricType = MetricType.DIT;
 
         String docTitle = getDocTitle(solution, metricType);
         String rowTitles = getRowTitles(metricType, "Number of Inherited Methods" + getDelimiter(options) + "Total Number of Methods");
@@ -221,7 +221,7 @@ public final class MetricService implements IMetricService {
     public void buildNocMetricsDetails(MetricOptions options, Collection<String> elements) throws MetricBuildException {
         JavaSolution solution = options.getSolution();
         List<NocHierarchy> nocMetrics = solution.getNocHierarchies();
-        MType metricType = MType.NOC;
+        MetricType metricType = MetricType.NOC;
 
         String docTitle = getDocTitle(solution, metricType);
         String rowTitles = getRowTitles(metricType, "Class Children");
@@ -262,7 +262,7 @@ public final class MetricService implements IMetricService {
     public void buildWmcMetricsDetails(MetricOptions options) throws MetricBuildException {
         JavaSolution solution = options.getSolution();
         List<WmcMetric> wmcMetrics = solution.getWmcMetrics();
-        MType metricType = MType.WMC;
+        MetricType metricType = MetricType.WMC;
 
         String docTitle = getDocTitle(solution, metricType);
         String rowTitles = getRowTitles(metricType);
@@ -289,11 +289,11 @@ public final class MetricService implements IMetricService {
         return String.format("%s%s %s%s", fullyQualifiedName, getDelimiter(options), String.valueOf(metric), extraColumn);
     }
 
-    private String getRowTitles(MType metricType) {
+    private String getRowTitles(MetricType metricType) {
         return getRowTitles(metricType, null);
     }
 
-    private String getRowTitles(MType metricType, String extra) {
+    private String getRowTitles(MetricType metricType, String extra) {
         String extraColumn = "";
         if (extra != null && !extra.equals("")) {
             extraColumn += DELIMITER + extra;
@@ -301,7 +301,7 @@ public final class MetricService implements IMetricService {
         return String.format("Class or Interface%s %s%s", DELIMITER, metricType.metricName, extraColumn);
     }
 
-    private String getDocTitle(JavaSolution solution, MType metricType) {
+    private String getDocTitle(JavaSolution solution, MetricType metricType) {
         return String.format("%s - %s", solution.getSystemName(), metricType.metricName);
     }
 
@@ -358,7 +358,7 @@ public final class MetricService implements IMetricService {
         return builder.toString();
     }
 
-    private void writeToFile(MType metricType, String output) throws MetricBuildException {
+    private void writeToFile(MetricType metricType, String output) throws MetricBuildException {
 //        writeToFile(metricType.toString(), output);
     }
 

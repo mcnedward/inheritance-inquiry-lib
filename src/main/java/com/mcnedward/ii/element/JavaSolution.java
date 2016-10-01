@@ -5,7 +5,7 @@ import com.mcnedward.ii.service.graph.element.DitHierarchy;
 import com.mcnedward.ii.service.graph.element.FullHierarchy;
 import com.mcnedward.ii.service.graph.element.NocHierarchy;
 import com.mcnedward.ii.service.graph.element.SolutionMethod;
-import com.mcnedward.ii.service.metric.MType;
+import com.mcnedward.ii.service.metric.MetricType;
 import com.mcnedward.ii.service.metric.element.DitMetric;
 import com.mcnedward.ii.service.metric.element.MetricInfo;
 import com.mcnedward.ii.service.metric.element.NocMetric;
@@ -200,7 +200,7 @@ public class JavaSolution {
 		return mInheritedMethodRisk;
 	}
 
-	public MetricInfo getMetricInfo(MType metricType) throws TaskBuildException {
+	public MetricInfo getMetricInfo(MetricType metricType) throws TaskBuildException {
 		switch (metricType) {
 		case DIT:
 			return mDitMetricInfo;

@@ -14,7 +14,7 @@ public abstract class MetricSection {
 	
 	protected String mSystemName;
 	
-	public MetricSection(JavaSolution solution, MType metricType) throws TaskBuildException {
+	public MetricSection(JavaSolution solution, MetricType metricType) throws TaskBuildException {
 		mSystemName = solution.getSystemName();
 		List<? extends Metric> metrics;
 		init();

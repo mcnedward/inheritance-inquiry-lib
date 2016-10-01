@@ -11,7 +11,7 @@ import com.mcnedward.ii.service.graph.element.DitHierarchy;
 import com.mcnedward.ii.service.graph.element.FullHierarchy;
 import com.mcnedward.ii.service.graph.element.NocHierarchy;
 import com.mcnedward.ii.service.graph.element.SolutionMethod;
-import com.mcnedward.ii.service.metric.MType;
+import com.mcnedward.ii.service.metric.MetricType;
 import com.mcnedward.ii.service.metric.element.*;
 import com.mcnedward.ii.utils.IILogger;
 import org.eclipse.jdt.core.dom.IMethodBinding;
@@ -319,7 +319,7 @@ public final class AnalyzerService {
 			oCount++;
 		}
 		double oAverage = oCount == 0 ? 0 : (double) (oTotal / oCount);
-		solution.setOMethodInfo(new MetricInfo(MType.OM, oMin, oAverage, oMax, oMaxClasses));
+		solution.setOMethodInfo(new MetricInfo(MetricType.OM, oMin, oAverage, oMax, oMaxClasses));
 
 		int eMax = 0, eMin = 0, eTotal = 0, eCount = 0;
 		List<String> eMaxClasses = new ArrayList<>();
@@ -337,20 +337,20 @@ public final class AnalyzerService {
 			eCount++;
 		}
 		int eAverage = eCount == 0 ? 0 : eTotal / eCount;
-		solution.setEMethodInfo(new MetricInfo(MType.EM, eMin, eAverage, eMax, eMaxClasses));
+		solution.setEMethodInfo(new MetricInfo(MetricType.EM, eMin, eAverage, eMax, eMaxClasses));
 	}
 
 	private void calculateMetricUsages(JavaSolution solution) {
 		try {
-			solution.setDitMetricInfo(getMetricInfo(solution, MType.DIT));
-			solution.setNocMetricInfo(getMetricInfo(solution, MType.NOC));
-			solution.setWmcMetricInfo(getMetricInfo(solution, MType.WMC));
+			solution.setDitMetricInfo(getMetricInfo(solution, MetricType.DIT));
+			solution.setNocMetricInfo(getMetricInfo(solution, MetricType.NOC));
+			solution.setWmcMetricInfo(getMetricInfo(solution, MetricType.WMC));
 		} catch (TaskBuildException e) {
 			IILogger.error(e);
 		}
 	}
 
-	private MetricInfo getMetricInfo(JavaSolution solution, MType metricType) throws TaskBuildException {
+	private MetricInfo getMetricInfo(JavaSolution solution, MetricType metricType) throws TaskBuildException {
 		List<? extends Metric> metrics = getMetrics(solution, metricType);
 		int min = 0, average = 0, max = 0;
 		List<String> maxClasses = new ArrayList<>();
@@ -375,7 +375,7 @@ public final class AnalyzerService {
 		return new MetricInfo(metricType, min, average, max, maxClasses);
 	}
 
-	private List<? extends Metric> getMetrics(JavaSolution solution, MType metricType) throws TaskBuildException {
+	private List<? extends Metric> getMetrics(JavaSolution solution, MetricType metricType) throws TaskBuildException {
 		List<? extends Metric> metrics;
 		switch (metricType) {
 		case DIT:

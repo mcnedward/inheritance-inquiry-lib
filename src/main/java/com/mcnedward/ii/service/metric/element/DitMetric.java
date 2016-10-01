@@ -1,7 +1,7 @@
 package com.mcnedward.ii.service.metric.element;
 
 import com.mcnedward.ii.element.JavaElement;
-import com.mcnedward.ii.service.metric.MType;
+import com.mcnedward.ii.service.metric.MetricType;
 
 /**
  * Metric for the Depth of Inheritance of a class or interface. Defined by
@@ -15,7 +15,7 @@ public class DitMetric extends Metric {
 	public int numberOfInheritedMethods;
 
 	public DitMetric(JavaElement element, int dit, int numberOfInheritedMethods) {
-		super(MType.DIT, element, dit);
+		super(MetricType.DIT, element, dit);
 		this.numberOfInheritedMethods = numberOfInheritedMethods;
 	}
 	

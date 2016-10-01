@@ -1,7 +1,7 @@
 package com.mcnedward.ii.service.metric.element;
 
 import com.mcnedward.ii.element.JavaElement;
-import com.mcnedward.ii.service.metric.MType;
+import com.mcnedward.ii.service.metric.MetricType;
 
 /**
  * @author Edward - Jul 14, 2016
@@ -9,13 +9,13 @@ import com.mcnedward.ii.service.metric.MType;
  */
 public abstract class Metric {
 
-	protected MType type;
+	protected MetricType type;
     protected String elementName;
     protected String fullyQualifiedName;
     protected int metric;
     protected boolean isInterface;
 
-	public Metric(MType type, JavaElement element, int metric) {
+	public Metric(MetricType type, JavaElement element, int metric) {
 		this.type = type;
 		elementName = element.getName();
 		fullyQualifiedName = element.getFullyQualifiedName();
@@ -23,7 +23,7 @@ public abstract class Metric {
 		isInterface = element.isInterface();
 	}
 
-    public MType getType() {
+    public MetricType getType() {
         return type;
     }
 

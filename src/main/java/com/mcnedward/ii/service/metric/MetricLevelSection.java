@@ -17,7 +17,7 @@ public final class MetricLevelSection extends MetricSection {
 	List<String> columnHeaders;
 	List<ExcelRow> excelRows;
 
-	protected MetricLevelSection(JavaSolution solution, MType metricType) throws TaskBuildException {
+	protected MetricLevelSection(JavaSolution solution, MetricType metricType) throws TaskBuildException {
 		super(solution, metricType);
 	}
 	
