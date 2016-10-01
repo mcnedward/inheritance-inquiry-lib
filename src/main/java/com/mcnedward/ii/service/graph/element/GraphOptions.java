@@ -40,14 +40,10 @@ public class GraphOptions {
     private String mProjectName;
 
     public GraphOptions() {
-        this(DEFAULT_X_DIST, DEFAULT_Y_DIST, DEFAULT_FONT_SIZE, DEFAULT_FONT_COLOR, DEFAULT_LABEL_COLOR, DEFAULT_ARROW_COLOR, DEFAULT_EDGE_COLOR, DEFAULT_INTERFACE_LABEL_COLOR, DEFAULT_INTERFACE_ARROW_COLOR, DEFAULT_INTERFACE_EDGE_COLOR, DEFAULT_GRAPH_SHAPE);
+        this(DEFAULT_X_DIST, DEFAULT_Y_DIST, DEFAULT_FONT_SIZE, DEFAULT_FONT_COLOR, DEFAULT_LABEL_COLOR, DEFAULT_ARROW_COLOR, DEFAULT_EDGE_COLOR, DEFAULT_GRAPH_SHAPE);
     }
 
     public GraphOptions(Integer xDist, Integer yDist, Integer fontSize, Color fontColor, Color labelColor, Color arrowColor, Color edgeColor, GraphShape graphShape) {
-        this(xDist, yDist, fontSize, fontColor, labelColor, arrowColor, edgeColor, DEFAULT_INTERFACE_LABEL_COLOR, DEFAULT_INTERFACE_ARROW_COLOR, DEFAULT_INTERFACE_EDGE_COLOR, graphShape);
-    }
-
-    public GraphOptions(Integer xDist, Integer yDist, Integer fontSize, Color fontColor, Color labelColor, Color arrowColor, Color edgeColor, Color interfaceLabelColor, Color interfaceArrowColor, Color interfaceEdgeColor, GraphShape graphShape) {
         mXDist = xDist;
         mYDist = yDist;
         mFont = new Font("Segoe UI", Font.PLAIN, fontSize);
@@ -55,17 +51,10 @@ public class GraphOptions {
         mLabelColor = labelColor == null ? DEFAULT_LABEL_COLOR : labelColor;
         mArrowColor = arrowColor == null ? DEFAULT_ARROW_COLOR : arrowColor;
         mEdgeColor = edgeColor == null ? DEFAULT_EDGE_COLOR : edgeColor;
-        mInterfaceLabelColor = interfaceLabelColor;
-        mInterfaceArrowColor = interfaceArrowColor;
-        mInterfaceEdgeColor = interfaceEdgeColor;
+        mInterfaceLabelColor = DEFAULT_INTERFACE_LABEL_COLOR;
+        mInterfaceArrowColor = DEFAULT_INTERFACE_ARROW_COLOR;
+        mInterfaceEdgeColor = DEFAULT_INTERFACE_EDGE_COLOR;
         mGraphShape = graphShape;
-    }
-
-    public GraphOptions(JavaSolution solution, Collection<String> fullyQualifiedNames, Integer xDist, Integer yDist, Integer fontSize, boolean useFullName) {
-        this(xDist, yDist, fontSize, DEFAULT_FONT_COLOR, DEFAULT_LABEL_COLOR, DEFAULT_ARROW_COLOR, DEFAULT_EDGE_COLOR, DEFAULT_INTERFACE_LABEL_COLOR, DEFAULT_INTERFACE_ARROW_COLOR, DEFAULT_INTERFACE_EDGE_COLOR, DEFAULT_GRAPH_SHAPE);
-        mSolution = solution;
-        mFullyQualifiedNames = fullyQualifiedNames;
-        mUseFullName = useFullName;
     }
 
     public GraphOptions(File directory, String projectName, boolean usePackages) {

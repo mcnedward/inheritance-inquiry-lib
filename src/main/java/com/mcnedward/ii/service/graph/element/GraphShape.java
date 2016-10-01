@@ -6,14 +6,16 @@ package com.mcnedward.ii.service.graph.element;
  */
 public enum GraphShape {
 
-	RECT("Rectangle"),
-    ROUNDED_RECT("Round Rectangle"),
-	CIRCLE("Circle");
+	RECT("Rectangle", 0),
+    ROUNDED_RECT("Round Rectangle", 1),
+	CIRCLE("Circle", 2);
 	
 	public String graphShape;
+    public int graphShapeValue;
 	
-	GraphShape(String graphShape) {
+	GraphShape(String graphShape, int graphShapeValue) {
 		this.graphShape = graphShape;
+        this.graphShapeValue = graphShapeValue;
 	}
 
 	@Override
