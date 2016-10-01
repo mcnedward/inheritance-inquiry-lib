@@ -30,7 +30,7 @@ public abstract class Builder {
     private MonitoringExecutorService mExecutorService;
     private static Map<Integer, String> mTaskMap; // For keeping track of all tasks
 
-    public Builder() {
+    Builder() {
         // Setup Threads
         mQueue = new ArrayBlockingQueue<>(100);
         mExecutorService = new MonitoringExecutorService(CORE_POOL_SIZE, MAX_POOL_SIZE, 0L, TimeUnit.MILLISECONDS, mQueue);

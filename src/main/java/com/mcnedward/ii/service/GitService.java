@@ -3,14 +3,15 @@ package com.mcnedward.ii.service;
 import java.io.File;
 import java.io.IOException;
 
+import com.mcnedward.ii.utils.IIUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.api.errors.InvalidRemoteException;
 import org.eclipse.jgit.lib.ProgressMonitor;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 
-import com.mcnedward.ii.exception.DownloadException;
 import com.mcnedward.ii.listener.GitDownloadListener;
+
+import static java.io.File.createTempFile;
 
 /**
  * Downloads a git repository to a temporary location, which can then be used in the InterfaceInquiry.
@@ -18,55 +19,41 @@ import com.mcnedward.ii.listener.GitDownloadListener;
  * @author Edward - Jun 24, 2016
  *
  */
-public final class GitService {
+public class GitService implements IGitService {
 	/**
 	 * Clone a remote git repository. This creates a temporary File directory that holds the contents of that git
 	 * repository. The file should be deleted after the JavaProject build is finished.
 	 * 
 	 * @param remoteUrl
 	 *            The URL of the remote repository.
-	 * @param repoName
-	 *            The name of the repository.
 	 * @param username
 	 *            The username for authentication.
 	 * @param password
 	 *            The password for authentication.
 	 * @param listener
 	 *            The SolutionBuildListener to notify of the progress of the cloning.
-	 * @return A File that holds the contents of the remote repository. This File is a git directory (has a .git
-	 *         folder). This needs to be deleted once the project has been built.
-	 * @throws InvalidRemoteException
-	 * @throws GitAPIException
-	 * @throws DownloadException
 	 */
-	public static void downloadFileFromGit(String remoteUrl, String username, String password, GitDownloadListener listener) {
-		int slashIndex = remoteUrl.lastIndexOf("/");
-		int dotIndex = remoteUrl.lastIndexOf(".");
-		String repoName = remoteUrl.substring(slashIndex + 1, dotIndex);
+	@Override
+	public void downloadFile(String remoteUrl, String username, String password, GitDownloadListener listener) {
+		String repoName = IIUtils.getGitProjectName(remoteUrl);
 		listener.onProgressChange("Starting download for " + repoName + "...", 0);
-		Runnable task = () -> {
-			try {
-				File tempRepo = File.createTempFile(repoName, "");
-				tempRepo.delete();
-				tempRepo.deleteOnExit();
+        try {
+            File tempRepo = createTempFile(repoName, "");
+            tempRepo.delete();
+            tempRepo.deleteOnExit();
 
-				Git gitResult;
-				gitResult = Git.cloneRepository().setProgressMonitor(new ProjectBuildMonitor(repoName, listener)).setURI(remoteUrl)
-						.setCredentialsProvider(new UsernamePasswordCredentialsProvider(username, password)).setDirectory(tempRepo).call();
+            Git gitResult;
+            gitResult = Git.cloneRepository().setProgressMonitor(new ProjectBuildMonitor(repoName, listener)).setURI(remoteUrl)
+                    .setCredentialsProvider(new UsernamePasswordCredentialsProvider(username, password)).setDirectory(tempRepo).call();
 
-				// Close everything
-				gitResult.getRepository().close();
-				gitResult.close();
+            // Close everything
+            gitResult.getRepository().close();
+            gitResult.close();
 
-				listener.finished(tempRepo, repoName);
-			} catch (IOException | GitAPIException e) {
-				listener.onDownloadError(String.format("Could not download project %s from the remote URL %s.", repoName, remoteUrl), e);
-			}
-
-		};
-
-		Thread thread = new Thread(task);
-		thread.start();
+            listener.finished(tempRepo, repoName);
+        } catch (IOException | GitAPIException e) {
+            listener.onBuildError(String.format("Could not download project %s from the remote URL %s.", repoName, remoteUrl), e);
+        }
 	}
 
 }
@@ -84,7 +71,7 @@ final class ProjectBuildMonitor implements ProgressMonitor {
 	private int mProgress, mGoal;
 	private String mTask;
 
-	public ProjectBuildMonitor(String repoName, GitDownloadListener listener) {
+	ProjectBuildMonitor(String repoName, GitDownloadListener listener) {
 		mRepoName = repoName;
 		mListener = listener;
 	}

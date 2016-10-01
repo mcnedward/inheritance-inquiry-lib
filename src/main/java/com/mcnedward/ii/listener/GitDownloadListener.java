@@ -6,8 +6,6 @@ import java.io.File;
  * @author Edward - Jun 25, 2016
  *
  */
-public interface GitDownloadListener {
-	void onProgressChange(String message, int progress);
-	void onDownloadError(String message, Exception exception);
+public interface GitDownloadListener extends BuildListener {
 	void finished(File gitFile, String repoName);
 }
