@@ -18,5 +18,5 @@ public interface IGraphService {
 
     void exportGraphsToFile(Collection<JungGraph> graphs, File directory, boolean usePackages) throws GraphBuildException;
 
-    void exportGraphsToFile(Collection<JungGraph> graphs, File directory, boolean usePackages, String projectName, GraphExportListener listener) throws GraphBuildException;
+    void exportGraphsToFile(Collection<JungGraph> graphs, File directory, String projectName, boolean usePackages, GraphExportListener listener) throws GraphBuildException;
 }

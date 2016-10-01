@@ -4,6 +4,7 @@ import com.mcnedward.ii.element.JavaSolution;
 import com.mcnedward.ii.service.graph.GraphService;
 
 import java.awt.*;
+import java.io.File;
 import java.util.Collection;
 
 /**
@@ -34,7 +35,9 @@ public class GraphOptions {
     private Font mFont;
     private Color mLabelColor, mFontColor, mArrowColor, mEdgeColor, mInterfaceLabelColor, mInterfaceArrowColor, mInterfaceEdgeColor;
     private GraphShape mGraphShape;
-    private boolean mUseFullName, mShowEdgeLabel;
+    private boolean mUseFullName, mUsePackages, mShowEdgeLabel;
+    private File mDirectory;
+    private String mProjectName;
 
     public GraphOptions() {
         this(DEFAULT_X_DIST, DEFAULT_Y_DIST, DEFAULT_FONT_SIZE, DEFAULT_FONT_COLOR, DEFAULT_LABEL_COLOR, DEFAULT_ARROW_COLOR, DEFAULT_EDGE_COLOR, DEFAULT_INTERFACE_LABEL_COLOR, DEFAULT_INTERFACE_ARROW_COLOR, DEFAULT_INTERFACE_EDGE_COLOR, DEFAULT_GRAPH_SHAPE);
@@ -63,6 +66,12 @@ public class GraphOptions {
         mSolution = solution;
         mFullyQualifiedNames = fullyQualifiedNames;
         mUseFullName = useFullName;
+    }
+
+    public GraphOptions(File directory, String projectName, boolean usePackages) {
+        mDirectory = directory;
+        mProjectName = projectName;
+        mUsePackages = usePackages;
     }
 
     public JavaSolution getSolution() {
@@ -205,12 +214,36 @@ public class GraphOptions {
         mUseFullName = useFullName;
     }
 
+    public boolean usePackages() {
+        return mUsePackages;
+    }
+
+    public void setUsePackages(boolean usePackages) {
+        mUsePackages = usePackages;
+    }
+
     public boolean showEdgeLabel() {
         return mShowEdgeLabel;
     }
 
     public void setShowEdgeLabel(boolean showEdgeLabel) {
         mShowEdgeLabel = showEdgeLabel;
+    }
+
+    public File getDirectory() {
+        return mDirectory;
+    }
+
+    public void setDirectory(File directory) {
+        mDirectory = directory;
+    }
+
+    public String getProjectName() {
+        return mProjectName;
+    }
+
+    public void setProjectName(String projectName) {
+        mProjectName = projectName;
     }
 
 }

@@ -63,7 +63,7 @@ public abstract class GraphService<T extends Hierarchy> implements IGraphService
     }
 
     @Override
-    public void exportGraphsToFile(Collection<JungGraph> graphs, File directory, boolean usePackages, String projectName, GraphExportListener listener) throws GraphBuildException {
+    public void exportGraphsToFile(Collection<JungGraph> graphs, File directory, String projectName, boolean usePackages, GraphExportListener listener) throws GraphBuildException {
         if (projectName == null || projectName.equals(""))
             IILogger.notify(listener, "You need to include a project name.", 0);
         int i = 1;

@@ -235,7 +235,7 @@ public class JavaProject {
 		mClasses = new ArrayList<>();
 		for (JavaPackage javaPackage : mPackages) {
 			for (JavaElement element : javaPackage.getElements()) {
-				if (!element.isInterface()) {
+				if (!element.isInterface() && !element.hasDiamonds()) {
 					mClasses.add(element);
 				}
 			}
@@ -271,7 +271,7 @@ public class JavaProject {
 		mInterfaces = new ArrayList<>();
 		for (JavaPackage javaPackage : mPackages) {
 			for (JavaElement element : javaPackage.getElements()) {
-				if (element.isInterface()) {
+				if (element.isInterface() && !element.hasDiamonds()) {
 					mInterfaces.add(element);
 				}
 			}
