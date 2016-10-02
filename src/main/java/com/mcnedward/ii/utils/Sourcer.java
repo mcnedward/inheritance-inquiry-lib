@@ -59,7 +59,7 @@ public class Sourcer {
 	private String getFileSource(BufferedReader reader) throws IOException {
 		StringBuilder fileData = new StringBuilder(16384);
 		char[] buffer = new char[16384];
-		int numberRead = 0;
+		int numberRead;
 		while ((numberRead = reader.read(buffer)) != -1) {
 			String readData = String.valueOf(buffer, 0, numberRead);
 			fileData.append(readData);

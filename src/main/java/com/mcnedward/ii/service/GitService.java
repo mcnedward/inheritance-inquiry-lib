@@ -6,7 +6,10 @@ import java.io.IOException;
 import com.mcnedward.ii.utils.IIUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.api.errors.TransportException;
+import org.eclipse.jgit.errors.UnsupportedCredentialItem;
 import org.eclipse.jgit.lib.ProgressMonitor;
+import org.eclipse.jgit.transport.ChainingCredentialsProvider;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 
 import com.mcnedward.ii.listener.GitDownloadListener;
@@ -15,7 +18,7 @@ import static java.io.File.createTempFile;
 
 /**
  * Downloads a git repository to a temporary location, which can then be used in the InterfaceInquiry.
- * 
+ *
  * @author Edward - Jun 24, 2016
  *
  */
@@ -23,7 +26,7 @@ public class GitService implements IGitService {
 	/**
 	 * Clone a remote git repository. This creates a temporary File directory that holds the contents of that git
 	 * repository. The file should be deleted after the JavaProject build is finished.
-	 * 
+	 *
 	 * @param remoteUrl
 	 *            The URL of the remote repository.
 	 * @param username
@@ -37,14 +40,17 @@ public class GitService implements IGitService {
 	public void downloadFile(String remoteUrl, String username, String password, GitDownloadListener listener) {
 		String repoName = IIUtils.getGitProjectName(remoteUrl);
 		listener.onProgressChange("Starting download for " + repoName + "...", 0);
+        Git gitResult = null;
         try {
             File tempRepo = createTempFile(repoName, "");
             tempRepo.delete();
             tempRepo.deleteOnExit();
 
-            Git gitResult;
-            gitResult = Git.cloneRepository().setProgressMonitor(new ProjectBuildMonitor(repoName, listener)).setURI(remoteUrl)
-                    .setCredentialsProvider(new UsernamePasswordCredentialsProvider(username, password)).setDirectory(tempRepo).call();
+            gitResult = Git.cloneRepository()
+                    .setProgressMonitor(new ProjectBuildMonitor(repoName, listener))
+                    .setURI(remoteUrl)
+                    .setCredentialsProvider(new UsernamePasswordCredentialsProvider(username, password))
+                    .setDirectory(tempRepo).call();
 
             // Close everything
             gitResult.getRepository().close();
@@ -53,6 +59,14 @@ public class GitService implements IGitService {
             listener.finished(tempRepo, repoName);
         } catch (IOException | GitAPIException e) {
             listener.onBuildError(String.format("Could not download project %s from the remote URL %s.", repoName, remoteUrl), e);
+        } catch (UnsupportedCredentialItem e) {
+            listener.onBuildError("Could not connect to your account. Make sure you are connecting through https and using your username and password, as ssh is not supported right now.", e);
+        } finally {
+            if (gitResult != null) {
+                if (gitResult.getRepository() != null)
+                    gitResult.getRepository().close();
+                gitResult.close();
+            }
         }
 	}
 
@@ -60,7 +74,7 @@ public class GitService implements IGitService {
 
 /**
  * Class for monitoring the progress of a git clone, and updating the SolutionBuildListener.
- * 
+ *
  * @author Edward - Jun 25, 2016
  *
  */

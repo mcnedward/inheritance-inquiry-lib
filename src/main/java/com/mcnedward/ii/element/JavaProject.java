@@ -35,7 +35,6 @@ public class JavaProject {
 		mProjectFile = projectFile;
 		mPackages = new ArrayList<>();
 		buildFile();
-		mVersion = VersionUtils.findVersion(mProjectPath);
 	}
 
 	public JavaElement find(String elementName) {
