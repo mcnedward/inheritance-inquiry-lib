@@ -7,6 +7,8 @@ import com.mcnedward.ii.listener.GitDownloadListener;
  */
 public interface IGitService {
 
-    void downloadFile(String remoteUrl, String username, String password, GitDownloadListener listener);
+    void downloadFile(String remoteUrl, char[] token, GitDownloadListener listener);
+
+    void downloadFile(String remoteUrl, String username, char[] password, GitDownloadListener listener);
 
 }

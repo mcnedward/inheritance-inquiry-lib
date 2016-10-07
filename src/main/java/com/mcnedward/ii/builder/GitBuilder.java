@@ -1,10 +1,9 @@
 package com.mcnedward.ii.builder;
 
-import com.mcnedward.ii.exception.MetricExportException;
 import com.mcnedward.ii.listener.GitDownloadListener;
 import com.mcnedward.ii.service.IGitService;
-import com.mcnedward.ii.service.metric.IMetricService;
-import com.mcnedward.ii.service.metric.element.MetricOptions;
+
+import java.util.Arrays;
 
 /**
  * Created by Edward on 9/25/2016.
@@ -15,35 +14,68 @@ public class GitBuilder extends Builder {
     private IGitService mGitService;
     private String mRemoteUrl;
     private String mUsername;
-    private String mPassword;
+    private char[] mPassword;
+    private boolean mIsToken;
 
     public GitBuilder(GitDownloadListener listener) {
         super();
         mDownloadListener = listener;
     }
 
-    public GitBuilder setup(IGitService service, String remoteUrl, String username, String password) {
+    public GitBuilder setup(IGitService service, String remoteUrl, String username, char[] password) {
         mGitService = service;
         mRemoteUrl = remoteUrl;
         mUsername = username;
         mPassword = password;
+        mIsToken = false;
+        return this;
+    }
+
+    public GitBuilder setup(IGitService service, String remoteUrl, char[] token) {
+        mGitService = service;
+        mRemoteUrl = remoteUrl;
+        mPassword = token;
+        mIsToken = true;
         return this;
     }
 
     @Override
     protected Runnable buildTask() {
-        if (mGitService == null || mRemoteUrl == null || mUsername == null || mPassword == null) {
-            throw new IllegalStateException("You need to call setup method first, and be sure to all the options!");
+        if (mGitService == null || mRemoteUrl == null) {
+            throw new IllegalStateException("You need to call setup method first!");
         }
-        return () -> {
-            try {
-                mGitService.downloadFile(mRemoteUrl, mUsername, mPassword, mDownloadListener);
-            } catch (Exception e) {
-                mDownloadListener.onBuildError("Something went wrong when exporting the metrics.", e);
-            } finally {
-                reset();
+        if (mIsToken) {
+            if (mPassword == null || mPassword.length == 0) {
+                throw new IllegalStateException("You need to provide a token!");
             }
-        };
+            if (mUsername != null) {
+                throw new IllegalStateException("You can't have a username if using a token. Make sure to call the correct setup method.");
+            }
+
+            return () -> {
+                try {
+                    mGitService.downloadFile(mRemoteUrl, mPassword, mDownloadListener);
+                } catch (Exception e) {
+                    mDownloadListener.onBuildError("Something went wrong when exporting the metrics.", e);
+                } finally {
+                    reset();
+                }
+            };
+        } else {
+            if ((mUsername == null || mUsername.equals("") || mPassword == null || mPassword.length == 0)) {
+                throw new IllegalStateException("You need to call setup method first, with both a username and password!");
+            }
+
+            return () -> {
+                try {
+                    mGitService.downloadFile(mRemoteUrl, mUsername, mPassword, mDownloadListener);
+                } catch (Exception e) {
+                    mDownloadListener.onBuildError("Something went wrong when exporting the metrics.", e);
+                } finally {
+                    reset();
+                }
+            };
+        }
     }
 
     @Override
@@ -51,6 +83,9 @@ public class GitBuilder extends Builder {
         mGitService = null;
         mRemoteUrl = null;
         mUsername = null;
-        mPassword = null;
+        if (mPassword != null) {
+            Arrays.fill(mPassword, (char) 0);
+            mPassword = null;
+        }
     }
 }

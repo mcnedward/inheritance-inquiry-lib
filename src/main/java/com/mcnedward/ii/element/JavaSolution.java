@@ -24,6 +24,7 @@ public class JavaSolution {
 
 	private String mProjectName;
 	private String mSystemName;
+    private String mProjectPath;
 	private String mVersion;
 	private int mClassCount;
 	private int mInheritanceCount;
@@ -59,6 +60,7 @@ public class JavaSolution {
         init();
         mProjectName = project.getName();
         mSystemName = project.getSystemName();
+        mProjectPath = project.getPath();
         mVersion = project.getVersion();
         mClassCount = project.getClassCount();
         mInheritanceCount = project.getInheritanceCount();
@@ -127,6 +129,10 @@ public class JavaSolution {
 	public String getSystemName() {
 		return mSystemName;
 	}
+
+	public String getProjectPath() {
+        return mProjectPath;
+    }
 
 	public String getVersion() {
 		return mVersion;

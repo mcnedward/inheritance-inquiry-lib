@@ -4,21 +4,12 @@ import com.mcnedward.ii.element.JavaProject;
 import com.mcnedward.ii.element.JavaSolution;
 import com.mcnedward.ii.exception.ProjectBuildException;
 import com.mcnedward.ii.exception.TaskBuildException;
-import com.mcnedward.ii.listener.BuildListener;
 import com.mcnedward.ii.listener.SolutionBuildListener;
 import com.mcnedward.ii.service.AnalyzerService;
 import com.mcnedward.ii.service.ProjectService;
-import com.mcnedward.ii.tasks.MonitoringExecutorService;
-import com.mcnedward.ii.utils.IILogger;
 import com.mcnedward.ii.utils.ServiceFactory;
 
 import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.Callable;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Created by Edward on 9/21/2016.
@@ -26,6 +17,7 @@ import java.util.concurrent.TimeUnit;
 public class ProjectBuilder extends Builder {
 
     private File mProjectFile;
+    private String mProjectName;
     private SolutionBuildListener mListener;
     // Services
     private ProjectService mProjectService;
@@ -50,6 +42,12 @@ public class ProjectBuilder extends Builder {
         return this;
     }
 
+    public ProjectBuilder setup(File projectFile, String projectName) {
+        mProjectFile = projectFile;
+        mProjectName = projectName;
+        return this;
+    }
+
     @Override
     protected Runnable buildTask() {
         if (mProjectFile == null) {
@@ -64,7 +62,7 @@ public class ProjectBuilder extends Builder {
 
         return () -> {
             try {
-                JavaProject project = mProjectService.build(mProjectFile, mListener);
+                JavaProject project = mProjectService.build(mProjectFile, mProjectName, mListener);
                 JavaSolution solution = mAnalyzerService.analyze(project, mListener);
                 mListener.finished(solution);
             } catch (ProjectBuildException e) {
@@ -82,5 +80,6 @@ public class ProjectBuilder extends Builder {
 
     protected void reset() {
         mProjectFile = null;
+        mProjectName = null;
     }
 }

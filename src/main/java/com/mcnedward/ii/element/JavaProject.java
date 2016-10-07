@@ -1,12 +1,11 @@
 package com.mcnedward.ii.element;
 
+import com.mcnedward.ii.utils.IILogger;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
-
-import com.mcnedward.ii.utils.IILogger;
-import com.mcnedward.ii.utils.VersionUtils;
 
 /**
  * @author Edward - Jun 16, 2016
@@ -36,6 +35,15 @@ public class JavaProject {
 		mPackages = new ArrayList<>();
 		buildFile();
 	}
+
+	public JavaProject(File projectFile, String projectName) {
+        mProjectPath = projectFile.getAbsolutePath();
+        mSystemName = projectName == null ? projectFile.getName() : projectName;
+        mName = projectName == null ? projectFile.getName() : projectName;
+        mProjectFile = projectFile;
+        mPackages = new ArrayList<>();
+        buildFile();
+    }
 
 	public JavaElement find(String elementName) {
 		try {

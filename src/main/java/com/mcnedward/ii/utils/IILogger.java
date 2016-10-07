@@ -34,6 +34,10 @@ public final class IILogger {
 	public static void analysis(String out, Object...args) {
 		if (ANALYSIS) System.out.println("ANALYSIS " + String.format(out, args));
 	}
+
+    public static void error(String out, Object...args) {
+        info("ERROR  " + out, args);
+    }
 	
 	public static void error(String out, Throwable e) {
 		System.out.println("ERROR " + out);

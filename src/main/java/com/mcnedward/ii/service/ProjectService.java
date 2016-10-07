@@ -1,12 +1,14 @@
 package com.mcnedward.ii.service;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Hashtable;
-import java.util.List;
-
+import com.mcnedward.ii.element.JavaProject;
+import com.mcnedward.ii.exception.ProjectBuildException;
+import com.mcnedward.ii.exception.TaskBuildException;
+import com.mcnedward.ii.jdt.visitor.ClassVisitor;
 import com.mcnedward.ii.listener.SolutionBuildListener;
+import com.mcnedward.ii.utils.ASTUtils;
+import com.mcnedward.ii.utils.IILogger;
+import com.mcnedward.ii.utils.SourcedFile;
+import com.mcnedward.ii.utils.Sourcer;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.compiler.IProblem;
@@ -17,14 +19,11 @@ import org.eclipse.jdt.core.dom.FileASTRequestor;
 import org.eclipse.jgit.annotations.Nullable;
 import org.eclipse.jgit.util.FileUtils;
 
-import com.mcnedward.ii.element.JavaProject;
-import com.mcnedward.ii.exception.ProjectBuildException;
-import com.mcnedward.ii.exception.TaskBuildException;
-import com.mcnedward.ii.jdt.visitor.ClassVisitor;
-import com.mcnedward.ii.utils.ASTUtils;
-import com.mcnedward.ii.utils.IILogger;
-import com.mcnedward.ii.utils.SourcedFile;
-import com.mcnedward.ii.utils.Sourcer;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Hashtable;
+import java.util.List;
 
 /**
  * This service is used to build a {@link JavaProject}. This takes a file for a project directory, or path to a project
@@ -74,6 +73,11 @@ public final class ProjectService {
 		JavaProject project = new JavaProject(projectFile);
 		return buildProject(project, listener);
 	}
+
+	public JavaProject build(File projectFile, String projectName, @Nullable SolutionBuildListener listener) throws ProjectBuildException {
+        JavaProject project = new JavaProject(projectFile, projectName);
+        return buildProject(project, listener);
+    }
 
 	private JavaProject buildProject(JavaProject project, SolutionBuildListener listener) throws ProjectBuildException {
 		try {

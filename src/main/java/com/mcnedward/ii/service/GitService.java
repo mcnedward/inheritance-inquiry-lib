@@ -1,18 +1,22 @@
 package com.mcnedward.ii.service;
 
-import java.io.File;
-import java.io.IOException;
-
+import com.mcnedward.ii.listener.GitDownloadListener;
+import com.mcnedward.ii.utils.IILogger;
 import com.mcnedward.ii.utils.IIUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.api.errors.TransportException;
+import org.eclipse.jgit.api.errors.JGitInternalException;
 import org.eclipse.jgit.errors.UnsupportedCredentialItem;
 import org.eclipse.jgit.lib.ProgressMonitor;
-import org.eclipse.jgit.transport.ChainingCredentialsProvider;
+import org.eclipse.jgit.transport.CredentialItem;
+import org.eclipse.jgit.transport.CredentialsProvider;
+import org.eclipse.jgit.transport.URIish;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 
-import com.mcnedward.ii.listener.GitDownloadListener;
+import java.io.File;
+import java.io.IOException;
+import java.security.SecureRandom;
+import java.util.Arrays;
 
 import static java.io.File.createTempFile;
 
@@ -23,6 +27,14 @@ import static java.io.File.createTempFile;
  *
  */
 public class GitService implements IGitService {
+
+    private static final SecureRandom random = new SecureRandom();
+
+    @Override
+    public void downloadFile(String remoteUrl, char[] token, GitDownloadListener listener) {
+        download(remoteUrl, new UsernamePasswordCredentialsProvider(new String(token), ""), token, listener);
+    }
+
 	/**
 	 * Clone a remote git repository. This creates a temporary File directory that holds the contents of that git
 	 * repository. The file should be deleted after the JavaProject build is finished.
@@ -37,19 +49,24 @@ public class GitService implements IGitService {
 	 *            The SolutionBuildListener to notify of the progress of the cloning.
 	 */
 	@Override
-	public void downloadFile(String remoteUrl, String username, String password, GitDownloadListener listener) {
+	public void downloadFile(String remoteUrl, String username, char[] password, GitDownloadListener listener) {
+        download(remoteUrl, new UsernamePasswordCredentialsProvider(username, password), password, listener);
+    }
+
+    private void download(String remoteUrl, CredentialsProvider credentialsProvider, char[] password, GitDownloadListener listener) {
 		String repoName = IIUtils.getGitProjectName(remoteUrl);
-		listener.onProgressChange("Starting download for " + repoName + "...", 0);
+        IILogger.notify(listener, "Starting download for " + repoName + "...", 0);
+
         Git gitResult = null;
         try {
-            File tempRepo = createTempFile(repoName, "");
-            tempRepo.delete();
-            tempRepo.deleteOnExit();
+            String tempDirectory = System.getProperty("java.io.tmpdir");
+            int n = random.nextInt((999 - 1) + 1) + 1;
+            File tempRepo = new File(String.format("%s/%s/%s-%s", tempDirectory, "II", repoName, Integer.toString(n)));
 
             gitResult = Git.cloneRepository()
                     .setProgressMonitor(new ProjectBuildMonitor(repoName, listener))
                     .setURI(remoteUrl)
-                    .setCredentialsProvider(new UsernamePasswordCredentialsProvider(username, password))
+                    .setCredentialsProvider(credentialsProvider)
                     .setDirectory(tempRepo).call();
 
             // Close everything
@@ -57,11 +74,16 @@ public class GitService implements IGitService {
             gitResult.close();
 
             listener.finished(tempRepo, repoName);
-        } catch (IOException | GitAPIException e) {
+        } catch (JGitInternalException | GitAPIException e) {
             listener.onBuildError(String.format("Could not download project %s from the remote URL %s.", repoName, remoteUrl), e);
         } catch (UnsupportedCredentialItem e) {
             listener.onBuildError("Could not connect to your account. Make sure you are connecting through https and using your username and password, as ssh is not supported right now.", e);
         } finally {
+            // Clear the password
+            if (password != null) {
+                Arrays.fill(password, (char) 0);
+                password = null;
+            }
             if (gitResult != null) {
                 if (gitResult.getRepository() != null)
                     gitResult.getRepository().close();
