@@ -8,15 +8,24 @@ import com.mcnedward.ii.listener.BuildListener;
  */
 public final class IILogger {
 
-	public static boolean DEBUG = true;
+	public static boolean DEBUG = false;
 	public static boolean ANALYSIS = false;
+    public static boolean INFO = true;
+    public static boolean ERROR = true;
+
+    public static void setLogLevels(boolean debug, boolean analysis, boolean info, boolean error) {
+        DEBUG = debug;
+        ANALYSIS = analysis;
+        INFO = info;
+        ERROR = error;
+    }
 	
 	public static void info(String out) {
-		System.out.println("INFO  " + out);
+		if (INFO) System.out.println("INFO  " + out);
 	}
 	
 	public static void info(String out, Object...args) {
-		System.out.println(String.format("INFO  " + out, args));
+		if (INFO) System.out.println(String.format("INFO  " + out, args));
 	}
 	
 	public static void debug(String out) {
@@ -36,16 +45,16 @@ public final class IILogger {
 	}
 
     public static void error(String out, Object...args) {
-        info("ERROR  " + out, args);
+        if (ERROR) System.out.println(String.format("ERROR  " + out, args));
     }
 	
 	public static void error(String out, Throwable e) {
-		System.out.println("ERROR " + out);
+        if (ERROR) System.out.println("ERROR " + out);
 		e.printStackTrace();
 	}
 	
 	public static void error(Exception e) {
-		error(e.getMessage(), e);
+		if (ERROR) error(e.getMessage(), e);
 	}
 
     public static void notify(BuildListener listener, String message, int progress) {

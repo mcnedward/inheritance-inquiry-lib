@@ -6,46 +6,7 @@ package com.mcnedward.ii;
  */
 public final class InheritanceInquiryMain {
 	
-//	public static void main(String[] args) {
-//		buildMultiSystems();
-//	}
-//
-//	protected static void buildMultiSystems() {
-//		try {
-//			new MultiSystemsBuilder().build();
-//		} catch (TaskBuildException e) {
-//			IILogger.error(e.getMessage(), e);
-//		}
-//	}
-//
-//	/**
-//	 * Builds a single project.
-//	 */
-//	protected static void buildProject() {
-//		try {
-//			new SolutionBuilder().build();
-//		} catch (TaskBuildException e) {
-//			IILogger.error(e.getMessage(), e);
-//		}
-//	}
-//
-//	/**
-//	 * Build all versions of a specific system.
-//	 */
-//	protected static void buildSystem() {
-//		try {
-//			new SystemBuilder().build();
-//		} catch (TaskBuildException e) {
-//			IILogger.error(e.getMessage(), e);
-//		}
-//	}
-//
-//	protected static void buildGraph() {
-//		try {
-//			new GraphBuilder().build();
-//		} catch (TaskBuildException e) {
-//			IILogger.error(e.getMessage(), e);
-//		}
-//	}
-	
+	public static void main(String[] args) {
+	}
+
 }
