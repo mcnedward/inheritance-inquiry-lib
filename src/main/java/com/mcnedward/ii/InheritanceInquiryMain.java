@@ -67,7 +67,8 @@ public final class InheritanceInquiryMain {
             if (graphDirectory.isFile()) {
                 error("The graph directory cannot be a file...");
             }
-            if (args.length >= 3) {
+            
+            if (args.length == 4) {
                 String arg = args[3];
                 if (arg.equals("true") || arg.equals("false"))
                     usePackages = arg.equals("true");
@@ -133,7 +134,7 @@ public final class InheritanceInquiryMain {
         return new GraphExportListener() {
             @Override
             public void onGraphsExport() {
-                System.out.print("\nYour graphs were exported!");
+                System.out.println("\nYour graphs were exported!");
                 System.exit(0);
             }
 
@@ -154,7 +155,7 @@ public final class InheritanceInquiryMain {
     }
 
     private static void error(String message) {
-        System.out.print(message + "\r");
+        System.out.println(message);
         System.exit(0);
     }
 
