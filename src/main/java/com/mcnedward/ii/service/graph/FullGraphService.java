@@ -25,7 +25,6 @@ public class FullGraphService extends GraphService<FullHierarchy> {
         Stack<Node> nodes = new Stack<>();
         Stack<Edge> edges = new Stack<>();
 
-        boolean useFullName = options.useFullName();
         for (int i = 0; i < trees.size(); i++) {
             FullHierarchy tree = trees.get(i);
             updateProgress(i + 1, trees.size(), listener);
@@ -63,8 +62,6 @@ public class FullGraphService extends GraphService<FullHierarchy> {
         }
         Collection<FullHierarchy> implTrees = tree.getImpls();
         for (FullHierarchy impl : implTrees) {
-            String element = impl.getElementName();
-
             Node childNode = new Node(impl);
             nodes.add(childNode);
             edges.add(new Edge("implements", parentNode, childNode, true));

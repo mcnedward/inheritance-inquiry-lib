@@ -1,25 +1,14 @@
 package com.mcnedward.ii.service.graph.jung;
 
-import com.mcnedward.ii.exception.GraphBuildException;
-import com.mcnedward.ii.service.graph.element.Edge;
-import com.mcnedward.ii.service.graph.element.GraphOptions;
-import com.mcnedward.ii.service.graph.element.Node;
-import edu.uci.ics.jung.algorithms.layout.TreeLayout;
-import edu.uci.ics.jung.graph.DelegateForest;
-import edu.uci.ics.jung.graph.DirectedGraph;
-import edu.uci.ics.jung.graph.DirectedSparseMultigraph;
-import edu.uci.ics.jung.visualization.*;
-import edu.uci.ics.jung.visualization.control.CrossoverScalingControl;
-import edu.uci.ics.jung.visualization.control.DefaultModalGraphMouse;
-import edu.uci.ics.jung.visualization.control.ModalGraphMouse;
-import edu.uci.ics.jung.visualization.control.ScalingControl;
-import edu.uci.ics.jung.visualization.renderers.DefaultEdgeLabelRenderer;
-import edu.uci.ics.jung.visualization.renderers.DefaultVertexLabelRenderer;
-import edu.uci.ics.jung.visualization.renderers.Renderer;
-import org.apache.commons.collections15.Transformer;
-
-import javax.swing.*;
-import java.awt.*;
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Paint;
+import java.awt.Shape;
+import java.awt.Stroke;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -30,6 +19,32 @@ import java.util.Map;
 import java.util.Stack;
 import java.util.TreeMap;
 
+import javax.swing.JComponent;
+
+import org.apache.commons.collections15.Transformer;
+
+import com.mcnedward.ii.exception.GraphBuildException;
+import com.mcnedward.ii.service.graph.element.Edge;
+import com.mcnedward.ii.service.graph.element.GraphOptions;
+import com.mcnedward.ii.service.graph.element.Node;
+
+import edu.uci.ics.jung.algorithms.layout.TreeLayout;
+import edu.uci.ics.jung.graph.DelegateForest;
+import edu.uci.ics.jung.graph.DirectedGraph;
+import edu.uci.ics.jung.graph.DirectedSparseMultigraph;
+import edu.uci.ics.jung.visualization.BasicVisualizationServer;
+import edu.uci.ics.jung.visualization.GraphZoomScrollPane;
+import edu.uci.ics.jung.visualization.RenderContext;
+import edu.uci.ics.jung.visualization.VisualizationImageServer;
+import edu.uci.ics.jung.visualization.VisualizationViewer;
+import edu.uci.ics.jung.visualization.control.CrossoverScalingControl;
+import edu.uci.ics.jung.visualization.control.DefaultModalGraphMouse;
+import edu.uci.ics.jung.visualization.control.ModalGraphMouse;
+import edu.uci.ics.jung.visualization.control.ScalingControl;
+import edu.uci.ics.jung.visualization.renderers.DefaultEdgeLabelRenderer;
+import edu.uci.ics.jung.visualization.renderers.DefaultVertexLabelRenderer;
+import edu.uci.ics.jung.visualization.renderers.Renderer;
+
 /**
  * @author Edward - Jul 18, 2016
  */
@@ -37,7 +52,7 @@ public class JungGraph {
 
     private DirectedGraph<String, String> mGraph;
     private DelegateForest<String, String> mForest;
-    private TreeLayout mLayout;
+	private TreeLayout<String, String> mLayout;
     private VisualizationImageServer<String, String> mImageServer;
     private VisualizationViewer<String, String> mViewer;
     private ScalingControl mScaler;
@@ -89,15 +104,14 @@ public class JungGraph {
     private void initializeComponents(GraphOptions options) {
         mForest = new DelegateForest<>(mGraph);
         mLayout = new TreeLayout<>(mForest, options.getXDist(), options.getYDist());
-        initializeLayout(mLayout);
-
         mViewer = new VisualizationViewer<>(mLayout);
         mViewer.setAlignmentX(Component.CENTER_ALIGNMENT);
         mViewer.setAlignmentY(Component.CENTER_ALIGNMENT);
         mViewer.setVertexToolTipTransformer(vertexToolTipTransformer(mNodeMap));
         mViewer.setEdgeToolTipTransformer(edgeToolTipTransformer(mEdgeMap));
 
-        DefaultModalGraphMouse gm = new DefaultModalGraphMouse();
+        @SuppressWarnings("rawtypes")
+		DefaultModalGraphMouse gm = new DefaultModalGraphMouse();
         gm.setMode(ModalGraphMouse.Mode.TRANSFORMING);
         mViewer.setGraphMouse(gm);
 
@@ -109,10 +123,6 @@ public class JungGraph {
 
         mImageServer = new VisualizationImageServer<>(mViewer.getGraphLayout(), mViewer.getGraphLayout().getSize());
         mGraphPane = new GraphZoomScrollPane(mViewer);
-    }
-
-    void initializeLayout(TreeLayout layout) {
-        // Override this in subclasses, if needed
     }
 
     private void configure(BasicVisualizationServer<String, String> server, GraphOptions options) throws GraphBuildException {
@@ -282,7 +292,8 @@ public class JungGraph {
 
     protected DefaultEdgeLabelRenderer edgeLabelRenderer(GraphOptions options) {
         return new DefaultEdgeLabelRenderer(options.getEdgeColor()) {
-            @Override
+			private static final long serialVersionUID = 1L;
+			@Override
             public <E> Component getEdgeLabelRendererComponent(JComponent vv, Object nodeName, Font font, boolean isSelected, E edge) {
                 super.setForeground(options.getEdgeColor());
                 setFont(options.getFont());

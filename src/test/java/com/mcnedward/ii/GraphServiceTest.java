@@ -44,8 +44,7 @@ public class GraphServiceTest extends ProjectTest {
 		solution.addDitHierarchy(hierarchy);
 
 		IGraphService service = ServiceFactory.ditGraphService();
-        GraphOptions options = new GraphOptions();
-        options.setSolution(solution);
+        GraphOptions options = new GraphOptions(solution);
 
 		// Act
 		service.buildHierarchyGraphs(options, new GraphLoadListener() {
@@ -92,7 +91,7 @@ public class GraphServiceTest extends ProjectTest {
 		solution.addDitHierarchy(hierarchy);
 		
 		IGraphService service = ServiceFactory.ditGraphService();
-        GraphOptions options = new GraphOptions();
+        GraphOptions options = new GraphOptions(solution);
         options.setSolution(solution);
 
 		// Act

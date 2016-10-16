@@ -2,8 +2,6 @@ package com.mcnedward.ii;
 
 import java.io.File;
 
-import com.mcnedward.ii.element.JavaSolution;
-import com.mcnedward.ii.exception.TaskBuildException;
 import com.mcnedward.ii.tasks.IIJob;
 
 /**

@@ -7,5 +7,10 @@ import com.mcnedward.ii.element.JavaSolution;
  *
  */
 public interface SolutionBuildListener extends BuildListener {
+	
+	/**
+	 * Notifies when the JavaSolution is built successfully.
+	 * @param solution The {@link JavaSolution}
+	 */
 	void finished(JavaSolution solution);
 }

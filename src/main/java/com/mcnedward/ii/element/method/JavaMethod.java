@@ -42,14 +42,14 @@ public class JavaMethod extends BaseObject {
 	}
 	
 	/**
-	 * @return the mReturnType
+	 * @return the returnType
 	 */
 	public String getReturnType() {
 		return mReturnType;
 	}
 
 	/**
-	 * @param mReturnType the mReturnType to set
+	 * @param returnType the returnType
 	 */
 	public void setReturnType(String returnType) {
 		mReturnType = returnType;
@@ -63,7 +63,7 @@ public class JavaMethod extends BaseObject {
 	}
 
 	/**
-	 * @param mMethodParameters the mMethodParameters to set
+	 * @param methodParameters the methodParameters to set
 	 */
 	public void setMethodParameters(List<MethodParameter> methodParameters) {
 		mMethodParameters = methodParameters;
@@ -81,7 +81,7 @@ public class JavaMethod extends BaseObject {
 	}
 
 	/**
-	 * @param mMethodCallObjects the mMethodCallObjects to set
+	 * @param methodCallObjects the methodCallObjects to set
 	 */
 	public void setMethodCallObjects(List<MethodCallObject> methodCallObjects) {
 		mMethodCallObjects = methodCallObjects;

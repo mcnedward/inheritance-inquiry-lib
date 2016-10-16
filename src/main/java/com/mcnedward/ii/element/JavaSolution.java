@@ -297,6 +297,6 @@ public class JavaSolution {
 
 	@Override
 	public String toString() {
-		return String.format("Solution for %s", mProjectName);
+		return String.format("%s. Classes: [%s] - Inheritance Use [%s]", mProjectName, mClassCount, mInheritanceCount);
 	}
 }

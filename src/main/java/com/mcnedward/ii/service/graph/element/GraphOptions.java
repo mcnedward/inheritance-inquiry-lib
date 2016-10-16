@@ -1,7 +1,6 @@
 package com.mcnedward.ii.service.graph.element;
 
 import com.mcnedward.ii.element.JavaSolution;
-import com.mcnedward.ii.service.graph.GraphService;
 
 import java.awt.*;
 import java.io.File;
@@ -39,8 +38,13 @@ public class GraphOptions {
     private File mDirectory;
     private String mProjectName;
 
-    public GraphOptions() {
+    /**
+     * The default options to use when building graphs.
+     * @param solution The {@link JavaSolution}
+     */
+    public GraphOptions(JavaSolution solution) {
         this(DEFAULT_X_DIST, DEFAULT_Y_DIST, DEFAULT_FONT_SIZE, DEFAULT_FONT_COLOR, DEFAULT_LABEL_COLOR, DEFAULT_ARROW_COLOR, DEFAULT_EDGE_COLOR, DEFAULT_GRAPH_SHAPE);
+        mSolution = solution;
     }
 
     public GraphOptions(Integer xDist, Integer yDist, Integer fontSize, Color fontColor, Color labelColor, Color arrowColor, Color edgeColor, GraphShape graphShape) {
@@ -57,6 +61,14 @@ public class GraphOptions {
         mGraphShape = graphShape;
     }
 
+    /**
+     * The options to use when exporting graphs.
+     *
+     * @param directory   The location to save the graphs to.
+     * @param projectName The name of the project.
+     * @param usePackages True if you want the graphs to be saved using their package structure, false if they should
+     *                    all be in one directory.
+     */
     public GraphOptions(File directory, String projectName, boolean usePackages) {
         mDirectory = directory;
         mProjectName = projectName;
@@ -168,7 +180,7 @@ public class GraphOptions {
     }
 
     public void setInterfaceLabelColor(Color interfaceArrowColor) {
-        mInterfaceLabelColor= interfaceArrowColor;
+        mInterfaceLabelColor = interfaceArrowColor;
     }
 
     public Color getInterfaceArrowColor() {

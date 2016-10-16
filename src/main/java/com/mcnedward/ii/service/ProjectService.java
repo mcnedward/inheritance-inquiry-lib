@@ -1,14 +1,11 @@
 package com.mcnedward.ii.service;
 
-import com.mcnedward.ii.element.JavaProject;
-import com.mcnedward.ii.exception.ProjectBuildException;
-import com.mcnedward.ii.exception.TaskBuildException;
-import com.mcnedward.ii.jdt.visitor.ClassVisitor;
-import com.mcnedward.ii.listener.SolutionBuildListener;
-import com.mcnedward.ii.utils.ASTUtils;
-import com.mcnedward.ii.utils.IILogger;
-import com.mcnedward.ii.utils.SourcedFile;
-import com.mcnedward.ii.utils.Sourcer;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Hashtable;
+import java.util.List;
+
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.compiler.IProblem;
@@ -19,11 +16,14 @@ import org.eclipse.jdt.core.dom.FileASTRequestor;
 import org.eclipse.jgit.annotations.Nullable;
 import org.eclipse.jgit.util.FileUtils;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Hashtable;
-import java.util.List;
+import com.mcnedward.ii.element.JavaProject;
+import com.mcnedward.ii.exception.ProjectBuildException;
+import com.mcnedward.ii.jdt.visitor.ClassVisitor;
+import com.mcnedward.ii.listener.SolutionBuildListener;
+import com.mcnedward.ii.utils.ASTUtils;
+import com.mcnedward.ii.utils.IILogger;
+import com.mcnedward.ii.utils.SourcedFile;
+import com.mcnedward.ii.utils.Sourcer;
 
 /**
  * This service is used to build a {@link JavaProject}. This takes a file for a project directory, or path to a project
@@ -54,6 +54,7 @@ public final class ProjectService {
 	 * @param listener
 	 *            The {@link SolutionBuildListener}. This can be null.
 	 * @return The JavaProject.
+	 * @throws ProjectBuildException
 	 */
 	public JavaProject build(String projectPath, @Nullable SolutionBuildListener listener) throws ProjectBuildException {
 		JavaProject project = new JavaProject(projectPath);
@@ -68,6 +69,7 @@ public final class ProjectService {
 	 * @param listener
 	 *            The {@link SolutionBuildListener}. This can be null.
 	 * @return The JavaProject.
+	 * @throws ProjectBuildException
 	 */
 	public JavaProject build(File projectFile, @Nullable SolutionBuildListener listener) throws ProjectBuildException {
 		JavaProject project = new JavaProject(projectFile);
@@ -75,9 +77,9 @@ public final class ProjectService {
 	}
 
 	public JavaProject build(File projectFile, String projectName, @Nullable SolutionBuildListener listener) throws ProjectBuildException {
-        JavaProject project = new JavaProject(projectFile, projectName);
-        return buildProject(project, listener);
-    }
+		JavaProject project = new JavaProject(projectFile, projectName);
+		return buildProject(project, listener);
+	}
 
 	private JavaProject buildProject(JavaProject project, SolutionBuildListener listener) throws ProjectBuildException {
 		try {
@@ -102,13 +104,15 @@ public final class ProjectService {
 			// Use the visitors to build the JavaProject!
 			visitCompilationUnits(project, files, listener);
 
-            if (listener != null)
-                listener.onProgressChange("Finished building project!", 100);
+			if (listener != null)
+				listener.onProgressChange("Finished building project!", 100);
 
 			afterBuild(project);
 			mHolders.clear();
 		} catch (IOException | IllegalStateException e) {
-            throw new ProjectBuildException(String.format("Something went wrong loading the file %s.\nPlease check that the source files of your project are in the correct directory.", project.getProjectFile()), e);
+			throw new ProjectBuildException(String.format(
+					"Something went wrong loading the file %s.\nPlease check that the source files of your project are in the correct directory.",
+					project.getProjectFile()), e);
 		}
 
 		if (mDeleteAfterBuild) {
@@ -139,7 +143,9 @@ public final class ProjectService {
 	 *            The absolute path of the project.
 	 * @param files
 	 *            The list of {@link SourcedFile}s.
-	 * @throws TaskBuildException
+	 * @param listener
+	 *            The {@link SolutionBuildLister}
+	 * @throws ProjectBuildException
 	 */
 	private void createASTs(String projectPath, List<SourcedFile> files, SolutionBuildListener listener) throws ProjectBuildException {
 		@SuppressWarnings("unchecked")
@@ -190,10 +196,10 @@ public final class ProjectService {
 			}
 			CompilationUnit cu = holder.cu;
 
-            int progress = (int) (((double) i / mHolders.size()) * 100);
-            IILogger.notify(listener, String.format("Visiting compilation units [%s / %s]...", i, mHolders.size()), progress);
+			int progress = (int) (((double) i / mHolders.size()) * 100);
+			IILogger.notify(listener, String.format("Visiting compilation units [%s / %s]...", i, mHolders.size()), progress);
 
-            List<String> missingImports = new ArrayList<>();
+			List<String> missingImports = new ArrayList<>();
 			IProblem[] problems = cu.getProblems();
 			if (problems != null && problems.length > 0) {
 				IILogger.debug(String.format("Got %s problems compiling the source file: %s", problems.length, fileName));
@@ -212,14 +218,14 @@ public final class ProjectService {
 
 	private static final IProgressMonitor getProgressMonitor(SolutionBuildListener listener, int projectFileCount) {
 		return new IProgressMonitor() {
-            private boolean mCancelled;
-            private int mWorkedProgress;
+			private boolean mCancelled;
+			private int mWorkedProgress;
 
 			@Override
 			public void worked(int arg0) {
-                mWorkedProgress += arg0;
-                    int progress = (int) (((double) mWorkedProgress / projectFileCount) * 100);
-                    listener.onProgressChange("Creating ASTs...", progress);
+				mWorkedProgress += arg0;
+				int progress = (int) (((double) mWorkedProgress / projectFileCount) * 100);
+				listener.onProgressChange("Creating ASTs...", progress);
 			}
 
 			@Override

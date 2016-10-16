@@ -1,24 +1,20 @@
 package com.mcnedward.ii.service;
 
-import com.mcnedward.ii.listener.GitDownloadListener;
-import com.mcnedward.ii.utils.IILogger;
-import com.mcnedward.ii.utils.IIUtils;
+import java.io.File;
+import java.security.SecureRandom;
+import java.util.Arrays;
+
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.JGitInternalException;
 import org.eclipse.jgit.errors.UnsupportedCredentialItem;
 import org.eclipse.jgit.lib.ProgressMonitor;
-import org.eclipse.jgit.transport.CredentialItem;
 import org.eclipse.jgit.transport.CredentialsProvider;
-import org.eclipse.jgit.transport.URIish;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 
-import java.io.File;
-import java.io.IOException;
-import java.security.SecureRandom;
-import java.util.Arrays;
-
-import static java.io.File.createTempFile;
+import com.mcnedward.ii.listener.GitDownloadListener;
+import com.mcnedward.ii.utils.IILogger;
+import com.mcnedward.ii.utils.IIUtils;
 
 /**
  * Downloads a git repository to a temporary location, which can then be used in the InterfaceInquiry.

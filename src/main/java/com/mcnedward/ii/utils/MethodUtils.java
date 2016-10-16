@@ -50,7 +50,7 @@ public final class MethodUtils {
 	 * @param binding
 	 *            The IMethodBinding for the method
 	 * @param generics
-	 *            A list of {@link ResolvedGenerics} for the class that the method is declared in
+	 *            A list of {@link ResolvedGeneric}s for the class that the method is declared in
 	 * @return The method signature
 	 */
 	public static String getMethodSignatureWithGenerics(IMethodBinding binding, List<ResolvedGeneric> generics) {

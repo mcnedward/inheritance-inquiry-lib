@@ -96,6 +96,7 @@ public abstract class GraphService<T extends Hierarchy> implements IGraphService
      * @param projectName        The name of the project. If this is not null, the directory {@link File} will have the
      *                           project name added.
      * @return The base path for the solution directory
+     * @throws GraphBuildException
      */
     private File buildGraphFile(File directory, String fullyQualifiedName, boolean usePackages, String projectName) throws GraphBuildException {
         String directoryPath = directory.getAbsolutePath();

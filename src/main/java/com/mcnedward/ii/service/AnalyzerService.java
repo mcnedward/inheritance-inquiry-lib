@@ -21,21 +21,21 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * A service tool for analyzing the Chidamber & Kemerer metrics for a {@link JavaProject}.
+ * A service tool for analyzing the Chidamber &amp Kemerer metrics for a {@link JavaProject}.
  * 
  * @author Edward - Jun 22, 2016
  *
  */
 public final class AnalyzerService {
-	
+
 	public JavaSolution analyze(JavaProject project, SolutionBuildListener listener) {
 		JavaSolution solution = initSolution(project);
 
-        IILogger.notify(listener, "Analyzing methods...", 10);
+		IILogger.notify(listener, "Analyzing methods...", 10);
 		calculateMethods(project, solution);
-        IILogger.notify(listener, "Analyzing metrics and building hierarchies...", 60);
+		IILogger.notify(listener, "Analyzing metrics and building hierarchies...", 60);
 		calculateMetricsAndTrees(project, solution, true);
-        IILogger.notify(listener, "Analyzing metric usages...", 100);
+		IILogger.notify(listener, "Analyzing metric usages...", 100);
 		calculateMetricUsages(solution);
 
 		return solution;
@@ -86,7 +86,7 @@ public final class AnalyzerService {
 				if (!elementToFind.equals(element.getName()))
 					continue;
 			}
-            calculateFullHierarchyTrees(element, project, solution);
+			calculateFullHierarchyTrees(element, project, solution);
 		}
 		calculateFinalAnalysis(solution);
 		return solution;
@@ -101,16 +101,18 @@ public final class AnalyzerService {
 	 * 
 	 * @param project
 	 *            The JavaProject
+	 * @param JavaSolution
+	 *            The JavaSolution
 	 * @param ignoreEmpty
-	 *            If this is true, then the Analyzer will ignore metrics whose value should not be included (1 for DIT, 0 for NOC).
-	 * @return
+	 *            If this is true, then the Analyzer will ignore metrics whose value should not be included (1 for DIT,
+	 *            0 for NOC).
 	 */
 	private void calculateMetricsAndTrees(JavaProject project, JavaSolution solution, boolean ignoreEmpty) {
 		for (JavaElement element : project.getAllElements()) {
 			calculateDepthOfInheritanceTree(project, element, solution, ignoreEmpty);
 			calculateNumberOfChildren(project, element, solution, ignoreEmpty);
 			calculateWeightedMethodsPerClass(project, element, solution, ignoreEmpty);
-            calculateFullHierarchyTrees(element, project, solution);
+			calculateFullHierarchyTrees(element, project, solution);
 		}
 	}
 
@@ -151,7 +153,7 @@ public final class AnalyzerService {
 	 * @param project
 	 *            The JavaProject
 	 * @param solution
-	 *            The {@JavaSolution} to place the metric into
+	 *            The {@link JavaSolution} to place the metric into
 	 * @param ignoreEmpty
 	 *            If this is true, then the Analyzer will ignore metrics whose value is zero.
 	 * @return int The Number of Children
@@ -181,7 +183,7 @@ public final class AnalyzerService {
 	 * @param project
 	 *            The JavaProject
 	 * @param solution
-	 *            The {@JavaSolution} to place the metric into
+	 *            The {@link JavaSolution} to place the metric into
 	 * @param ignoreZero
 	 *            If this is true, then the Analyzer will ignore metrics whose value is zero.
 	 * @return int The Weighted Methods per Class
@@ -204,7 +206,8 @@ public final class AnalyzerService {
 	 * 
 	 * @param project
 	 *            The {@link JavaProject}.
-	 * @return The {@link SolutionMethod} list
+	 * @param solution
+	 *            The {@link JavaSolution}
 	 */
 	private void calculateMethods(JavaProject project, JavaSolution solution) {
 		for (JavaElement child : project.getClasses()) {
@@ -224,18 +227,20 @@ public final class AnalyzerService {
 
 					if (childBinding.overrides(parentBinding) && !parentMethod.isAbstract()) {
 						// Add override method to solution
-						solution.addOMethod(new SolutionMethod(childMethod.getName(), childMethod.getSignature(), parent.getName(), child.getName(), child.getFullyQualifiedName()));
+						solution.addOMethod(new SolutionMethod(childMethod.getName(), childMethod.getSignature(), parent.getName(), child.getName(),
+								child.getFullyQualifiedName()));
 						IILogger.analysis("Method %s in element %s is overriding method %s defined in parent class %s.", childMethod.getSignature(),
 								child, parentMethod.getSignature(), parent);
 
 						// Child method overrides parent method, so check to see if the child method contains the parent
 						// method's MethodInvocation
 						for (JavaMethodInvocation invocation : childMethod.getMethodInvocations()) {
-							// The method declaration binding will be the same binding as the one where the method is defined (declared)
+							// The method declaration binding will be the same binding as the one where the method is
+							// defined (declared)
 							IMethodBinding methodDeclaration = invocation.getMethodBinding().getMethodDeclaration();
 							if (methodDeclaration == parentBinding) {
-								solution.addEMethod(
-										new SolutionMethod(childMethod.getName(), childMethod.getSignature(), parent.getName(), child.getName(), child.getFullyQualifiedName()));
+								solution.addEMethod(new SolutionMethod(childMethod.getName(), childMethod.getSignature(), parent.getName(),
+										child.getName(), child.getFullyQualifiedName()));
 								IILogger.analysis("Method %s in element %s is extending method %s defined in parent class %s.",
 										childMethod.getSignature(), child, parentMethod.getSignature(), parent);
 							}
@@ -245,13 +250,13 @@ public final class AnalyzerService {
 			}
 		}
 	}
-	
+
 	/**
 	 * Used to create the full hierarchy tree structure for an element.
 	 * 
-	 * @param element
-	 * @param project
-	 * @param solution
+	 * @param element The {@link JavaElement}
+	 * @param project The {@link JavaProject}
+	 * @param solution The {@link JavaSolution}
 	 */
 	private void calculateFullHierarchyTrees(JavaElement element, JavaProject project, JavaSolution solution) {
 		FullHierarchy tree = new FullHierarchy(project, element);
@@ -276,7 +281,7 @@ public final class AnalyzerService {
 				if (h.hasChildren())
 					hierarchiesOver0++;
 				averageWidth += h.getMaxWidth();
-				
+
 				if (h.getNdc() > ndcMax) {
 					ndcMax = h.getNdc();
 				}
@@ -301,14 +306,14 @@ public final class AnalyzerService {
 		}
 		calculateAverageMethodUsage(solution);
 	}
-	
-	private void calculateAverageMethodUsage(JavaSolution solution) {		
+
+	private void calculateAverageMethodUsage(JavaSolution solution) {
 		int oMax = 0, oMin = 0, oTotal = 0, oCount = 0;
 		List<String> oMaxClasses = new ArrayList<>();
 		for (Map.Entry<String, List<SolutionMethod>> entry : solution.getOMethods().entrySet()) {
 			String element = entry.getKey();
 			int methodCount = entry.getValue().size();
-			
+
 			if (methodCount > oMax) {
 				oMax = methodCount;
 				oMaxClasses.add(element);
@@ -326,7 +331,7 @@ public final class AnalyzerService {
 		for (Map.Entry<String, List<SolutionMethod>> entry : solution.getEMethods().entrySet()) {
 			String element = entry.getKey();
 			int methodCount = entry.getValue().size();
-			
+
 			if (methodCount > eMax) {
 				eMax = methodCount;
 				eMaxClasses.add(element);
@@ -354,7 +359,7 @@ public final class AnalyzerService {
 		List<? extends Metric> metrics = getMetrics(solution, metricType);
 		int min = 0, average = 0, max = 0;
 		List<String> maxClasses = new ArrayList<>();
-		
+
 		for (int i = 0; i < metrics.size(); i++) {
 			int value = metrics.get(i).getMetric();
 			if (i == 0) {
@@ -363,7 +368,8 @@ public final class AnalyzerService {
 			}
 			if (value > max) {
 				max = value;
-				// TODO This is wrong... this adds max classes that are not the max anymore, I need to filter this at the end of the loop maybe?
+				// TODO This is wrong... this adds max classes that are not the max anymore, I need to filter this at
+				// the end of the loop maybe?
 				maxClasses.add(metrics.get(i).getFullyQualifiedName());
 			}
 			if (value < min)

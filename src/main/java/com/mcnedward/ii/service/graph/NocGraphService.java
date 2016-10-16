@@ -59,7 +59,8 @@ public class NocGraphService extends GraphService<NocHierarchy> {
     }
 
     private void recurseHierarchyTrees(NocHierarchy tree, Node parentNode, Stack<Node> nodes, Stack<Edge> edges) {
-        Stack<NocHierarchy> hierarchyTree = (Stack<NocHierarchy>) tree.getTree().clone();
+        @SuppressWarnings("unchecked")
+		Stack<NocHierarchy> hierarchyTree = (Stack<NocHierarchy>) tree.getTree().clone();
         while (!hierarchyTree.isEmpty()) {
             NocHierarchy childTree = hierarchyTree.pop();
             Node childNode = new Node(childTree);

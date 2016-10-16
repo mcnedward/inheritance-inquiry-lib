@@ -1,14 +1,11 @@
 package com.mcnedward.ii;
 
-import com.mcnedward.ii.element.JavaElement;
-import com.mcnedward.ii.exception.TaskBuildException;
-import org.junit.Test;
-
-import java.io.File;
-import java.util.List;
-
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
+
+import org.junit.Test;
+
+import com.mcnedward.ii.element.JavaElement;
 
 /**
  * @author Edward - Jul 24, 2016

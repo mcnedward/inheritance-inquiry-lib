@@ -63,6 +63,7 @@ public class GraphBuilder extends Builder {
             }
             return () -> {
                 try {
+                    mIsBuild = false;
                     mGraphService.buildHierarchyGraphs(mOptions, mLoadListener);
                 } catch (Exception e) {
                     mLoadListener.onBuildError("Something went wrong when building the graphs.", e);
@@ -77,9 +78,10 @@ public class GraphBuilder extends Builder {
             }
             return () -> {
                 try {
+                    mIsExport = false;
                     mGraphService.exportGraphsToFile(mGraphs, mOptions.getDirectory(), mOptions.getProjectName(), mOptions.usePackages(), mExportListener);
                 } catch (GraphBuildException e) {
-                    mExportListener.onBuildError(String.format("Something went wrong when exporting the graphs."), e);
+                    mExportListener.onBuildError("Something went wrong when exporting the graphs.", e);
                 } finally {
                     reset();
                 }
@@ -89,10 +91,7 @@ public class GraphBuilder extends Builder {
     }
 
     @Override
-    protected void reset() {
-        mGraphService = null;
-        mOptions = null;
-        mGraphs = null;
+    protected synchronized void reset() {
         mIsBuild = false;
         mIsExport = false;
     }
